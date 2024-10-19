@@ -1,0 +1,43 @@
+{
+  "name": "maguz-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "casbin": "^5.31.0",
+    "compression": "^1.7.4",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-list-endpoints": "^7.1.0",
+    "gridfs-stream": "^1.1.1",
+    "helmet": "^4.6.0",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "5.1.0",
+    "mongoose": "^7.0.1",
+    "multer": "1.4.3",
+    "multer-gridfs-storage": "^5.0.2",
+    "os": "^0.1.1",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "nodemon": "^2.0.22",
+    "prettier": "^3.3.3"
+  }
+}
