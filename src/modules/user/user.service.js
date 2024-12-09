@@ -1,0 +1,15 @@
+const BaseService = require('../base/BaseService');
+const UserModel = require('./user.model');
+
+class UserService extends BaseService {
+    constructor() {
+        super(UserModel); // Pass the User model to the BaseService
+    }
+
+    // Example of a custom service method: Find users by role
+    async findUsersByRole(role) {
+        return await this.model.model.find({ role }).populate('org', 'name'); // Populate organization details
+    }
+}
+
+module.exports = new UserService();

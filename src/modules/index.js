@@ -1,12 +1,34 @@
 const express = require("express");
-const authRoutes = require("./auth");
-const userRoutes = require("../modules/users/user.routes");
+const orgRoutes = require("./org");
+const userRoutes = require("./user");
+const siteRoutes = require("./site");
+const vendorRoutes = require('./vendor');
+const inventoryRoutes = require('./inventory');
+const materialMetadataRoutes = require('./materialMetadata');
+const stockRoutes = require('./stock'); 
+const taskRoutes = require('./task');
+const paymentRoutes = require('./payment'); 
+const orderRoutes = require('./order');
+const approvalRoutes = require('./approval');
+const usageRoutes = require('./usage');
+const messageRoutes = require('./message'); 
+const fileRoutes = require('./file');
 
 const router = express.Router();
 
-router.use("/v1/auth", authRoutes);
 router.use('/v1/users', userRoutes);
+router.use('/v1/orgs', orgRoutes);
+router.use('/v1/sites', siteRoutes);
+router.use('/v1/vendors', vendorRoutes);
+router.use('/v1/inventories', inventoryRoutes);
+router.use('/v1/materials', materialMetadataRoutes);
+router.use('/v1/stocks', stockRoutes);
+router.use('/v1/tasks', taskRoutes);
+router.use('/v1/payments', paymentRoutes);
+router.use('/v1/orders', orderRoutes);
+router.use('/v1/approvals', approvalRoutes);
+router.use('/v1/usages', usageRoutes);
+router.use('/v1/messages', messageRoutes);
+router.use('/v1/files', fileRoutes);
 
-// Error Handling Middleware
-// app.use(errorHandler);
 module.exports = router;
