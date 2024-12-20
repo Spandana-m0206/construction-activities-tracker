@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
+const { MessageTypes } = require('../../utils/enums');
 
 // Define Message-specific fields
 const messageFields = {
@@ -12,6 +13,10 @@ const messageFields = {
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order
     paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null }, // Nullable reference to Payment Request
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
+    type: { type: String, enum: MessageTypes, required: true }, 
+    reaction: { type: [String], required: true }, 
+    taggedMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message', required: true }, 
+    isDeleted: { type: Boolean, required: true }, 
 };
 
 // Create the extended schema

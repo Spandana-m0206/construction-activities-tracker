@@ -10,7 +10,7 @@ const userFields = {
     email: { type: String, required: true, unique: true, match: /^\S+@\S+\.\S+$/ },
     password: { type: String, required: true },
     role: { type: String, enum: Roles, required: true },
-    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
+    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: false }, // Reference to Org
     language: { type: String, enum: Languages, required: true },
     resetToken: { type: String, default: null },
     resetTokenExpiry: { type: Date, default: null },
