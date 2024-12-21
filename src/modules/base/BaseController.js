@@ -1,5 +1,3 @@
-const { StatusCodes } = require("http-status-codes");
-
 class BaseController {
     constructor(service) {
         if (!service) {
@@ -11,18 +9,11 @@ class BaseController {
     // Generic method for creating a resource
     async create(req, res) {
         try {
-            const { person, penaltyBy,approvedBy } = req.body;
-            if(person && penaltyBy && person === penaltyBy) { 
-                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
-            }
-            if(person && approvedBy && person === approvedBy) { 
-                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person cannot approve itself penalty' });
-            }
             const data = await this.service.create(req.body);
-            res.status(StatusCodes.CREATED).json(data);
+            res.status(201).json(data);
         } catch (error) {
             console.error(`[BaseController Error - create]: ${error.message}`);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
     }
 
@@ -30,10 +21,10 @@ class BaseController {
     async find(req, res) {
         try {
             const data = await this.service.find(req.query);
-            res.status(StatusCodes.OK).json(data);
+            res.status(200).json(data);
         } catch (error) {
             console.error(`[BaseController Error - find]: ${error.message}`);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            res.status(500).json({ error: error.message });
         }
     }
 
@@ -42,30 +33,23 @@ class BaseController {
         try {
             const data = await this.service.findOne({ _id: req.params.id });
             if (!data) {
-                return res.status(StatusCodes.NOT_FOUND).json({ message: 'Resource not found' });
+                return res.status(404).json({ message: 'Resource not found' });
             }
-            res.status(StatusCodes.OK).json(data);
+            res.status(200).json(data);
         } catch (error) {
             console.error(`[BaseController Error - findOne]: ${error.message}`);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            res.status(500).json({ error: error.message });
         }
     }
 
     // Generic method for updating a resource
     async update(req, res) {
         try {
-            const { person, penaltyBy,approvedBy } = req.body;
-            if(person && penaltyBy && person === penaltyBy) { 
-                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
-            }
-            if(person && approvedBy && person === approvedBy) { 
-                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person cannot approve itself penalty' });
-            }
             const data = await this.service.updateOne({ _id: req.params.id }, req.body);
-            res.status(StatusCodes.OK).json(data);
+            res.status(200).json(data);
         } catch (error) {
             console.error(`[BaseController Error - update]: ${error.message}`);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
     }
 
@@ -73,10 +57,10 @@ class BaseController {
     async delete(req, res) {
         try {
             const data = await this.service.deleteOne({ _id: req.params.id });
-            res.status(StatusCodes.OK).json({ message: 'Resource deleted', data });
+            res.status(200).json({ message: 'Resource deleted', data });
         } catch (error) {
             console.error(`[BaseController Error - delete]: ${error.message}`);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            res.status(500).json({ error: error.message });
         }
     }
 }

@@ -1,3 +1,4 @@
+const { StatusCodes } = require('http-status-codes');
 const BaseController = require('../base/BaseController');
 const PenaltyService = require('./penalty.service');
 
@@ -6,11 +7,82 @@ class PenaltyController extends BaseController {
         super(PenaltyService); // Pass the PenaltyService to the BaseController
     }
 
+    // Generic method for creating a resource
+    async create(req, res) {
+        try {
+            const { person, penaltyBy,approvedBy } = req.body;
+            if(person && penaltyBy && person === penaltyBy) { 
+                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
+            }
+            if(person && approvedBy && person === approvedBy) { 
+                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person cannot approve itself penalty' });
+            }
+            const data = await PenaltyService.create(req.body);
+            res.status(StatusCodes.CREATED).json(data);
+        } catch (error) {
+            console.error(`[PenaltyController Error - create]: ${error.message}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
+
+    // Generic method for retrieving multiple resources
+    async find(req, res) {
+        try {
+            const data = await PenaltyService.find(req.query);
+            res.status(StatusCodes.OK).json(data);
+        } catch (error) {
+            console.error(`[PenaltyController Error - find]: ${error.message}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
+
+    // Generic method for retrieving a single resource
+    async findOne(req, res) {
+        try {
+            const data = await PenaltyService.findOne({ _id: req.params.id });
+            if (!data) {
+                return res.status(StatusCodes.NOT_FOUND).json({ message: 'Resource not found' });
+            }
+            res.status(StatusCodes.OK).json(data);
+        } catch (error) {
+            console.error(`[PenaltyController Error - findOne]: ${error.message}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
+
+    // Generic method for updating a resource
+    async update(req, res) {
+        try {
+            const { person, penaltyBy,approvedBy } = req.body;
+            if(person && penaltyBy && person === penaltyBy) { 
+                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
+            }
+            if(person && approvedBy && person === approvedBy) { 
+                return res.status(StatusCodes.BAD_REQUEST).json({ success:"false", error: 'Person cannot approve itself penalty' });
+            }
+            const data = await PenaltyService.updateOne({ _id: req.params.id }, req.body);
+            res.status(StatusCodes.OK).json(data);
+        } catch (error) {
+            console.error(`[PenaltyController Error - update]: ${error.message}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
+
+    // Generic method for deleting a resource
+    async delete(req, res) {
+        try {
+            const data = await PenaltyService.deleteOne({ _id: req.params.id });
+            res.status(StatusCodes.OK).json({ message: 'Resource deleted', data });
+        } catch (error) {
+            console.error(`[PenaltyController Error - delete]: ${error.message}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
     // Example custom controller method: Get penalties by organization
     async getPenaltiesByOrg(req, res, next) {
         try {
-            const penalties = await this.service.findPenaltiesByOrg(req.params.orgId);
-            res.status(200).json({ success: true, data: penalties });
+            const penalties = await PenaltyService.findPenaltiesByOrg(req.params.orgId);
+            res.status(StatusCodes.OK).json({ success: true, data: penalties });
         } catch (error) {
             next(error);
         }
