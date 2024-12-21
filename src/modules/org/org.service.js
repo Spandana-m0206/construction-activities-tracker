@@ -1,6 +1,6 @@
 const BaseService = require('../base/BaseService');
 const OrgModel = require('./org.model');
-const UserModel = require('../user/user.model')
+const UserService = require('../user/user.service')
 class OrgService extends BaseService {
     constructor() {
         super(OrgModel); 
@@ -15,7 +15,7 @@ class OrgService extends BaseService {
         try {
           const orgDoc = await OrgModel.create(orgDetails);
           
-          const adminDoc = await UserModel.create(
+          const adminDoc = await UserService.create(
               {
                 ...adminDetails,
                 org: orgDoc._id

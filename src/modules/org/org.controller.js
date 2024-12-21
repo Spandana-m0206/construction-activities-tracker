@@ -3,7 +3,8 @@ const { default: ApiError } = require('../../utils/apiError');
 const BaseController = require('../base/BaseController');
 const OrgService = require('./org.service');
 const { default: ApiResponse } = require('../../utils/apiResponse');
-const UserService = require('../user/user.model')
+const UserService = require('../user/user.service');
+const { Roles } = require('../../utils/enums');
 class OrgController extends BaseController {
     constructor() {
         super(OrgService); // Pass the OrgService to the BaseController
@@ -50,7 +51,7 @@ class OrgController extends BaseController {
             if(isUserExisted){
                 return res.status(400).json(new ApiError(HttpStatusCode.BadRequest, "User with same Email or Phone already exists"));
             }
-            admin.role = 'Admin';
+            admin.role = Roles.ADMIN;
 
             const newOrg = await OrgService.create(org, admin);
             if(!newOrg){
