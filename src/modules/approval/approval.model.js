@@ -12,6 +12,7 @@ const approvalFields = {
     type: { type: String, enum: ApprovalTypes, required: true }, // Enum for types
     progressPercentage: { type: Number, default: null }, // Nullable float percentage
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
+    approvedAt: { type: Date, default: Date.now()} // Reference to User
 };
 
 // Create the extended schema

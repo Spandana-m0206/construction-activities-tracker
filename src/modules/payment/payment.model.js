@@ -1,25 +1,20 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
-const { PaymentPriorities, PaymentStatuses } = require('../../utils/enums'); // Enums for priority and status
+const { PaymentStatuses, PaymentMethods, PaymentTypes } = require('../../utils/enums'); // Enums for statuses, methods, and types
 
 // Define Payment-specific fields
 const paymentFields = {
-    priority: { type: String, enum: PaymentPriorities, required: true }, // Enum for priorities
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
-    inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
-    site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to Site
-    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // Nullable reference to User
-    status: { type: String, enum: PaymentStatuses, required: true }, // Enum for statuses
+    status: { type: String, enum: PaymentStatuses, required: true }, // Payment status
     amount: { type: Number, required: true }, // Payment amount
-    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
-    inventoryRequest: [
-        {
-            material: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata', required: true }, // Reference to Material
-            qty: { type: Number, required: true },
-            price: { type: Number, required: true },
-        },
-    ],
-    vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: false }, // Nullable Reference to Vendor
+    attachment: { type: mongoose.Schema.Types.ObjectId, ref: 'File', default: null }, // Optional file attachment
+    method: { type: String, enum: PaymentMethods, required: true }, // Payment method
+    paidBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // User who made the payment
+    paidTo: { type: mongoose.Schema.Types.ObjectId, refPath: 'paidToModel', required: true }, // Reference to Vendor/User
+    paidToModel: { type: String, enum: ['User', 'Vendor'], required: true }, // Dynamic reference type for `paidTo`
+    comments: { type: String, default: null }, // Payment comments
+    type: { type: String, enum: PaymentTypes, required: true }, // Payment type (credit/debit)
+    purchaseOrder: { type: mongoose.Schema.Types.ObjectId, ref: 'PurchaseOrder', default: null }, // Optional reference to Purchase Order
+    paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentRequest', default: null }, // Optional reference to Payment Request
 };
 
 // Create the extended schema

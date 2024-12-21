@@ -2,7 +2,7 @@ const CountryCodes = ['+1', '+91', '+44', '+61']; // Add more as needed
 const Roles = ['Admin', 'Inventory Manager', 'Site Supervisor', 'Finance Executive'];
 const Languages = ['EN', 'ES', 'FR']; // Add more languages if required
 const ProjectCurrencies = ['USD', 'EUR', 'INR', 'GBP', 'AUD']; // Add more as needed
-const SiteTypes = ['1BHK', '2BHK', '3BHK'];
+const SiteTypes = ['2BHK', '3BHK', '4BHK', '5BHK'];
 const FloorTypes = ['raw', 'standard', 'luxury'];
 const SiteStatuses = ['upcoming', 'in progress', 'waiting', 'completed'];
 const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
@@ -24,6 +24,16 @@ const OrderPriorities = ['high', 'medium', 'low'];
 const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
 const ApprovalTypes = ['show progress', 'task completed'];
 const UsageTypes = ['used', 'wasted', 'transfer'];
+const PenaltySources = ['treat', 'salary', 'payables'];
+const PurchaseRequestPriorities = ['high', 'medium', 'low'];
+const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
+const FulfillmentStatuses = ['in progress', 'in transit', 'received', 'cancelled', 'returned'];
+const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
+const StockSources = ["inventory", "site"];
+const MessageTypes = ["status", "approval"];
+const CarpetAreaUnitType = ['sq. ft.', 'sq. mt.'];
+const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
+const PaymentTypes = ['credit', 'debit']
 
 module.exports = {
     UsageTypes,
@@ -44,4 +54,15 @@ module.exports = {
     SiteTypes,
     FloorTypes,
     SiteStatuses,
+    FulfillmentStatuses,
+    PenaltySources,
+    PurchaseRequestPriorities,
+    PurchaseRequestStatuses,
+    FulfillmentStatuses,
+    TransferTypes,
+    StockSources,
+    CarpetAreaUnitType,
+    MessageTypes,
+    PaymentMethods,
+    PaymentTypes
 };

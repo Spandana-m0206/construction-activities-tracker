@@ -5,7 +5,7 @@ const app = require("./app");
 const logger = require("./utils/logger");
 const listEndpoints = require("express-list-endpoints");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 if (cluster.isMaster) {
   const numCPUs = process.env.WORKER_COUNT ?? os.cpus().length;
