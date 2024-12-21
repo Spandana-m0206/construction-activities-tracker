@@ -1,3 +1,5 @@
+const { StatusCodes } = require("http-status-codes");
+
 class BaseController {
     constructor(service) {
         if (!service) {
@@ -9,6 +11,13 @@ class BaseController {
     // Generic method for creating a resource
     async create(req, res) {
         try {
+            const { person, penaltyBy,approvedBy } = req.body;
+            if(person && penaltyBy && person === penaltyBy) { 
+                return res.status(400).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
+            }
+            if(person && approvedBy && person === approvedBy) { 
+                return res.status(400).json({ success:"false", error: 'Person cannot approve itself penalty' });
+            }
             const data = await this.service.create(req.body);
             res.status(201).json(data);
         } catch (error) {
@@ -45,6 +54,13 @@ class BaseController {
     // Generic method for updating a resource
     async update(req, res) {
         try {
+            const { person, penaltyBy,approvedBy } = req.body;
+            if(person && penaltyBy && person === penaltyBy) { 
+                return res.status(400).json({ success:"false", error: 'Person and penaltyBy cannot be the same' });
+            }
+            if(person && approvedBy && person === approvedBy) { 
+                return res.status(400).json({ success:"false", error: 'Person cannot approve itself penalty' });
+            }
             const data = await this.service.updateOne({ _id: req.params.id }, req.body);
             res.status(200).json(data);
         } catch (error) {
