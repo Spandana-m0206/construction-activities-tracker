@@ -1,5 +1,10 @@
 const CountryCodes = ['+1', '+91', '+44', '+61']; // Add more as needed
-const Roles = ['Admin', 'Inventory Manager', 'Site Supervisor', 'Finance Executive'];
+const Roles = {
+    ADMIN : 'Admin',
+    INVENTORY_MANAGER : 'Inventory Manager',
+    SITE_SUPERVISOR : 'Site Supervisor',
+    FINANCE_EXECUTIVE : 'Finance Executive',
+  }
 const Languages = ['EN', 'ES', 'FR']; // Add more languages if required
 const ProjectCurrencies = ['USD', 'EUR', 'INR', 'GBP', 'AUD']; // Add more as needed
 const SiteTypes = ['2BHK', '3BHK', '4BHK', '5BHK'];

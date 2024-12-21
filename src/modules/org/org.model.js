@@ -5,7 +5,7 @@ const extendSchema = require('../base/BaseModel');
 const orgFields = {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, match: /^\S+@\S+\.\S+$/ },
-    admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     address: { type: String, default: null },
 };
 
