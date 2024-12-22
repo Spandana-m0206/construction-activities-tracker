@@ -1,6 +1,12 @@
 const BaseController = require('../base/BaseController');
 const UserService = require('./user.service');
-
+const { default: ApiResponse } = require('../../utils/apiResponse');
+const { StatusCodes } = require('http-status-codes');
+const { default: enumToArray } = require('../../utils/EnumToArray');
+const { Roles } = require('../../utils/enums');
+const { default: ApiError } = require('../../utils/apiError');
+const userService = require('./user.service');
+const {generateRandomPassword} = require('../../utils/password');
 class UserController extends BaseController {
     constructor() {
         super(UserService); // Pass the UserService to the BaseController
@@ -10,11 +16,53 @@ class UserController extends BaseController {
     async getUsersByRole(req, res, next) {
         try {
             const users = await this.service.findUsersByRole(req.params.role);
-            res.status(200).json({ success: true, data: users });
+            res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.ACCEPTED, users, "User fetched successfully"));
         } catch (error) {
             next(error);
         }
     }
+
+    async create (req, res) {
+        try {
+            const {name, countryCode, phone, email, language, role } = req.body;
+    
+            if(!role || !role.trim() || !enumToArray(Roles).includes(role) ){
+                console.log(enumToArray(Roles))
+                return res.status(StatusCodes.BAD_REQUEST)
+                    .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid role" ))
+            }
+            if(!name ||!countryCode ||!phone ||!email ||!language){
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Please fill required fields"));
+            }
+            const isUserExisted = await UserService.findOne({
+                $or: [
+                  { email },
+                  { phone }
+                ]
+              })
+            if(isUserExisted){
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "User with same Email or Phone already exists"));
+            }      
+            if(!req.user.org){
+                return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
+            }
+            const password = generateRandomPassword()
+            const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password})
+            //TODO: send a create user email 
+            delete newUser.password
+            return res.status(StatusCodes.CREATED)
+                .json( new ApiResponse(StatusCodes.CREATED, {
+                    userId:newUser._id,
+                    name:newUser.name,
+                    email:newUser.email,
+                    role:newUser.role,
+                    phone:newUser.phone,
+        }, "User created successfully"))
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message, error))
+    }
+}   
+
 }
 
 module.exports = new UserController();
