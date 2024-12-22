@@ -6,10 +6,33 @@ const Roles = {
     FINANCE_EXECUTIVE : 'Finance Executive',
   }
 const Languages = ['EN', 'ES', 'FR']; // Add more languages if required
-const ProjectCurrencies = ['USD', 'EUR', 'INR', 'GBP', 'AUD']; // Add more as needed
-const SiteTypes = ['2BHK', '3BHK', '4BHK', '5BHK'];
-const FloorTypes = ['raw', 'standard', 'luxury'];
-const SiteStatuses = ['upcoming', 'in progress', 'waiting', 'completed'];
+const ProjectCurrencies = {
+    USD: 'USD',
+    EUR: 'EUR',
+    INR: 'INR',
+    GBP: 'GBP',
+    AUD: 'AUD'
+};
+const SiteTypes = {
+    BHK2: '2BHK',
+    BHK3: '3BHK',
+    BHK4: '4BHK',
+    BHK5: '5BHK',
+};
+
+const FloorTypes = {
+    RAW: 'raw',
+    STANDARD: 'standard',
+    LUXURY: 'luxury',
+};
+
+const SiteStatuses = {
+    UPCOMING: 'upcoming',
+    IN_PROGRESS: 'in progress',
+    WAITING: 'waiting',
+    COMPLETED: 'completed',
+};
+
 const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = [
