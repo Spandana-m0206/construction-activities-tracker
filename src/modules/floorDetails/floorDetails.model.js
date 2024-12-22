@@ -13,7 +13,7 @@ const floorDetailsFields = {
     type: { type: String, enum: enumToArray(FloorTypes), required: true }, // Floor Type
     washrooms: { type: Number, required: true }, // Number of Washrooms
     carpetArea: { type: Number, required: true }, // Carpet Area
-    carpetAreaUnit: { type: String, enum: CarpetAreaUnitType, required: true }, // Unit for Carpet Area
+    carpetAreaUnit: { type: String, enum: enumToArray(CarpetAreaUnitType), required: true }, // Unit for Carpet Area
     isParking: { type: Boolean, required: true }, // Parking Availability
     isBasement: { type: Boolean, required: true }, // Basement Availability
     isStore: { type: Boolean, required: true }, // Store Room Availability
