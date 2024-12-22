@@ -16,7 +16,7 @@ class UserController extends BaseController {
     async getUsersByRole(req, res, next) {
         try {
             const users = await this.service.findUsersByRole(req.params.role);
-            res.status(200).json(new ApiResponse(StatusCodes.ACCEPTED, users, "User fetched successfully"));
+            res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED, users, "User fetched successfully"));
         } catch (error) {
             next(error);
         }
@@ -32,7 +32,7 @@ class UserController extends BaseController {
                     .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid role" ))
             }
             if(!name ||!countryCode ||!phone ||!email ||!language){
-                return res.status(400).json(new ApiError(StatusCodes.BAD_REQUEST, "Please fill required fields"));
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Please fill required fields"));
             }
             const isUserExisted = await UserService.findOne({
                 $or: [
@@ -41,10 +41,10 @@ class UserController extends BaseController {
                 ]
               })
             if(isUserExisted){
-                return res.status(400).json(new ApiError(StatusCodes.BAD_REQUEST, "User with same Email or Phone already exists"));
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "User with same Email or Phone already exists"));
             }      
             if(!req.user.org){
-                return res.status(403).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
+                return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
             }
             const password = generateRandomPassword()
             const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password})
@@ -59,7 +59,7 @@ class UserController extends BaseController {
                     phone:newUser.phone,
         }, "User created successfully"))
     } catch (error) {
-        return res.status(500).json(new ApiError(500, error.message, error))
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message, error))
     }
 }   
 
