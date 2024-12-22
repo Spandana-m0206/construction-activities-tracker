@@ -69,9 +69,15 @@ class FloorDetailsController extends BaseController {
             }
 
             // Check Floor Number and Level
-            if (floorData.floorNumber < 0 || floorData.level < 0) {
+            if (!floorData?.floorNumber || !floorData?.level ||floorData.floorNumber < 0 || floorData.level < 0) {
                 return res.status(StatusCodes.BAD_REQUEST).json(
                     new ApiError(StatusCodes.BAD_REQUEST, 'Floor Number and Level must be positive numbers')
+                );
+            }
+
+            if(floorData.level > validSite.level){
+                return res.status(StatusCodes.BAD_REQUEST).json(
+                    new ApiError(StatusCodes.BAD_REQUEST, 'Floor Level must not exceed the maximum number of levels in the site')
                 );
             }
 
