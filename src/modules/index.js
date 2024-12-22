@@ -13,6 +13,7 @@ const approvalRoutes = require("./approval");
 const usageRoutes = require("./usage");
 const messageRoutes = require("./message");
 const fileRoutes = require("./file");
+const authRoute = require("./auth")
 const purchaseRequestFulfillmentRoutes = require("./purchaseRequestFulfillment");
 const materialListItemRoutes = require("./materialListItem");
 const purchaseRequestRoutes = require("./purchaseRequest");
@@ -20,9 +21,13 @@ const penaltyRoutes = require("./penalty");
 const requestFulfillmentRoutes = require("./requestFulfillment");
 const paymentRequestRoutes = require("./paymentRequest");
 const purchaseRoutes = require("./purchase");
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
+router.use('/v1/auth', authRoute);
+
+router.use(authMiddleware)
 router.use('/v1/users', userRoutes);
 router.use('/v1/orgs', orgRoutes);
 router.use('/v1/sites', siteRoutes);

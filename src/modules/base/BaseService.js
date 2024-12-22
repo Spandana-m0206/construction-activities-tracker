@@ -26,6 +26,10 @@ class BaseService {
         return this.handleOperation(this.model.find.bind(this.model), 'find', filter, projection, options);
     }
 
+    async findById(id) {
+        return this.handleOperation(this.model.findById.bind(this.model), 'findById', id);
+    }
+
     async findOne(filter = {}, projection = {}, options = {}) {
         return this.handleOperation(this.model.findOne.bind(this.model), 'findOne', filter, projection, options);
     }
