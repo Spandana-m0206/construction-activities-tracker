@@ -8,6 +8,7 @@ exports.generateToken = async (user) => {
             const token = jwt.sign(
                 {
                     userId: user._id,
+                    name: user.name,
                     role: user.role,
                     orgId: org._id,
                     orgName: org.name,
