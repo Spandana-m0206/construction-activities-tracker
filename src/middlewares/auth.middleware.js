@@ -13,7 +13,6 @@ exports.authMiddleware = async (req, res, next) => {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     if(!verified) return res.status(401).json(new ApiError(401, "Access Denied, Invalid token"));
-    //TODO: get user from user modal and add req.user = user
     const user = await UserService.findById(verified.userId);
     if(!user) return res.status(401).json(new ApiError(401, "Access Denied, User not found"));
     delete user.password;
