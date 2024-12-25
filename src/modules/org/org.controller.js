@@ -2,7 +2,7 @@ const { HttpStatusCode } = require('axios');
 const { default: ApiError } = require('../../utils/apiError');
 const BaseController = require('../base/BaseController');
 const OrgService = require('./org.service');
-const { default: ApiResponse } = require('../../utils/apiResponse');
+const { ApiResponse } = require('../../utils/apiResponse');
 const UserService = require('../user/user.service');
 const { Roles } = require('../../utils/enums');
 class OrgController extends BaseController {

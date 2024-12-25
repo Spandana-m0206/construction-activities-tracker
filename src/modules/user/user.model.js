@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { CountryCodes, Roles, Languages } = require('../../utils/enums'); // Enums for validation
 const bcrypt = require('bcrypt');
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const  enumToArray  = require('../../utils/EnumToArray');
 // Define User-specific fields
 const userFields = {
     name: { type: String, required: true },

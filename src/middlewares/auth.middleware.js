@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { default: ApiError } = require("../utils/apiError");
+const { ApiError } = require("../utils/apiError");
 
 exports.authMiddleware = (req, res, next) => {
   const authHeader = req.headers["authorization"];

@@ -39,7 +39,8 @@ const MessageTypes = ["status", "approval"];
 const CarpetAreaUnitType = ['sq. ft.', 'sq. mt.'];
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
-
+const TaskTypes = ["Payment", "materials", "plumbing"]
+const TaskDepartments =['Inventory', 'Finance', 'Sales']
 module.exports = {
     UsageTypes,
     ApprovalStatuses,
@@ -69,5 +70,7 @@ module.exports = {
     CarpetAreaUnitType,
     MessageTypes,
     PaymentMethods,
-    PaymentTypes
+    PaymentTypes,
+    TaskTypes,
+    TaskDepartments
 };
