@@ -131,3 +131,5 @@ dist
 
 .vscode/
 .idea/
+
+./src/modules/.DS_Store
