@@ -21,6 +21,7 @@ const penaltyRoutes = require("./penalty");
 const requestFulfillmentRoutes = require("./requestFulfillment");
 const paymentRequestRoutes = require("./paymentRequest");
 const purchaseRoutes = require("./purchase");
+const floorDetailsRoutes = require('./floorDetails')
 const { authMiddleware } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
@@ -48,6 +49,7 @@ router.use('/v1/purchase-requests', purchaseRequestRoutes);
 router.use('/v1/penalties', penaltyRoutes);
 router.use('/v1/request-fulfillments', requestFulfillmentRoutes);
 router.use('/v1/payment-requests', paymentRequestRoutes);
+router.use('/v1/floor-details', floorDetailsRoutes);
 router.use('/purchases', purchaseRoutes);
 
 module.exports = router;

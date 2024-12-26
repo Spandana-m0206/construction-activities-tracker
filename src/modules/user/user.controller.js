@@ -16,7 +16,7 @@ class UserController extends BaseController {
     async getUsersByRole(req, res, next) {
         try {
             const users = await this.service.findUsersByRole(req.params.role);
-            res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.ACCEPTED, users, "User fetched successfully"));
+            res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED, users, "User fetched successfully"));
         } catch (error) {
             next(error);
         }

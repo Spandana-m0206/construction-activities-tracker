@@ -49,6 +49,40 @@ class BaseService {
     async deleteOne(filter) {
         return this.handleOperation(this.model.deleteOne.bind(this.model), 'deleteOne', filter);
     }
+
+    async findPaginated(filter = {}, page = 1, limit = 10, projection = {}, options = {}) {
+        try {
+            // Ensure page and limit are numbers
+            page = parseInt(page) || 1;
+            limit = parseInt(limit) || 10;
+
+            // Calculate skip value
+            const skip = (page - 1) * limit;
+
+            // Fetch paginated data and total count
+            const [data, totalCount] = await Promise.all([
+                this.model.find(filter, projection, options).skip(skip).limit(limit),
+                this.model.countDocuments(filter)
+            ]);
+
+            // Prepare pagination metadata
+            const pagination = {
+                page,
+                limit,
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit)
+            };
+
+            return {
+                data,
+                pagination
+            };
+        } catch (error) {
+            console.error(`[BaseService Error - findPaginated]: ${error.message}`);
+            throw new Error(`Failed to perform paginated query. ${error.message || 'Unknown error occurred.'}`);
+        }
+    }
+
 }
 
 module.exports = BaseService;

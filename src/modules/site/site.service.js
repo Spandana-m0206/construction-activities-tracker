@@ -10,6 +10,8 @@ class SiteService extends BaseService {
     async findSitesByStatus(status) {
         return await this.model.model.find({ status }).populate('supervisor', 'name').populate('org', 'name');
     }
+
+
 }
 
 module.exports = new SiteService();

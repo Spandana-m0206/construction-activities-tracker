@@ -43,6 +43,18 @@ class BaseController {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
     }
+    async findById(req, res) {
+        try {
+            const data = await this.service.findById(req.params.id);
+            if (!data) {
+                return res.status(404).json({ message: 'Resource not found' });
+            }
+            res.status(200).json(data);
+        } catch (error) {
+            console.error(`[BaseController Error - findById]: ${error.message}`);
+            res.status(500).json({ error: error.message });
+        }
+    }
 
     // Generic method for updating a resource
     async update(req, res) {
