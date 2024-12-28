@@ -20,7 +20,7 @@ const TaskStatuses = [
     'waiting',
     'never',
 ]; // Add more statuses as needed
-
+const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
 const PaymentStatuses = ['approved', 'rejected', 'in review'];
@@ -40,7 +40,9 @@ const CarpetAreaUnitType = ['sq. ft.', 'sq. mt.'];
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
 const TaskTypes = ["Payment", "materials", "plumbing"]
-const TaskDepartments =['Inventory', 'Finance', 'Sales']
+const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
+const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
+
 module.exports = {
     UsageTypes,
     ApprovalStatuses,
@@ -72,5 +74,7 @@ module.exports = {
     PaymentMethods,
     PaymentTypes,
     TaskTypes,
-    TaskDepartments
+    TaskDepartments,
+    LandType,
+    TriggerTask
 };

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
-const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses } = require('../../utils/enums'); // Enums
+const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses, LandType } = require('../../utils/enums'); // Enums
 
 // Define Site-specific fields
 const siteFields = {
@@ -12,6 +12,7 @@ const siteFields = {
     projectValue: { type: Number, required: true },
     type: { type: String, enum: SiteTypes, required: true },
     level: { type: Number, required: true },
+    landType: { type: String, enum: LandType, required: true },
     floors: { type: Number, required: true },
     basements: { type: Number, required: true },
     balcony: { type: Number, required: true },
@@ -22,6 +23,7 @@ const siteFields = {
     supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
     status: { type: String, enum: SiteStatuses, required: true },
+    // parking condition
 };
 
 // Create the extended schema
