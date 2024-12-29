@@ -8,7 +8,7 @@ class FileService extends BaseService {
 
     // Example custom service method: Get files by organization
     async findFilesByOrg(orgId) {
-        return await this.model.model.find({ org: orgId }).populate('uploadedBy', 'name email');
+        return await this.model.find({ org: orgId }).populate('uploadedBy', 'name email');
     }
 }
 
