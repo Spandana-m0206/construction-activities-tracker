@@ -10,12 +10,12 @@ class FileController extends BaseController {
     async uploadFile(req, res, next) {
         try {
             const fileData = {
-                filename: req.file.filename,
+                filename: req.file.originalname,
                 type: req.file.mimetype,
                 size: req.file.size,
-                org: req.body.org,
+                org: req.user.org,
                 uploadedBy: req.user.userId, // Assuming userId is in the request user object
-                url: `${process.env.BASE_URL}/uploads/${req.file.filename}`, // Example URL format
+                url: `${process.env.BASE_URL}/file/link/${req.file.id}`, // Example URL format
             };
 
             const newFile = await this.service.create(fileData);
@@ -24,7 +24,7 @@ class FileController extends BaseController {
             next(error);
         }
     }
-
+    
     // Existing methods...
     async getFilesByOrg(req, res, next) {
         try {
