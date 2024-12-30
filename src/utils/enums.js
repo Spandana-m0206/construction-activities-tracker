@@ -65,6 +65,9 @@ const CarpetAreaUnitType = {
 };
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
+// TODO Added these two enums to test this may change later
+const TaskTypes = ['task', 'subtask'];
+const TaskDepartments = ['inventory', 'site', 'finance'];
 
 module.exports = {
     UsageTypes,
@@ -76,6 +79,8 @@ module.exports = {
     PaymentStatuses,
     TaskStatuses,
     TaskPriorities,
+    TaskTypes,
+    TaskDepartments,
     MaterialCategories,
     Units,
     CountryCodes,
