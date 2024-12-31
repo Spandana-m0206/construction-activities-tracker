@@ -7,8 +7,8 @@ const { type } = require('os');
 const taskFields = {
     title: { type: String,  }, // Task title
     description: { type: String, default: null }, // Task description
-    startDate: { type: Date,  }, // Task start date
-    endDate: { type: Date,  }, // Task end date
+    startTime: { type: Date,  }, // Task start date
+    endTime: { type: Date,  }, // Task end date
     status: { type: String, enum: TaskStatuses,  }, // Task status
     subtasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: [] }], // Subtasks references
     nextTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: [] }], // Subtasks references
@@ -29,6 +29,7 @@ const taskFields = {
     isParallel: { type: Boolean, default: false }, // Determines parallel or sequential
     level: { type: Number },
     floor: { type: Number }, 
+    tempId: { type: Number }, // Temporary ID for mapping
     trigger: { type:String, enum: TriggerTask}
 };
 

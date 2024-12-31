@@ -13,8 +13,9 @@ router.put('/:id', TaskController.update.bind(TaskController));  // Update Task
 router.delete('/:id', TaskController.delete.bind(TaskController)); // Delete Task
 
 // Custom endpoints
-router.post('/create-task-hierarchy', TaskController.importTasks.bind(TaskController)); 
+router.post('/create-tasks', TaskController.createTasksFromMap.bind(TaskController)); 
 router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); 
-// router.post('/:id/process', TaskController.processTask.bind(TaskController));
+router.get('/can-update/:taskId', TaskController.canUpdateTask.bind(TaskController)); 
+router.get('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
 
 module.exports = router;

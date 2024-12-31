@@ -14,12 +14,12 @@ const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // 
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = [
     'open',
-    'in progress',
-    'waiting for approval',
-    'closed',
-    'waiting',
+    'IN_PROGRESS',
+    'REVIEW',
+    'COMPLETED',
+    'PENDING',
     'never',
-]; // Add more statuses as needed
+]; 
 const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];

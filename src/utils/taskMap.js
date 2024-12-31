@@ -1,4 +1,6 @@
-{
+// utils/taskMap.js
+
+const taskMap = {
     "1": {
         "id": 1,
         "title": "Step 1: Land Inspection",
@@ -1589,3 +1591,6 @@
         "raisedToDept": "Sales"
     }
 }
+  
+module.exports = taskMap;
+  
