@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses, LandType } = require('../../utils/enums'); // Enums
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const  enumToArray = require('../../utils/EnumToArray');
 
 // Define Site-specific fields
 const siteFields = {
