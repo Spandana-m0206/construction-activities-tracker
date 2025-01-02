@@ -6,6 +6,7 @@ const inventoryFields = {
     name: { type: String, required: true },
     address: { type: String, required: true },
     manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
+    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to User
 };
 
 // Create the extended schema
