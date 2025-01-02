@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses, LandType } = require('../../utils/enums'); // Enums
+const { default: enumToArray } = require('../../utils/EnumToArray');
 
 // Define Site-specific fields
 const siteFields = {
@@ -8,22 +9,15 @@ const siteFields = {
     location: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-    projectCurrency: { type: String, enum: ProjectCurrencies, required: true },
+    projectCurrency: { type: String, enum: enumToArray(ProjectCurrencies), required: true },
     projectValue: { type: Number, required: true },
-    type: { type: String, enum: SiteTypes, required: true },
     level: { type: Number, required: true },
     landType: { type: String, enum: LandType, required: true },
     floors: { type: Number, required: true },
     basements: { type: Number, required: true },
-    balcony: { type: Number, required: true },
-    washroom: { type: Number, required: true },
-    storeReq: { type: Boolean, required: true },
-    parkingReq: { type: Boolean, required: true },
-    floorType: { type: String, enum: FloorTypes, required: true },
     supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
-    status: { type: String, enum: SiteStatuses, required: true },
-    // parking condition
+    status: { type: String, enum: enumToArray(SiteStatuses), required: true },
 };
 
 // Create the extended schema

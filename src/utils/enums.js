@@ -6,10 +6,33 @@ const Roles = {
     FINANCE_EXECUTIVE : 'Finance Executive',
   }
 const Languages = ['EN', 'ES', 'FR']; // Add more languages if required
-const ProjectCurrencies = ['USD', 'EUR', 'INR', 'GBP', 'AUD']; // Add more as needed
-const SiteTypes = ['2BHK', '3BHK', '4BHK', '5BHK'];
-const FloorTypes = ['raw', 'standard', 'luxury'];
-const SiteStatuses = ['upcoming', 'in progress', 'waiting', 'completed'];
+const ProjectCurrencies = {
+    USD: 'USD',
+    EUR: 'EUR',
+    INR: 'INR',
+    GBP: 'GBP',
+    AUD: 'AUD'
+};
+const SiteTypes = {
+    BHK2: '2BHK',
+    BHK3: '3BHK',
+    BHK4: '4BHK',
+    BHK5: '5BHK',
+};
+
+const FloorTypes = {
+    RAW: 'raw',
+    STANDARD: 'standard',
+    LUXURY: 'luxury',
+};
+
+const SiteStatuses = {
+    UPCOMING: 'upcoming',
+    IN_PROGRESS: 'in progress',
+    WAITING: 'waiting',
+    COMPLETED: 'completed',
+};
+
 const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = [
@@ -36,7 +59,10 @@ const FulfillmentStatuses = ['in progress', 'in transit', 'received', 'cancelled
 const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
 const StockSources = ["inventory", "site"];
 const MessageTypes = ["status", "approval"];
-const CarpetAreaUnitType = ['sq. ft.', 'sq. mt.'];
+const CarpetAreaUnitType = {
+    SQUARE_FEET: 'sq. ft.',
+    SQUARE_METER: 'sq. mt.',
+};
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
 const TaskTypes = ["Payment", "materials", "plumbing"]
@@ -53,6 +79,8 @@ module.exports = {
     PaymentStatuses,
     TaskStatuses,
     TaskPriorities,
+    TaskTypes,
+    TaskDepartments,
     MaterialCategories,
     Units,
     CountryCodes,

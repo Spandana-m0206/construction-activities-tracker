@@ -8,7 +8,7 @@ class PenaltyService extends BaseService {
 
     // Example custom service method: Get penalties by organization
     async findPenaltiesByOrg(orgId) {
-        return await this.model.model.find({ org: orgId })
+        return await this.model.find({ org: orgId })
             .populate('person', 'name email')
             .populate('penaltyBy', 'name email')
             .populate('approvedBy', 'name email')

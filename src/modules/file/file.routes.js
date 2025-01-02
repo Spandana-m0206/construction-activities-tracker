@@ -9,7 +9,6 @@ router.post('/', upload.single('file'), FileController.uploadFile.bind(FileContr
 
 router.get('/', FileController.find.bind(FileController));
 router.get('/:id', FileController.findOne.bind(FileController));
-router.put('/:id', FileController.update.bind(FileController));
 router.delete('/:id', FileController.delete.bind(FileController));
 
 // Custom route: Get files by organization

@@ -7,8 +7,8 @@ class ApprovalService extends BaseService {
     }
 
     // Example custom service method: Get approvals by site
-    async findApprovalsBySite(siteId) {
-        return await this.model.model.find({ site: siteId })
+    async findApprovalsBySite(filter = {}) {
+        return await this.model.find(filter)
             .populate('task', 'title status')
             .populate('images', 'url')
             .populate('approvedBy', 'name email')

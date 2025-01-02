@@ -1,18 +1,19 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { CarpetAreaUnitType, FloorTypes, SiteTypes } = require('../../utils/enums');
+const { default: enumToArray } = require('../../utils/EnumToArray');
 
 // Define Floor Details-specific fields
 const floorDetailsFields = {
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required: true }, // Reference to Site
     floorNumber: { type: Number, required: true }, // Floor Number
     balconies: { type: Number, required: true }, // Number of Balconies
-    size: { type: String, enum: SiteTypes, required: true }, // Floor Size
+    size: { type: String, enum: enumToArray(SiteTypes), required: true }, // Floor Size
     level: { type: Number, required: true }, // Level of the floor
-    type: { type: String, enum: FloorTypes, required: true }, // Floor Type
+    type: { type: String, enum: enumToArray(FloorTypes), required: true }, // Floor Type
     washrooms: { type: Number, required: true }, // Number of Washrooms
     carpetArea: { type: Number, required: true }, // Carpet Area
-    carpetAreaUnit: { type: String, enum: CarpetAreaUnitType, required: true }, // Unit for Carpet Area
+    carpetAreaUnit: { type: String, enum: enumToArray(CarpetAreaUnitType), required: true }, // Unit for Carpet Area
     isParking: { type: Boolean, required: true }, // Parking Availability
     isBasement: { type: Boolean, required: true }, // Basement Availability
     isStore: { type: Boolean, required: true }, // Store Room Availability
