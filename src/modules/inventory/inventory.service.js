@@ -7,8 +7,8 @@ class InventoryService extends BaseService {
     }
 
     // Example custom service method: Find inventories by manager
-    async findInventoriesByManager(managerId) {
-        return await this.model.model.find({ manager: managerId }).populate('manager', 'name email');
+    async findInventoriesByManager(filter = {}) {
+        return await this.model.find(filter).populate('manager', 'name email');
     }
 }
 
