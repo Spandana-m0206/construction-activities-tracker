@@ -1,6 +1,6 @@
 const ApiError = require('../../utils/apiError');
-const { TaskStatuses } = require('../../utils/enums');
-const taskMap = require('../../utils/taskMap');
+const { TaskStatuses, StatusOrder } = require('../../utils/enums');
+const {taskMap, TaskIDs} = require('../../utils/taskMap');
 const BaseService = require('../base/BaseService');
 const SiteModel = require('../site/site.model');
 const Task = require('./task.model');
@@ -18,7 +18,7 @@ class TaskService extends BaseService {
       throw new ApiError(500, "Site Does not exist");
     };
 
-    const expandedMap = this.expandTaskMap(taskMap, site.level, site.landType);
+    const expandedMap = this.expandTaskMap(taskMap, site.level, site.landType, site);
     this.assignOrgAndSite(expandedMap, site.org, siteId);
     this.computeTimesForAllTasks(expandedMap, site.startDate);
     return this.createTasksFromMap(expandedMap, site.landType, site.level);
@@ -32,7 +32,7 @@ class TaskService extends BaseService {
     }
   }
 
-  expandTaskMap(taskMap, numLevels, landType) {
+  expandTaskMap(taskMap, numLevels, landType, site) {
     const expandedMap = {};
     const oneTimeTasks = [];
     const perLevelTasks = [];
@@ -49,17 +49,17 @@ class TaskService extends BaseService {
     oneTimeTasks.forEach(origTask => {
       expandedMap[origTask.id] = {
         ...origTask,
-        level: 0
+        level: -9999
       };
     });
 
     function makeLevelId(origId, floor) {
       return origId * 1000 + floor;
     }
-
+    const basements = site.basements;
     perLevelTasks.forEach(origTask => {
       const origId = origTask.id;
-      for (let level = 0; level < numLevels; level++) {
+      for (let level = -basements; level < numLevels; level++) {
         const newId = makeLevelId(origId, level);
         expandedMap[newId] = {
           ...origTask,
@@ -106,29 +106,24 @@ class TaskService extends BaseService {
       }
     }
 
-    const DE_SHUTTERING_ORIG_ID = 36;
-    const WALLS_ORIG_ID = 27;
-    const FLOOR_WORK_ORIG_ID = 127;
-    const ROOF_TASK_IDS = [91, 92];
-
     for (let level = 0; level < numLevels; level++) {
-      const deShutId = makeLevelId(DE_SHUTTERING_ORIG_ID, level);
+      const deShutId = makeLevelId(TaskIDs.DE_SHUTTERING_ORIG_ID, level);
       if (!expandedMap[deShutId]) continue;
 
       expandedMap[deShutId].nextTasks = [];
 
-      const levelWorkId = makeLevelId(FLOOR_WORK_ORIG_ID, level);
+      const levelWorkId = makeLevelId(TaskIDs.FLOOR_WORK_ORIG_ID, level);
       if (expandedMap[levelWorkId]) {
         expandedMap[deShutId].nextTasks.push(levelWorkId);
       }
 
       if (level < numLevels) {
-        const nextWallsId = makeLevelId(WALLS_ORIG_ID, level + 1);
+        const nextWallsId = makeLevelId(TaskIDs.WALLS_ORIG_ID, level + 1);
         if (expandedMap[nextWallsId]) {
           expandedMap[deShutId].nextTasks.push(nextWallsId);
         }
       } else {
-        ROOF_TASK_IDS.forEach(rId => {
+        TaskIDs.ROOF_TASK_IDS.forEach(rId => {
           if (expandedMap[rId]) {
             expandedMap[deShutId].nextTasks.push(rId);
           }
@@ -136,13 +131,12 @@ class TaskService extends BaseService {
       }
     }
 
-    const LAND_TASK_ID = 2;
     if (expandedMap[LAND_TASK_ID]) {
-      const task2 = expandedMap[LAND_TASK_ID];
+      const task2 = expandedMap[TaskIDs.CHOOSE_TYPE_OF_LAND];
       let chosenId = null;
-      if (landType === 'Raw') chosenId = 3;
-      else if (landType === 'Constructed') chosenId = 4;
-      else if (landType === 'Water') chosenId = 5;
+      if (landType === 'Raw') chosenId = TaskIDs.LAND_TYPES.RAW;
+      else if (landType === 'Constructed') TaskIDs.LAND_TYPES.CONSTRUCTED
+      else if (landType === 'Water') TaskIDs.LAND_TYPES.WATER
 
       if (chosenId && expandedMap[chosenId]) {
         task2.nextTasks = [chosenId];
@@ -322,168 +316,145 @@ class TaskService extends BaseService {
       .populate('nextTasks')
       .populate('parentTask')
       .exec();
-
+  
     if (!task) {
       throw new ApiError(404, "Task not found");
     }
-
-    // Validate desiredStatus
-    if (!TaskStatuses.includes(desiredStatus)) {
+  
+    // Validate desiredStatus using enum
+    const statusValues = Object.values(TaskStatuses);
+    if (!statusValues.includes(desiredStatus)) {
       throw new ApiError(400, "Invalid status value");
     }
-
+  
     // Prevent invalid status transitions (e.g., from COMPLETED back to IN_PROGRESS)
-    const statusOrder = {
-      'PENDING': 1,
-      'IN_PROGRESS': 2,
-      'COMPLETED': 3,
-      // Add other statuses as needed
-    };
-
-    if (statusOrder[desiredStatus] < statusOrder[task.status]) {
+    if (StatusOrder[desiredStatus] < StatusOrder[task.status]) {
       throw new ApiError(400, "Cannot move to a previous status");
     }
-
-    // If updating to COMPLETED, perform additional checks
-    if (desiredStatus === 'COMPLETED') {
-      // 1. If it's a parent task, ensure all subtasks are completed
+  
+    // Additional validation for COMPLETED status
+    if (desiredStatus === TaskStatuses.COMPLETED) {
+      // Check if all subtasks are completed
       if (task.subtasks && task.subtasks.length > 0) {
-        const incompleteSubtasks = task.subtasks.filter(sub => sub.status !== 'COMPLETED');
+        const incompleteSubtasks = task.subtasks.filter(sub => sub.status !== TaskStatuses.COMPLETED);
         if (incompleteSubtasks.length > 0) {
           throw new ApiError(400, "Cannot complete this task until all subtasks are completed");
         }
       }
-
-      // 2. If it's a subtask, ensure preceding subtasks are completed (for sequential flows)
+  
+      // Check sequential dependencies
       if (task.parentTask) {
         const parent = await this.model.findById(task.parentTask)
           .populate({
             path: 'subtasks',
-            options: { sort: { level: 1 } } // Assuming 'level' defines the order
+            options: { sort: { level: 1 } }, // Assuming 'level' defines the order
           })
           .exec();
-
+  
         if (parent && parent.isParallel === false) { // Sequential Flow
           const taskIndex = parent.subtasks.findIndex(sub => sub._id.toString() === taskId);
-          if (taskIndex > 0) { // If not the first subtask
+          if (taskIndex > 0) { // Check preceding subtasks
             const precedingSubtasks = parent.subtasks.slice(0, taskIndex);
-            const incompletePreceding = precedingSubtasks.filter(sub => sub.status !== 'COMPLETED');
+            const incompletePreceding = precedingSubtasks.filter(sub => sub.status !== TaskStatuses.COMPLETED);
             if (incompletePreceding.length > 0) {
               throw new ApiError(400, "Cannot complete this subtask until all preceding subtasks are completed");
             }
           }
         }
       }
-
-      // 3. Additional Checks (Other Cases)
-      // Example: Ensure no dependencies are blocking this task
-      // Implement as needed based on your task relationships
     }
-
-    // Additional validations can be added here (e.g., deadlines, dependencies)
-
+  
     return true; // All checks passed
   }
 
-  /**
-   * Updates the status of a task after validating it can be updated.
-   * @param {String} taskId - The ID of the task to update.
-   * @param {String} newStatus - The new status to set.
-   * @returns {Object} - The updated task.
-   */
   async updateTaskStatus(taskId, newStatus) {
     // Validate if the task can be updated
     await this.canUpdateTask(taskId, newStatus);
-
+  
     // Fetch the task again to update
     const task = await this.model.findById(taskId)
       .populate('subtasks')
       .populate('nextTasks')
       .populate('parentTask')
       .exec();
-
+  
     // Update status and progressPercentage
     task.status = newStatus;
-
-    // Update progressPercentage based on status
+  
+    // Update progressPercentage based on status using enums
     switch (newStatus) {
-      case 'open':
-      case 'PENDING':
+      case TaskStatuses.PENDING:
+      case TaskStatuses.OPEN:
         task.progressPercentage = 0;
         break;
-      case 'IN_PROGRESS':
+      case TaskStatuses.IN_PROGRESS:
         task.progressPercentage = 50;
         break;
-      case 'REVIEW':
+      case TaskStatuses.REVIEW:
         task.progressPercentage = 75;
         break;
-      case 'COMPLETED':
+      case TaskStatuses.COMPLETED:
         task.progressPercentage = 100;
         break;
-      case 'never':
-        // Define behavior for 'never' if applicable
-        break;
-      default:
+      case TaskStatuses.NEVER:
+        task.progressPercentage = 0; // Define specific behavior if required
         break;
     }
-
+  
     // Save the updated task
     await task.save();
-
+  
     // Handle transitions if task is completed
-    if (newStatus === 'COMPLETED') {
+    if (newStatus === TaskStatuses.COMPLETED) {
       // Handle Next Tasks
       if (task.nextTasks && task.nextTasks.length > 0) {
         if (task.isParallel) {
           // Parallel Flow: Start all next tasks simultaneously
           await Promise.all(task.nextTasks.map(async (nextTask) => {
-            if (nextTask.status === 'open' || nextTask.status === 'PENDING') {
-              nextTask.status = 'IN_PROGRESS';
-              // Note: Do not modify startTime and endTime as per instructions
+            if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
+              nextTask.status = TaskStatuses.IN_PROGRESS;
               await nextTask.save();
             }
           }));
         } else {
           // Sequential Flow: Start only the immediate next task
-          const firstPending = task.nextTasks.find(t => t.status === 'open' || t.status === 'PENDING');
+          const firstPending = task.nextTasks.find(t =>
+            [TaskStatuses.OPEN, TaskStatuses.PENDING].includes(t.status)
+          );
           if (firstPending) {
-            firstPending.status = 'IN_PROGRESS';
-            // Note: Do not modify startTime and endTime as per instructions
+            firstPending.status = TaskStatuses.IN_PROGRESS;
             await firstPending.save();
           }
         }
       }
-
+  
       // Handle Parent Task Completion
       if (task.parentTask) {
         const parent = await this.model.findById(task.parentTask)
           .populate('subtasks')
           .exec();
-
+  
         if (parent) {
-          const allSubtasksCompleted = parent.subtasks.every(sub => sub.status === 'COMPLETED');
-          if (allSubtasksCompleted && parent.status !== 'COMPLETED') {
-            parent.status = 'COMPLETED';
+          const allSubtasksCompleted = parent.subtasks.every(sub => sub.status === TaskStatuses.COMPLETED);
+          if (allSubtasksCompleted && parent.status !== TaskStatuses.COMPLETED) {
+            parent.status = TaskStatuses.COMPLETED;
             parent.progressPercentage = 100;
             await parent.save();
-
-            // Optionally, handle parent's next tasks
+  
             if (parent.nextTasks && parent.nextTasks.length > 0) {
               if (parent.isParallel) {
-                // Parallel Flow
                 await Promise.all(parent.nextTasks.map(async (nextTask) => {
-                  if (nextTask.status === 'open' || nextTask.status === 'PENDING') {
-                    nextTask.status = 'IN_PROGRESS';
-                    // Note: Do not modify startTime and endTime as per instructions
+                  if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
+                    nextTask.status = TaskStatuses.IN_PROGRESS;
                     await nextTask.save();
                   }
                 }));
               } else {
-                // Sequential Flow
-                const firstPendingParentNext = parent.nextTasks.find(t => t.status === 'open' || t.status === 'PENDING');
+                const firstPendingParentNext = parent.nextTasks.find(t =>
+                  [TaskStatuses.OPEN, TaskStatuses.PENDING].includes(t.status)
+                );
                 if (firstPendingParentNext) {
-                  firstPendingParentNext.status = 'IN_PROGRESS';
-                  // Note: Do not modify startTime and endTime as per instructions
+                  firstPendingParentNext.status = TaskStatuses.IN_PROGRESS;
                   await firstPendingParentNext.save();
                 }
               }
@@ -492,18 +463,97 @@ class TaskService extends BaseService {
         }
       }
     }
-
+  
     // Return the updated task with populated references
     const updatedTask = await this.model.findById(taskId)
       .populate('subtasks')
       .populate('nextTasks')
       .populate('parentTask')
       .exec();
-
+  
     return {
       success: true,
-      data: updatedTask
+      data: updatedTask,
     };
+  }
+  
+  async addSubTask(parentTaskId, subTaskData) {
+
+    try {
+      const parentTask = await Task.findById(parentTaskId);
+      if (!parentTaskId) {
+        throw new ApiError(404, "Parent Task does not exist");
+      }
+      subTaskData.site = parentTask.site;
+      subTaskData.org = parentTask.org;
+      subTaskData.parentTask = parentTaskId;
+
+      const newSubtask = await Task.create(subTaskData);
+
+      parentTask.subtasks.push(newSubtask._id);
+
+      await parentTask.save();
+
+      return newSubtask;
+    } catch (error) {
+      console.error("Error adding subtask:", error);
+      throw new ApiError(500, "An unexpected error occurred while adding the subtask");
+    }
+  }
+
+  async deleteSubtask(parentTaskId, subtaskId) {
+    try {
+      // Find the parent task
+      const parentTask = await Task.findById(parentTaskId);
+      if (!parentTask) {
+        throw new ApiError(404, "Parent Task does not exist");
+      }
+
+      // Check if the subtask exists in the parent task's subtasks array
+      if (!parentTask.subtasks.includes(subtaskId)) {
+        throw new ApiError(404, "Sub Task does not exist");
+      }
+
+      // Remove the subtask from the subtasks array
+      parentTask.subtasks = parentTask.subtasks.filter(
+        (task) => task.toString() !== subtaskId
+      );
+
+      // Save the updated parent task
+      const updatedTask = await parentTask.save();
+
+      // Optionally delete the subtask itself
+      await TaskModel.findByIdAndDelete(subtaskId);
+
+      return updatedTask;
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+      throw new ApiError(500, "An unexpected error occurred while deleting the subtask");
+    }
+  }
+
+  async getSubTasks(parentTaskId) {
+    try {
+      // Find the parent task
+      const parentTask = await Task.findById(parentTaskId).populate('subtasks');
+
+      // Check if the parent task exists
+      if (!parentTask) {
+        throw new ApiError(404, "Parent Task does not exist");
+      }
+
+      // Check if there are subtasks
+      if (!parentTask.subtasks || parentTask.subtasks.length === 0) {
+        return { message: "No subtasks found", subtasks: [] };
+      }
+
+      // Return subtasks
+      return parentTask.subtasks;
+    } catch (error) {
+      // Log and throw unexpected errors
+      console.error("Error fetching subtasks:", error);
+      throw new ApiError(500, "An unexpected error occurred while fetching subtasks");
+    }
   }
 }
 

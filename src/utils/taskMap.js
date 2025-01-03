@@ -1591,6 +1591,19 @@ const taskMap = {
         "raisedToDept": "Sales"
     }
 }
-  
-module.exports = taskMap;
+
+const TaskIDs = {
+    DE_SHUTTERING_ORIG_ID: 36,
+    WALLS_ORIG_ID: 27,
+    FLOOR_WORK_ORIG_ID: 127,
+    ROOF_TASK_IDS: [91, 92],
+    CHOOSE_TYPE_OF_LAND: 2,
+    LAND_TYPES: {
+        RAW: 3,
+        CONSTRUCTED: 4,
+        WATER: 5,
+    },
+};
+
+module.exports = {taskMap, TaskIDs};
   

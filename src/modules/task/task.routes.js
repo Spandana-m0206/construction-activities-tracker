@@ -14,8 +14,10 @@ router.delete('/:id', TaskController.delete.bind(TaskController)); // Delete Tas
 
 // Custom endpoints
 router.post('/create-tasks', TaskController.createTasksFromMap.bind(TaskController)); 
+router.post('/add-subtask/:parentTaskId', TaskController.addSubTask.bind(TaskController)); 
+router.get('/get-subtasks/:parentTaskId', TaskController.getSubTasks.bind(TaskController)); 
+router.delete('/delete-subtask/:parentTaskId', TaskController.deleteSubtask.bind(TaskController)); 
 router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); 
-router.get('/can-update/:taskId', TaskController.canUpdateTask.bind(TaskController)); 
 router.get('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
 
 module.exports = router;

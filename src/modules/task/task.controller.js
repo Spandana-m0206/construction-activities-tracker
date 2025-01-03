@@ -19,7 +19,7 @@ class TaskController extends BaseController {
     // New controller method to create tasks from a map
     async createTasksFromMap(req, res, next) {
         try {
-            const {siteId, orgId} = req.body; 
+            const {siteId} = req.body; 
 
             const createdTasks = await TaskService.createTasksForFloors(siteId);
             return res.status(201).json({ success: true, data: createdTasks });
@@ -28,11 +28,32 @@ class TaskController extends BaseController {
         }
     }
 
-    async canUpdateTask(req, res, next) {
+    // New controller method to add sub task
+    async addSubTask(req, res, next) {
         try {
-            const {taskId} = req.params;
-            const data = await TaskService.canUpdateTask(taskId, req.body.status);
-            return res.status(201).json({ success: true, data: data });
+            const {parentTaskId} = req.params; 
+            const {subTaskData} = req.body;
+            const newSubtask = await TaskService.addSubTask(parentTaskId, subTaskData);
+            return res.status(201).json({ success: true, data: newSubtask });
+        } catch (error) {
+            next(error);
+        }
+    }
+    async deleteSubtask(req, res, next) {
+        try {
+            const {parentTaskId, subTaskId} = req.params; 
+            const updatedTask = await TaskService.deleteSubtask(parentTaskId, subTaskId);
+            return res.status(201).json({ success: true, data: updatedTask });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getSubTasks(req, res, next) {
+        try {
+            const {parentTaskId} = req.params; 
+            const subtasks = await TaskService.getSubTasks(parentTaskId);
+            return res.status(201).json({ success: true, data: subtasks });
         } catch (error) {
             next(error);
         }

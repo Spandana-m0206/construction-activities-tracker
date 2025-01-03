@@ -35,14 +35,22 @@ const SiteStatuses = {
 
 const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
-const TaskStatuses = [
-    'open',
-    'IN_PROGRESS',
-    'REVIEW',
-    'COMPLETED',
-    'PENDING',
-    'never',
-]; 
+const TaskStatuses = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    REVIEW: 'REVIEW',
+    COMPLETED: 'COMPLETED',
+    OPEN: 'OPEN',
+    NEVER: 'NEVER',
+  };
+  
+const StatusOrder = {
+    PENDING: 1,
+    IN_PROGRESS: 2,
+    REVIEW: 3,
+    COMPLETED: 4,
+};
+
 const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
@@ -104,5 +112,6 @@ module.exports = {
     TaskTypes,
     TaskDepartments,
     LandType,
-    TriggerTask
+    TriggerTask,
+    StatusOrder
 };
