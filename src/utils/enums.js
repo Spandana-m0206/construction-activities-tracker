@@ -42,6 +42,7 @@ const TaskStatuses = {
     COMPLETED: 'COMPLETED',
     OPEN: 'OPEN',
     NEVER: 'NEVER',
+    UPCOMING:'UPCOMING'
   };
   
 const StatusOrder = {

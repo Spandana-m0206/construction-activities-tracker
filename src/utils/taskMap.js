@@ -1593,6 +1593,7 @@ const taskMap = {
 }
 
 const TaskIDs = {
+    ROOT_IDS : [1],
     DE_SHUTTERING_ORIG_ID: 36,
     WALLS_ORIG_ID: 27,
     FLOOR_WORK_ORIG_ID: 127,
@@ -1605,5 +1606,10 @@ const TaskIDs = {
     },
 };
 
-module.exports = {taskMap, TaskIDs};
+const Triggers = {
+    ONE_TIME: "ONE_TIME",
+    ONE_TIME_FOR_EVERY_LEVEL: "ONE_TIME_FOR_EVERY_LEVEL"
+}
+
+module.exports = {taskMap, TaskIDs, Triggers};
   

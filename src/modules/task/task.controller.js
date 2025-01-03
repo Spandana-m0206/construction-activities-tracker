@@ -32,8 +32,7 @@ class TaskController extends BaseController {
     async addSubTask(req, res, next) {
         try {
             const {parentTaskId} = req.params; 
-            const {subTaskData} = req.body;
-            const newSubtask = await TaskService.addSubTask(parentTaskId, subTaskData);
+            const newSubtask = await TaskService.addSubTask(parentTaskId, req.body);
             return res.status(201).json({ success: true, data: newSubtask });
         } catch (error) {
             next(error);
@@ -41,8 +40,8 @@ class TaskController extends BaseController {
     }
     async deleteSubtask(req, res, next) {
         try {
-            const {parentTaskId, subTaskId} = req.params; 
-            const updatedTask = await TaskService.deleteSubtask(parentTaskId, subTaskId);
+            const {subTaskId} = req.params; 
+            const updatedTask = await TaskService.deleteSubtask(subTaskId);
             return res.status(201).json({ success: true, data: updatedTask });
         } catch (error) {
             next(error);

@@ -1,6 +1,6 @@
 const ApiError = require('../../utils/apiError');
 const { TaskStatuses, StatusOrder } = require('../../utils/enums');
-const {taskMap, TaskIDs} = require('../../utils/taskMap');
+const {taskMap, TaskIDs, Triggers} = require('../../utils/taskMap');
 const BaseService = require('../base/BaseService');
 const SiteModel = require('../site/site.model');
 const Task = require('./task.model');
@@ -21,7 +21,7 @@ class TaskService extends BaseService {
     const expandedMap = this.expandTaskMap(taskMap, site.level, site.landType, site);
     this.assignOrgAndSite(expandedMap, site.org, siteId);
     this.computeTimesForAllTasks(expandedMap, site.startDate);
-    return this.createTasksFromMap(expandedMap, site.landType, site.level);
+    return this.createTasksFromMap(expandedMap);
   }
 
   assignOrgAndSite(taskMap, orgId, siteId) {
@@ -39,9 +39,9 @@ class TaskService extends BaseService {
 
     for (const key of Object.keys(taskMap)) {
       const tDef = taskMap[key];
-      if (tDef.trigger === 'ONE_TIME_FOR_EVERY_LEVEL') {
+      if (tDef.trigger === Triggers.ONE_TIME_FOR_EVERY_LEVEL) {
         perLevelTasks.push(tDef);
-      } else if(tDef.trigger === 'ONE_TIME') {
+      } else if(tDef.trigger === Triggers.ONE_TIME) {
         oneTimeTasks.push(tDef);
       }
     }
@@ -49,7 +49,7 @@ class TaskService extends BaseService {
     oneTimeTasks.forEach(origTask => {
       expandedMap[origTask.id] = {
         ...origTask,
-        level: -9999
+        level: 0
       };
     });
 
@@ -59,7 +59,7 @@ class TaskService extends BaseService {
     const basements = site.basements;
     perLevelTasks.forEach(origTask => {
       const origId = origTask.id;
-      for (let level = -basements; level < numLevels; level++) {
+      for (let level = 0; level <= numLevels; level++) {
         const newId = makeLevelId(origId, level);
         expandedMap[newId] = {
           ...origTask,
@@ -77,7 +77,7 @@ class TaskService extends BaseService {
         currentTask.subtasks = currentTask.subtasks.map(subId => {
           const subDef = taskMap[subId];
           if (!subDef) return subId;
-          if (subDef.trigger === 'ONE_TIME_FOR_EVERY_LEVEL') {
+          if (subDef.trigger === Triggers.ONE_TIME_FOR_EVERY_LEVEL) {
             return makeLevelId(subId, parentLevel);
           } else {
             return subId;
@@ -89,8 +89,8 @@ class TaskService extends BaseService {
         currentTask.nextTasks = currentTask.nextTasks.map(nId => {
           const nDef = taskMap[nId];
           if (!nDef) return nId;
-          if (nDef.trigger === 'ONE_TIME_FOR_EVERY_LEVEL') {
-            return makeLevelId(nId, parentFloor);
+          if (nDef.trigger === Triggers.ONE_TIME_FOR_EVERY_LEVEL) {
+            return makeLevelId(nId, parentLevel);
           } else {
             return nId;
           }
@@ -100,30 +100,35 @@ class TaskService extends BaseService {
       if (currentTask.parentTask) {
         const pId = currentTask.parentTask;
         const pDef = taskMap[pId];
-        if (pDef && pDef.trigger === 'ONE_TIME_FOR_EVERY_LEVEL') {
-          currentTask.parentTask = makeLevelId(pId, parentFloor);
+        if (pDef && pDef.trigger === Triggers.ONE_TIME_FOR_EVERY_LEVEL) {
+          currentTask.parentTask = makeLevelId(pId, parentLevel);
         }
       }
     }
 
-    for (let level = 0; level < numLevels; level++) {
-      const deShutId = makeLevelId(TaskIDs.DE_SHUTTERING_ORIG_ID, level);
+    const DE_SHUTTERING_ORIG_ID = TaskIDs.DE_SHUTTERING_ORIG_ID;
+    const WALLS_ORIG_ID = TaskIDs.WALLS_ORIG_ID;
+    const FLOOR_WORK_ORIG_ID = TaskIDs.FLOOR_WORK_ORIG_ID;
+    const ROOF_TASK_IDS = TaskIDs.ROOF_TASK_IDS;
+
+    for (let level = 0; level <= numLevels; level++) {
+      const deShutId = makeLevelId(DE_SHUTTERING_ORIG_ID, level);
       if (!expandedMap[deShutId]) continue;
 
       expandedMap[deShutId].nextTasks = [];
 
-      const levelWorkId = makeLevelId(TaskIDs.FLOOR_WORK_ORIG_ID, level);
+      const levelWorkId = makeLevelId(FLOOR_WORK_ORIG_ID, level);
       if (expandedMap[levelWorkId]) {
         expandedMap[deShutId].nextTasks.push(levelWorkId);
       }
 
       if (level < numLevels) {
-        const nextWallsId = makeLevelId(TaskIDs.WALLS_ORIG_ID, level + 1);
+        const nextWallsId = makeLevelId(WALLS_ORIG_ID, level + 1);
         if (expandedMap[nextWallsId]) {
           expandedMap[deShutId].nextTasks.push(nextWallsId);
         }
       } else {
-        TaskIDs.ROOF_TASK_IDS.forEach(rId => {
+        ROOF_TASK_IDS.forEach(rId => {
           if (expandedMap[rId]) {
             expandedMap[deShutId].nextTasks.push(rId);
           }
@@ -131,12 +136,13 @@ class TaskService extends BaseService {
       }
     }
 
-    if (expandedMap[LAND_TASK_ID]) {
-      const task2 = expandedMap[TaskIDs.CHOOSE_TYPE_OF_LAND];
+    const CHOOSE_TYPE_OF_LAND = TaskIDs.CHOOSE_TYPE_OF_LAND;
+    if (expandedMap[CHOOSE_TYPE_OF_LAND]) {
+      const task2 = expandedMap[CHOOSE_TYPE_OF_LAND];
       let chosenId = null;
       if (landType === 'Raw') chosenId = TaskIDs.LAND_TYPES.RAW;
-      else if (landType === 'Constructed') TaskIDs.LAND_TYPES.CONSTRUCTED
-      else if (landType === 'Water') TaskIDs.LAND_TYPES.WATER
+      else if (landType === 'Constructed') chosenId = TaskIDs.LAND_TYPES.CONSTRUCTED;
+      else if (landType === 'Water') chosenId = TaskIDs.LAND_TYPES.WATER;
 
       if (chosenId && expandedMap[chosenId]) {
         task2.nextTasks = [chosenId];
@@ -149,7 +155,7 @@ class TaskService extends BaseService {
   }
 
   computeTimesForAllTasks(taskMap, projectStartDate) {
-    const rootIds = ['1']
+    const rootIds = TaskIDs.ROOT_IDS
     const baseDate = projectStartDate ? new Date(projectStartDate) : new Date();
 
     for (const rId of rootIds) {
@@ -287,7 +293,7 @@ class TaskService extends BaseService {
       const populatedTasks = await this.model.find({
         tempId: { $in: Object.keys(taskMap).map(k => parseInt(k, 10)) }
       })
-        .populate('subtasks', 'title status startDate endDate')
+        .populate('subtasks', 'title status startTime endTime')
         .populate('assignedTo', 'name email')
         .populate('org', 'name')
         .populate('site', 'name');
@@ -478,52 +484,73 @@ class TaskService extends BaseService {
   }
   
   async addSubTask(parentTaskId, subTaskData) {
-
     try {
-      const parentTask = await Task.findById(parentTaskId);
-      if (!parentTaskId) {
-        throw new ApiError(404, "Parent Task does not exist");
+      // 1. Validate subTaskData
+      if (!subTaskData || typeof subTaskData !== 'object') {
+        throw new ApiError(400, "Invalid subTaskData provided");
       }
-      subTaskData.site = parentTask.site;
-      subTaskData.org = parentTask.org;
-      subTaskData.parentTask = parentTaskId;
-
-      const newSubtask = await Task.create(subTaskData);
-
-      parentTask.subtasks.push(newSubtask._id);
-
-      await parentTask.save();
-
-      return newSubtask;
-    } catch (error) {
-      console.error("Error adding subtask:", error);
-      throw new ApiError(500, "An unexpected error occurred while adding the subtask");
-    }
-  }
-
-  async deleteSubtask(parentTaskId, subtaskId) {
-    try {
-      // Find the parent task
-      const parentTask = await Task.findById(parentTaskId);
+  
+      // 2. Fetch the parent task WITHOUT .lean() to get a Mongoose document
+      const parentTask = await this.model.findById(parentTaskId);
       if (!parentTask) {
         throw new ApiError(404, "Parent Task does not exist");
       }
+  
+      console.log("Parent Task Site:", parentTask.site);
+  
+      // 3. Assign necessary properties to subTaskData
+      subTaskData.site = parentTask.site;
+      subTaskData.org = parentTask.org;
+      subTaskData.parentTask = parentTaskId;
+  
+      // 4. Create the new subtask
+      const newSubtask = await this.model.create(subTaskData);
+  
+      // 5. Ensure the 'subtasks' array exists on the parent task
+      if (!Array.isArray(parentTask.subtasks)) {
+        parentTask.subtasks = [];
+      }
+  
+      // 6. Add the new subtask's ID to the parent's subtasks
+      parentTask.subtasks.push(newSubtask._id);
+  
+      // 7. Save the updated parent task
+      await parentTask.save();
+  
+      return newSubtask;
+    } catch (error) {
+      console.error("Error adding subtask:", error);
+      // Re-throw ApiError or wrap other errors appropriately
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "An unexpected error occurred while adding the subtask");
+    }
+  }
+  
 
-      // Check if the subtask exists in the parent task's subtasks array
-      if (!parentTask.subtasks.includes(subtaskId)) {
+  async deleteSubtask(subTaskId) {
+    try {
+      // Find the parent task
+      const subTask = await this.model.findById(subTaskId);
+      if (!subTask) {
         throw new ApiError(404, "Sub Task does not exist");
       }
-
+      const parentTaskId = subTask.parentTask;
+      const parentTask = await this.model.findById(parentTaskId);
+      if (!subTask) {
+        throw new ApiError(404, "Parent Task does not exist");
+      }
       // Remove the subtask from the subtasks array
       parentTask.subtasks = parentTask.subtasks.filter(
-        (task) => task.toString() !== subtaskId
+        (task) => task.toString() !== subTaskId
       );
 
       // Save the updated parent task
       const updatedTask = await parentTask.save();
 
       // Optionally delete the subtask itself
-      await TaskModel.findByIdAndDelete(subtaskId);
+      await this.model.findByIdAndDelete(subTaskId);
 
       return updatedTask;
     } catch (error) {
