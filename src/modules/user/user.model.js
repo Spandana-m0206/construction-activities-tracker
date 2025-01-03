@@ -15,6 +15,8 @@ const userFields = {
     language: { type: String, enum: Languages, required: true },
     resetToken: { type: String, default: null },
     resetTokenExpiry: { type: Date, default: null },
+    resetOTP: { type: String, default: null },
+    resetOTPExpiry: { type: Date, default: null },
     isActive: { type: Boolean, required: true, default: true },
 };
 
@@ -25,7 +27,7 @@ userSchema.pre('save', async function (next){
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, parseInt(process.env.SALTS) )
     }
-    if(this.email){
+    if(this.isModified('email')){
         this.email = this.email.toLowerCase().trim();
     }
     next()
@@ -38,6 +40,11 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 userSchema.methods.generatePasswordResetToken = function () {
     this.resetToken = Math.random().toString(36).slice(-8)
     this.resetTokenExpiry = Date.now() + 3600000 // 1 hour
+} 
+
+userSchema.methods.generatePasswordResetOTP = function () {
+    this.resetOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    this.resetOTPExpiry = Date.now() + 3600000 // 1 hour
 } 
 
 // Create and export the Mongoose model
