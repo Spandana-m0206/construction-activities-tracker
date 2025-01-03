@@ -1,4 +1,4 @@
-const generateOTPEmailForResetPassword = (OTP) => {
+const generateOTPEmailForResetPassword = (name, OTP) => {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +50,7 @@ const generateOTPEmailForResetPassword = (OTP) => {
   <div class="container">
     <div class="header">Reset Your Password</div>
     <div class="content">
-      <p>Dear User,</p>
+      <p>Dear ${name},</p>
       <p>We received a request to reset your password. Use the following code to proceed:</p>
       <div class="otp-code">${OTP}</div>
       <p>If you did not request a password reset, please ignore this email or contact support immediately.</p>

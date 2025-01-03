@@ -28,7 +28,7 @@ exports.generateToken = async (user) => {
 
 exports.sendOTPForResetPassword = async (user) => {
     try {
-        const template = generateOTPEmailForResetPassword(user.resetOTP);
+        const template = generateOTPEmailForResetPassword(user?.name, user.resetOTP);
         await sendEmail(user.email, "Password Reset Request", template);
     } catch (error) {
         throw new Error("Failed to send OTP: " + error?.message)
