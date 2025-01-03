@@ -47,6 +47,14 @@ userSchema.methods.generatePasswordResetOTP = function () {
     this.resetOTPExpiry = Date.now() + 3600000 // 1 hour
 } 
 
+userSchema.methods.verifyPasswordResetToken = function (token) {
+    return this.resetToken === token && this.resetTokenExpiry > Date.now();
+};
+
+userSchema.methods.verifyPasswordResetOTP = function (otp) {
+    return this.resetOTP === otp && this.resetOTPExpiry > Date.now();
+};
+
 // Create and export the Mongoose model
 const UserModel = mongoose.model('User', userSchema);
 
