@@ -4,7 +4,7 @@ const BaseController = require('../base/BaseController');
 const InventoryService = require('./inventory.service');
 const { default: ApiError } = require('../../utils/apiError');
 const { default: ApiResponse } = require('../../utils/apiResponse');
-
+const userService = require('../user/user.service');
 class InventoryController extends BaseController {
     constructor() {
         super(InventoryService); // Pass the InventoryService to the BaseController
@@ -20,7 +20,11 @@ class InventoryController extends BaseController {
             if(user.role !== Roles.ADMIN) { 
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, 'You are not authorized to create inventories'));
             }
-            inventoryData.manager = user._id;
+            const managerId= inventoryData.manager;
+            const managerUser = await userService.findOne({_id:managerId});
+            if(!managerUser || managerUser.role !== Roles.INVENTORY_MANAGER) {
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, 'Invalid inventory manager'));
+            }
             inventoryData.org = user.org;
             const data = await this.service.create(inventoryData);
             res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED, data, 'Inventory created successfully'));
