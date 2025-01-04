@@ -1,10 +1,10 @@
 const BaseController = require('../base/BaseController');
 const UserService = require('./user.service');
-const { default: ApiResponse } = require('../../utils/apiResponse');
+const  ApiResponse  = require('../../utils/apiResponse');
 const { StatusCodes } = require('http-status-codes');
 const { default: enumToArray } = require('../../utils/EnumToArray');
 const { Roles } = require('../../utils/enums');
-const { default: ApiError } = require('../../utils/apiError');
+const  ApiError = require('../../utils/apiError');
 const userService = require('./user.service');
 const {generateRandomPassword} = require('../../utils/password');
 class UserController extends BaseController {
@@ -57,7 +57,7 @@ class UserController extends BaseController {
                     email:newUser.email,
                     role:newUser.role,
                     phone:newUser.phone,
-        }, "User created successfully"))
+        },"User created successfully"))
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message, error))
     }

@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const generateOTPEmailForResetPassword = require('../../utils/generateSendOtpEmail')
 const sendEmail = require('../../utils/sentgrid');
 const UserService = require("../user/user.service");
-const { default: ApiError } = require("../../utils/apiError");
+const ApiError  = require("../../utils/apiError");
 const { StatusCodes } = require("http-status-codes");
 exports.generateToken = async (user) => {
     try {

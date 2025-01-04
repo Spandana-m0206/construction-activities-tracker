@@ -1,8 +1,8 @@
 const { StatusCodes } = require("http-status-codes");
-const { default: ApiError } = require("../../utils/apiError");
+const  ApiError  = require("../../utils/apiError");
 const AuthService = require("./auth.service");
 const UserService = require("../user/user.service");
-const { default: ApiResponse } = require("../../utils/apiResponse");
+const ApiResponse  = require("../../utils/apiResponse");
 
 
 exports.login = async (req, res, next) => {
