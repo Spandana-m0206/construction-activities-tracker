@@ -29,9 +29,9 @@ exports.forgotPassword = async (req, res, next) =>{
   try {
     const {email} = req.body;
     const user = await AuthService.forgetPassword(email);
-    //we have reset password token in user
-   const emailStatus=await AuthService.sendOTPForResetPassword(user)
-    console.log(emailStatus)
+    
+    await AuthService.sendOTPForResetPassword(user)
+    
     return res.status(StatusCodes.ACCEPTED)
      .json(new ApiResponse(StatusCodes.ACCEPTED, {}, `Reset Password Mail send to ${email?.toLowerCase()}`));
   } catch (error) {

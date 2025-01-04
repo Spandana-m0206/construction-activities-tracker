@@ -1,5 +1,4 @@
 const OrgService = require("../org/org.service");
-// const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const generateOTPEmailForResetPassword = require('../../utils/generateSendOtpEmail')
 const sendEmail = require('../../utils/sentgrid');
