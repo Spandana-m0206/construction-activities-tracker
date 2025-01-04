@@ -28,7 +28,7 @@ const router = express.Router();
 
 router.use('/v1/auth', authRoute);
 
-// router.use(authMiddleware)
+router.use(authMiddleware)
 router.use('/v1/users', userRoutes);
 router.use('/v1/orgs', orgRoutes);
 router.use('/v1/sites', siteRoutes);
