@@ -2,8 +2,8 @@ const { StatusCodes } = require('http-status-codes');
 const { Roles } = require('../../utils/enums');
 const BaseController = require('../base/BaseController');
 const InventoryService = require('./inventory.service');
-const { default: ApiError } = require('../../utils/apiError');
-const { default: ApiResponse } = require('../../utils/apiResponse');
+const ApiError = require('../../utils/apiError');
+const ApiResponse = require('../../utils/apiResponse');
 const userService = require('../user/user.service');
 class InventoryController extends BaseController {
     constructor() {

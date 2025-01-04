@@ -8,7 +8,7 @@ class MaterialListItemService extends BaseService {
 
     // Example custom service method: Get material list items by purchase details
     async findMaterialListItemsByPurchase(purchaseId) {
-        return await this.model.model.find({ purchaseDetails: purchaseId })
+        return await this.model.find({ purchaseDetails: purchaseId })
             .populate('materialMetadata', 'name category')
             .populate('purchaseDetails', 'id');
     }
