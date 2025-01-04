@@ -7,6 +7,7 @@ const materialListItemFields = {
     price: { type: Number, required: true }, // Price of the material
     purchaseDetails: { type: mongoose.Schema.Types.ObjectId, ref: 'Purchase', required: true }, // Reference to Purchase
     qty: { type: Number, required: true }, // Quantity of the material
+    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
 };
 
 // Create the extended schema
