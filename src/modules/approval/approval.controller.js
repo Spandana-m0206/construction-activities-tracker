@@ -1,10 +1,10 @@
-const { default: ApiError } = require('../../utils/apiError');
+const ApiError = require('../../utils/apiError');
 const { ApprovalStatuses, ApprovalTypes, Roles } = require('../../utils/enums');
 const { default: enumToArray } = require('../../utils/EnumToArray');
 const BaseController = require('../base/BaseController');
 const ApprovalService = require('./approval.service');
 const { StatusCodes } = require("http-status-codes");
-const { default: ApiResponse } = require('../../utils/apiResponse');
+const ApiResponse = require('../../utils/apiResponse');
 class ApprovalController extends BaseController {
     constructor() {
         super(ApprovalService); // Pass the ApprovalService to the BaseController
