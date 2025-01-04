@@ -1,3 +1,5 @@
+const { StatusCodes } = require('http-status-codes');
+const { default: ApiError } = require('../../utils/apiError');
 const BaseService = require('../base/BaseService');
 const UserModel = require('./user.model');
 

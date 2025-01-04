@@ -45,14 +45,44 @@ exports.resetPassword= async (email, newPassword, resetToken)=> {
     return user;
 
 }
+exports.resetPassword= async (email, newPassword, resetToken)=> {
+    const user=await UserService.findOne({email:email.toLowerCase().trim()})
+    if(!user){
+        throw new Error('Invalid token or email');
+    }
+  if(!user.verifyPasswordResetToken(resetToken)){
+    throw new ApiError(StatusCodes.BAD_REQUEST,"Invalid Token","Invalid Token")
+  }
+    user.password = newPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    user.resetOTP = undefined;
+    user.resetOTPExpiry = undefined;
+    await user.save();
+    return user;
+
+}
 exports.sendOTPForResetPassword = async (user) => {
     try {
         const template = generateOTPEmailForResetPassword(user?.name, user.resetOTP);
         return await sendEmail(user.email, "Password Reset Request", template);
         
+        return await sendEmail(user.email, "Password Reset Request", template);
+        
     } catch (error) {
         throw new Error("Failed to send OTP: " + error?.message)
     }
+} 
+exports.forgetPassword= async (email)=> {
+    const user = await UserService.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+        throw new ApiError
+        (StatusCodes.NOT_FOUND,'User not found',"User Not Found");
+    }
+   user.generatePasswordResetOTP()
+    await user.save();
+    return user;
+}
 } 
 exports.forgetPassword= async (email)=> {
     const user = await UserService.findOne({ email: email.trim().toLowerCase() });
