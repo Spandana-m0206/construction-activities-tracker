@@ -83,7 +83,7 @@ exports.forgetPassword= async (email)=> {
     await user.save();
     return user;
 }
-} 
+
 exports.forgetPassword= async (email)=> {
     const user = await UserService.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
