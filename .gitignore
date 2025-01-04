@@ -134,3 +134,6 @@ dist
 
 ./src/modules/.DS_Store
 .DS_Store
+
+./package-lock.json
+./src/utils/taskConfig.json

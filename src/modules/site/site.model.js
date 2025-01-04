@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
-const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses } = require('../../utils/enums'); // Enums
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const { ProjectCurrencies, SiteTypes, FloorTypes, SiteStatuses, LandType } = require('../../utils/enums'); // Enums
+const  enumToArray = require('../../utils/EnumToArray');
 
 // Define Site-specific fields
 const siteFields = {
@@ -12,6 +12,7 @@ const siteFields = {
     projectCurrency: { type: String, enum: enumToArray(ProjectCurrencies), required: true },
     projectValue: { type: Number, required: true },
     level: { type: Number, required: true },
+    landType: { type: String, enum: LandType, required: true },
     floors: { type: Number, required: true },
     basements: { type: Number, required: true },
     supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User

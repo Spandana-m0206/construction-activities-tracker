@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { default: ApiError } = require("../utils/apiError");
+const  ApiError  = require("../utils/apiError");
 const UserService = require("../modules/user/user.service");
 const { StatusCodes } = require("http-status-codes");
 

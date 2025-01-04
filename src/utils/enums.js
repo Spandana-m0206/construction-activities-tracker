@@ -35,15 +35,24 @@ const SiteStatuses = {
 
 const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
-const TaskStatuses = [
-    'open',
-    'in progress',
-    'waiting for approval',
-    'closed',
-    'waiting',
-    'never',
-]; // Add more statuses as needed
+const TaskStatuses = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    REVIEW: 'REVIEW',
+    COMPLETED: 'COMPLETED',
+    OPEN: 'OPEN',
+    NEVER: 'NEVER',
+    UPCOMING:'UPCOMING'
+  };
+  
+const StatusOrder = {
+    PENDING: 1,
+    IN_PROGRESS: 2,
+    REVIEW: 3,
+    COMPLETED: 4,
+};
 
+const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
 const PaymentStatuses = ['approved', 'rejected', 'in review'];
@@ -65,9 +74,9 @@ const CarpetAreaUnitType = {
 };
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
-// TODO Added these two enums to test this may change later
-const TaskTypes = ['task', 'subtask'];
-const TaskDepartments = ['inventory', 'site', 'finance'];
+const TaskTypes = ["Payment", "materials", "plumbing"]
+const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
+const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
 
 module.exports = {
     UsageTypes,
@@ -100,5 +109,10 @@ module.exports = {
     CarpetAreaUnitType,
     MessageTypes,
     PaymentMethods,
-    PaymentTypes
+    PaymentTypes,
+    TaskTypes,
+    TaskDepartments,
+    LandType,
+    TriggerTask,
+    StatusOrder
 };

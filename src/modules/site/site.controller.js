@@ -1,5 +1,5 @@
 const { StatusCodes } = require('http-status-codes');
-const { default: ApiError } = require('../../utils/apiError');
+const  ApiError  = require('../../utils/apiError');
 const BaseController = require('../base/BaseController');
 const SiteService = require('./site.service');
 const { default: ApiResponse } = require('../../utils/apiResponse');

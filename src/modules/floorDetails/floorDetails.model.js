@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { CarpetAreaUnitType, FloorTypes, SiteTypes } = require('../../utils/enums');
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const enumToArray = require('../../utils/EnumToArray');
 
 // Define Floor Details-specific fields
 const floorDetailsFields = {

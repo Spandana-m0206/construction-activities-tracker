@@ -1,4 +1,4 @@
-import ApiResponse from './apiResponse.js';
+const ApiResponse = require('./apiResponse.js');
 
 class PaginatedApiResponse extends ApiResponse {
   constructor(
@@ -20,4 +20,4 @@ class PaginatedApiResponse extends ApiResponse {
   }
 }
 
-export default PaginatedApiResponse;
+module.exports =  PaginatedApiResponse;

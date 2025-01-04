@@ -1,16 +1,23 @@
+// task.routes.js
+
 const express = require('express');
 const TaskController = require('./task.controller');
 
 const router = express.Router();
 
-// Base routes from BaseController
-router.post('/', TaskController.create.bind(TaskController)); // Create task
-router.get('/', TaskController.find.bind(TaskController)); // Get all tasks
-router.get('/:id', TaskController.findOne.bind(TaskController)); // Get task by ID
-router.put('/:id', TaskController.update.bind(TaskController)); // Update task
-router.delete('/:id', TaskController.delete.bind(TaskController)); // Delete task
+// Inherited CRUD endpoints from BaseController
+router.post('/', TaskController.create.bind(TaskController));    // Create Task
+router.get('/', TaskController.find.bind(TaskController));       // Get all Tasks
+router.get('/:id', TaskController.findOne.bind(TaskController)); // Get one Task
+router.put('/:id', TaskController.update.bind(TaskController));  // Update Task
+router.delete('/:id', TaskController.delete.bind(TaskController)); // Delete Task
 
-// Custom route: Get tasks by site
-router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); // Find tasks by site
+// Custom endpoints
+router.post('/create-tasks', TaskController.createTasksFromMap.bind(TaskController)); 
+router.post('/add-subtask/:parentTaskId', TaskController.addSubTask.bind(TaskController)); 
+router.get('/get-subtasks/:parentTaskId', TaskController.getSubTasks.bind(TaskController)); 
+router.delete('/delete-subtask/:subTaskId', TaskController.deleteSubtask.bind(TaskController)); 
+router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); 
+router.get('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
 
 module.exports = router;
