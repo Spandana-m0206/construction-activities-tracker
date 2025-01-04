@@ -2,7 +2,7 @@ const { StatusCodes } = require('http-status-codes');
 const ApiError = require('../../utils/apiError'); // Assuming ApiError is a class
 const BaseController = require('../base/BaseController');
 const OrgService = require('./org.service');
-const { ApiResponse } = require('../../utils/apiResponse');
+const ApiResponse = require('../../utils/apiResponse');
 const UserService = require('../user/user.service');
 const { Roles } = require('../../utils/enums');
 

@@ -1,8 +1,8 @@
 const BaseController = require('../base/BaseController');
 const MaterialListItemService = require('./materialListItem.service');
 const { StatusCodes } = require("http-status-codes");
-const { default: ApiResponse } = require('../../utils/apiResponse');
-const { default: ApiError } = require('../../utils/apiError');
+const ApiResponse = require('../../utils/apiResponse');
+const ApiError = require('../../utils/apiError');
 const { Roles } = require('../../utils/enums');
 class MaterialListItemController extends BaseController {
     constructor() {

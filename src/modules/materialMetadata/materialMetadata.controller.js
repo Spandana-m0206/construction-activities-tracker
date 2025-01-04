@@ -2,8 +2,8 @@ const BaseController = require('../base/BaseController');
 const MaterialMetadataService = require('./materialMetadata.service');
 const { StatusCodes } = require('http-status-codes');
 const { Roles, MaterialCategories, Units } = require('../../utils/enums');
-const { default: ApiError } = require('../../utils/apiError');
-const { default: ApiResponse } = require('../../utils/apiResponse');
+const ApiError = require('../../utils/apiError');
+const ApiResponse = require('../../utils/apiResponse');
 const { default: enumToArray } = require('../../utils/EnumToArray');
 
 class MaterialMetadataController extends BaseController {
