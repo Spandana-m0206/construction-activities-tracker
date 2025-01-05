@@ -1,4 +1,5 @@
 const sentgrid = require('@sendgrid/mail')
+const logger = require("./logger");
 
 sentgrid.setApiKey(process.env.SENDGRID_API_KEY)
 
@@ -12,7 +13,7 @@ const sendEmail = async (to, subject, html) => {
 
     try {
         await sentgrid.send(msg)
-        logger.info(`Email sent to ${to}`)
+        console.log(`Email sent to ${to}`)
     } catch (error) {
         console.error(`Error sending email to ${to}: ${error.message}`)
         throw error

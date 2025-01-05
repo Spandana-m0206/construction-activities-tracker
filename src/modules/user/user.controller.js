@@ -2,7 +2,7 @@ const BaseController = require('../base/BaseController');
 const UserService = require('./user.service');
 const ApiResponse = require('../../utils/apiResponse');
 const { StatusCodes } = require('http-status-codes');
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const enumToArray  = require('../../utils/EnumToArray');
 const { Roles } = require('../../utils/enums');
 const ApiError = require('../../utils/apiError');
 const userService = require('./user.service');
@@ -57,7 +57,7 @@ class UserController extends BaseController {
                     email:newUser.email,
                     role:newUser.role,
                     phone:newUser.phone,
-        }, "User created successfully"))
+        },"User created successfully"))
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message, error))
     }
