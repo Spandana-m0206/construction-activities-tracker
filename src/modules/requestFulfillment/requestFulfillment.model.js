@@ -17,7 +17,7 @@ const requestFulfillmentFields = {
     transferFromType: { type: String, enum: ['Site', 'Inventory'], required: false }, // Source type
     transferredTo: { type: mongoose.Schema.Types.ObjectId, refPath: 'transferToType', required: true }, // Destination location (Site/Inventory)
     transferToType: { type: String, enum: ['Site', 'Inventory'], required: true }, // Destination type
-    transferType: { type: String, enum: TransferTypes, required: true }, // Type of transfer
+    transferType: { type: String, enum: TransferTypes, required: true }, // Type of transfer 
 };
 
 // Create the extended schema

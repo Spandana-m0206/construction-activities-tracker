@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { OrderStatuses, OrderPriorities } = require('../../utils/enums'); // Enums for statuses and priorities
-const { type } = require('os');
-const { request } = require('http');
 
 // Define Order-specific fields
 const orderFields = {
@@ -24,7 +22,13 @@ const orderFields = {
     // approvedOn: { type: Date, required: false }, // Nullable
     // dispatchedOn: { type: Date, required: false }, // Nullable
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'requestFulfillment', required: true     }
+    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'requestFulfillment', required: true     },
+    fulfilledMaterials: [
+        {
+            material: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata' },
+            quantity: { type: Number, required: true }
+        }
+    ]   
 };
 
 // Create the extended schema

@@ -33,7 +33,7 @@ const SiteStatuses = {
     COMPLETED: 'completed',
 };
 
-const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
+const MaterialCategories = ['furniture interior', 'electrical', 'plumbing', 'cement']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = {
     PENDING: 'PENDING',
@@ -56,7 +56,7 @@ const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
 const PaymentStatuses = ['approved', 'rejected', 'in review'];
-const OrderStatuses = ['in progress', 'approved', 'rejected', 'in transit'];
+const OrderStatuses = ['in progress', 'approved', 'rejected', 'in transit', 'completed', 'cancelled', 'partially fulfilled'];
 const OrderPriorities = ['high', 'medium', 'low'];
 const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
 const ApprovalTypes = ['show progress', 'task completed'];

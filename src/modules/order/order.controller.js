@@ -1,4 +1,5 @@
 const BaseController = require('../base/BaseController');
+const requestFulfillmentService = require('../requestFulfillment/requestFulfillment.service');
 const OrderService = require('./order.service');
 
 class OrderController extends BaseController {
@@ -15,6 +16,39 @@ class OrderController extends BaseController {
             next(error);
         }
     }
+    async createMaterialRequest  (req, res, next)  {
+        try {
+            const { site, materials, priority, assignedTo } = req.body;
+    
+            const order = await OrderService.createOrder({
+                createdBy: req.user._id,
+                site,
+                materials,
+                priority,
+                status: 'in progress',
+                assignedTo,
+                org: req.user.org
+            });
+    
+            res.status(200).json({ success: true, data: order });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async reviewMaterialRequest (req, res, next){
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+    
+            const order = await OrderService.reviewOrder(id, status);
+    
+            res.status(200).json({ success: true, data: order });
+        } catch (error) {
+            next(error);
+        }
+    };
+    
 }
 
 module.exports = new OrderController();

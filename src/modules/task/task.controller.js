@@ -16,18 +16,6 @@ class TaskController extends BaseController {
         }
     }
 
-    // New controller method to create tasks from a map
-    async createTasksFromMap(req, res, next) {
-        try {
-            const {siteId} = req.body; 
-
-            const createdTasks = await TaskService.createTasksForFloors(siteId);
-            return res.status(201).json({ success: true, data: createdTasks });
-        } catch (error) {
-            next(error);
-        }
-    }
-
     // New controller method to add sub task
     async addSubTask(req, res, next) {
         try {
