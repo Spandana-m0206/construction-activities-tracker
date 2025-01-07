@@ -1,5 +1,7 @@
+const { UsageTypes } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
 const StockModel = require('../stock/stock.model');
+const stockService = require('../stock/stock.service');
 const Usage = require('./usage.model');
 
 class UsageService extends BaseService {
@@ -22,7 +24,7 @@ class UsageService extends BaseService {
     async createUsage (data) {
         const { material, quantity, type, site, inventory, toSite, toInventory } = data;
 
-        const stock = await StockModel.findOne({
+        const stock = await stockService.findOne({
             material,
             site: site || null,
             inventory: inventory || null
@@ -33,13 +35,15 @@ class UsageService extends BaseService {
         }
 
         switch (type) {
-            case 'used':
-            case 'wasted':
+            case UsageTypes.USED:
                 stock.quantity -= quantity;
                 break;
-            case 'transfer':
+            case UsageTypes.WASTED:
                 stock.quantity -= quantity;
-                await StockModel.findOneAndUpdate(
+                break;
+            case UsageTypes.TRANSFER:
+                stock.quantity -= quantity;
+                await stockService.findOneAndUpdate(
                     { material, site: toSite || null, inventory: toInventory || null },
                     { $inc: { quantity } },
                     { upsert: true }

@@ -18,7 +18,7 @@ class OrderController extends BaseController {
     }
     async createMaterialRequest  (req, res, next)  {
         try {
-            const { site, materials, priority, assignedTo } = req.body;
+            const { site, materials, priority, assignedTo, task } = req.body;
     
             const order = await OrderService.createOrder({
                 createdBy: req.user._id,
@@ -27,6 +27,7 @@ class OrderController extends BaseController {
                 priority,
                 status: 'in progress',
                 assignedTo,
+                task: task,
                 org: req.user.org
             });
     

@@ -9,7 +9,7 @@ const orderFields = {
     inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
     // fromInventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
     // fromSite: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to Site
-    status: { type: String, enum: OrderStatuses, required: true }, // Enum for statuses
+    status: { type: String, enum: OrderStatuses, required: true, default: OrderStatuses.IN_PROGRESS}, // Enum for statuses
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
     task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: null }, // Nullable reference to Task
     materials: [

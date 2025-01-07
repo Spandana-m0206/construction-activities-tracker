@@ -56,15 +56,33 @@ const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
 const PaymentStatuses = ['approved', 'rejected', 'in review'];
-const OrderStatuses = ['in progress', 'approved', 'rejected', 'in transit', 'completed', 'cancelled', 'partially fulfilled'];
+const OrderStatuses = {
+    IN_PROGRESS: 'in progress',
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+    IN_TRANSIT: 'in transit',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+    PARTIALLY_FULFILLED: 'partially fulfilled'
+}
 const OrderPriorities = ['high', 'medium', 'low'];
 const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
 const ApprovalTypes = ['show progress', 'task completed'];
-const UsageTypes = ['used', 'wasted', 'transfer'];
+const UsageTypes = {
+    USED: 'used',
+    WASTED: 'wasted',
+    TRANSFER: 'transfer'
+};
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
-const FulfillmentStatuses = ['in progress', 'in transit', 'received', 'cancelled', 'returned'];
+const FulfillmentStatuses = {
+    IN_PROGRESS: 'in progress',
+    IN_TRANSIT: 'in transit',
+    RECEIVED: 'received',
+    CANCELLED: 'cancelled',
+    RETURNED: 'returned'
+}
 const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
 const StockSources = ["inventory", "site"];
 const MessageTypes = ["status", "approval"];
@@ -77,7 +95,14 @@ const PaymentTypes = ['credit', 'debit']
 const TaskTypes = ["Payment", "materials", "plumbing"]
 const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
 const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
-
+const TransferFromType = {
+    SITE: 'Site',
+    INVENTORY: 'Inventory'
+}
+const TransferToType = {
+    SITE: 'Site',
+    INVENTORY: 'Inventory'
+}
 module.exports = {
     UsageTypes,
     ApprovalStatuses,
@@ -114,5 +139,7 @@ module.exports = {
     TaskDepartments,
     LandType,
     TriggerTask,
-    StatusOrder
+    StatusOrder,
+    TransferFromType,
+    TransferToType
 };
