@@ -4,6 +4,7 @@ const AuthService = require("./auth.service");
 const UserService = require("../user/user.service");
 const ApiResponse  = require("../../utils/apiResponse");
 
+
 exports.login = async (req, res, next) => {
   try {
         const {email, password } = req.body;
@@ -15,13 +16,39 @@ exports.login = async (req, res, next) => {
             return res.status(401).json(new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Credentials"));
         }
         const token = await AuthService.generateToken(user);
+        const refreshToken =await AuthService.generateRefreshToken(user._id,user.org)
+        await AuthService.saveRefreshToken(user._id,refreshToken)
         delete user.password
         return res.status(StatusCodes.OK)
-           .json(new ApiResponse(StatusCodes.OK, {token, user}, "User logged in successfully"));
+           .json(new ApiResponse(StatusCodes.OK, {token,refreshToken,user}, "User logged in successfully"));
   } catch (err) {
     next(err);
   }
 };
+exports.refreshAccessToken=async (req,res)=>{
+  try {
+    const {refreshToken}=req.body
+    
+    if(!refreshToken){
+      return res.status(401).json(new ApiError(StatusCodes.UNAUTHORIZED,"Token Not Found","Token Not Found"))
+    }
+    const {userId}=await AuthService.getPayLoadFromToken(refreshToken)
+    const user=await UserService.findById(userId)
+    if(user.refreshToken!=refreshToken){
+      return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED,"Invalid Token","Invalid Token"))
+    }
+    const newAccessToken=await AuthService.generateToken(user)
+    const newRefreshToken=await AuthService.generateRefreshToken(userId,user.org)
+    await AuthService.saveRefreshToken(userId,newRefreshToken)
+    return res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED,{accessToken:newAccessToken,refreshToken:newRefreshToken},"Successfuly Token Generated")
+    )
+
+} catch (error) {
+  
+    
+  }
+
+}
 
 exports.forgotPassword = async (req, res, next) =>{
   try {
