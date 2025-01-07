@@ -1,4 +1,4 @@
-const { OrderStatuses, FulfillmentStatuses, TransferFromType, TransferToType } = require('../../utils/enums');
+const { OrderStatuses, FulfillmentStatuses, TransferFromType, TransferToType, UsageTypes } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
 const OrderModel = require('../order/order.model');
 const StockModel = require('../stock/stock.model');
@@ -7,6 +7,7 @@ const orderService = require('../order/order.service');
 const requestFulfillmentService = require('./requestFulfillment.service');
 const RequestFulfillment = require('./requestFulfillment.model');
 const materialListItemService = require('../materialListItem/materialListItem.service');
+const usageService = require('../usage/usage.service');
 const StockItemModel = require('../stock/stock.model');
 const RequestFulfillmentModel = require('./requestFulfillment.model');
 
@@ -26,7 +27,7 @@ class RequestFulfillmentService extends BaseService {
     }
 
     async createFulfillment(data) {
-        const { orderId, materialList, transferredFrom, transferFromType, transferredTo, transferToType, transferType, fulfilledBy } = data;
+        const { orderId, materialList, transferredFrom, transferFromType, transferredTo, transferToType, transferType, fulfilledBy, receivedBy } = data;
     
         // Validate required fields
         if (!orderId || !materialList || materialList.length === 0) {
@@ -126,6 +127,8 @@ class RequestFulfillmentService extends BaseService {
             transferToType,
             transferType,
             fulfilledBy,
+            receivedBy:receivedBy,
+            receivedOn: new Date(),
             status: FulfillmentStatuses.IN_TRANSIT,
         });
     
@@ -175,6 +178,22 @@ class RequestFulfillmentService extends BaseService {
         // Update Order Status
         await this.updateOrderStatus(order, fulfillment.materialList);
     
+            // Add Usage Flow (Example Integration)
+    const usageData = fulfillment.materialList.map((item) => ({
+        material: item.materialMetadata,
+        quantity: item.qty,
+        type: UsageTypes.TRANSFER, // Can be 'used', 'wasted', or 'transferred'
+        site: fulfillment.transferToType === TransferToType.SITE ? fulfillment.transferredTo : null,
+        inventory: fulfillment.transferToType === TransferToType.INVENTORY ? fulfillment.transferredTo : null,
+        createdBy: fulfillment.fulfilledBy,
+        org: order.org,
+        task: order.task || null, // Associate with task if applicable
+    }));
+
+    await usageService.createBulk(usageData); // Add a bulk create method for usage
+
+    // Update Order Status
+    await this.updateOrderStatus(order, fulfillment.materialList);
         return fulfillment;
     }
     

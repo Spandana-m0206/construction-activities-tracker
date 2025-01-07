@@ -28,9 +28,8 @@ class RequestFulfillmentController extends BaseController {
         try {
             const { id } = req.params;
             const { receivedBy, receivedOn } = req.body;
-            const fulfilledBy = req.user.userId;
             const fulfilledOn = new Date();
-            const fulfillment = await requestFulfillmentService.acknowledgeReceipt(id, { receivedBy, receivedOn, fulfilledBy, fulfilledOn});
+            const fulfillment = await requestFulfillmentService.acknowledgeReceipt(id, { receivedBy, receivedOn, fulfilledOn});
     
             res.status(200).json({ success: true, data: fulfillment });
         } catch (error) {
