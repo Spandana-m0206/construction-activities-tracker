@@ -1,4 +1,7 @@
+const { UsageTypes } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
+const StockModel = require('../stock/stock.model');
+const stockService = require('../stock/stock.service');
 const Usage = require('./usage.model');
 
 class UsageService extends BaseService {
@@ -17,7 +20,8 @@ class UsageService extends BaseService {
             .populate('toSite', 'name location')
             .populate('toInventory', 'name address')
             .populate('orderId', 'status priority');
-    }
+    
+        }
 }
 
 module.exports = new UsageService();

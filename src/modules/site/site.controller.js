@@ -4,9 +4,10 @@ const BaseController = require('../base/BaseController');
 const SiteService = require('./site.service');
 const ApiResponse = require('../../utils/apiResponse');
 const { default: PaginatedApiResponse } = require('../../utils/paginatedApiResponse');
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const enumToArray  = require('../../utils/EnumToArray');
 const { ProjectCurrencies, SiteTypes, SiteStatuses } = require('../../utils/enums');
 const UserService = require('../user/user.service');
+const taskService = require('../task/task.service');
 
 class SiteController extends BaseController {
     constructor() {
@@ -46,6 +47,8 @@ class SiteController extends BaseController {
             }
             if(!siteData?.status)siteData.status = SiteStatuses.WAITING;
             const newSite = await SiteService.create(siteData);
+            await taskService.createTasksForFloors(newSite._id);
+ 
             res.status(StatusCodes.CREATED)
                 .json(new ApiResponse(StatusCodes.CREATED, newSite, "New Site Created"))
             

@@ -15,6 +15,17 @@ class UsageController extends BaseController {
             next(error);
         }
     }
+    async trackMaterialUsage (req, res, next) {
+        try {
+            const usage = await UsageService.createUsage(req.body);
+    
+            res.status(200).json({ success: true, data: usage });
+        } catch (error) {
+            next(error);
+
+        }
+    };
+    
 }
 
 module.exports = new UsageController();

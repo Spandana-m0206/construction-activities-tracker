@@ -3,6 +3,9 @@ const RequestFulfillmentController = require('./requestFulfillment.controller');
 
 const router = express.Router();
 
+router.post('/dispatch', RequestFulfillmentController.dispatchMaterials);
+router.post('/ack/:id', RequestFulfillmentController.acknowledgeReceipt);
+
 // Base routes from BaseController
 router.post('/', RequestFulfillmentController.create.bind(RequestFulfillmentController)); // Create fulfillment
 router.get('/', RequestFulfillmentController.find.bind(RequestFulfillmentController)); // Get all fulfillments
