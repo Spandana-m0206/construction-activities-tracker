@@ -24,7 +24,7 @@ class RequestFulfillmentService extends BaseService {
 
     // Example custom service method: Get fulfillments by order ID
     async findFulfillmentsByOrder(orderId) {
-        return await this.model.model
+        return await this.model
             .find({ orderId })
             .populate('materialList', 'name category')
             .populate('fulfilledBy', 'name email')
