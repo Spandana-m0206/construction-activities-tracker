@@ -24,8 +24,8 @@ const taskFields = {
     attachments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File', default: [] }], // File attachments
     changeHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: [] }], // History of task changes
     type: { type: String, enum: TaskTypes,  }, // Task type
-    raisedByDept: { type: String, enum: TaskDepartments,  required:true, default:"Site" }, // TODO Department that raised the task
-    raisedToDept: { type: String, enum: TaskDepartments, required:true }, // Department to which the task is assigned
+    raisedByDept: { type: String, enum: enumToArray(TaskDepartments),  required:true, default:"Site" }, // TODO Department that raised the task
+    raisedToDept: { type: String, enum: enumToArray(TaskDepartments), required:true }, // Department to which the task is assigned
     penalty: { type: mongoose.Schema.Types.ObjectId, ref: 'Penalty', default: null }, // Reference to penalty
     isParallel: { type: Boolean, default: false }, // Determines parallel or sequential
     level: { type: Number },

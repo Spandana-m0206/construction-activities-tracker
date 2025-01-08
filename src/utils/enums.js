@@ -96,12 +96,12 @@ const TaskTypes = ["Payment", "materials", "plumbing"]
 const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
 const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
 const TransferFromType = {
-    SITE: 'Site',
-    INVENTORY: 'Inventory'
+    SITE: 'site',
+    INVENTORY: 'inventory'
 }
 const TransferToType = {
-    SITE: 'Site',
-    INVENTORY: 'Inventory'
+    SITE: 'site',
+    INVENTORY: 'inventory'
 }
 module.exports = {
     UsageTypes,

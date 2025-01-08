@@ -18,6 +18,8 @@ class RequestFulfillmentController extends BaseController {
     }
     async dispatchMaterials (req, res, next){
         try {
+            req.body.fulfilledBy = req.user.userId;
+            req.body.org = req.user.org;
             const fulfillment = await requestFulfillmentService.createFulfillment(req.body);
             res.status(200).json({ success: true, data: fulfillment });
         } catch (error) {
@@ -27,9 +29,8 @@ class RequestFulfillmentController extends BaseController {
     async acknowledgeReceipt (req, res, next) {
         try {
             const { id } = req.params;
-            const { receivedBy, receivedOn } = req.body;
-            const fulfilledOn = new Date();
-            const fulfillment = await requestFulfillmentService.acknowledgeReceipt(id, { receivedBy, receivedOn, fulfilledOn});
+            const receivedBy = req.user.userId;
+            const fulfillment = await requestFulfillmentService.acknowledgeReceipt(id, { receivedBy });
     
             res.status(200).json({ success: true, data: fulfillment });
         } catch (error) {

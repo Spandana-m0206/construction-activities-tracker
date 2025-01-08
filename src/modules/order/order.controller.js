@@ -1,3 +1,4 @@
+const { OrderStatuses } = require('../../utils/enums');
 const BaseController = require('../base/BaseController');
 const requestFulfillmentService = require('../requestFulfillment/requestFulfillment.service');
 const OrderService = require('./order.service');
@@ -18,17 +19,18 @@ class OrderController extends BaseController {
     }
     async createMaterialRequest  (req, res, next)  {
         try {
-            const { site, materials, priority, assignedTo, task } = req.body;
-    
+            const { site, materials, priority, assignedTo, task, fromInventory, fromSite} = req.body;
             const order = await OrderService.createOrder({
                 createdBy: req.user._id,
                 site,
                 materials,
                 priority,
-                status: 'in progress',
-                assignedTo,
+                status: OrderStatuses.IN_PROGRESS,
+                assignedTo: assignedTo,
                 task: task,
-                org: req.user.org
+                org: req.user.org,
+                fromInventory,
+                fromSite
             });
     
             res.status(200).json({ success: true, data: order });
@@ -41,7 +43,6 @@ class OrderController extends BaseController {
         try {
             const { id } = req.params;
             const { status } = req.body;
-    
             const order = await OrderService.reviewOrder(id, status);
     
             res.status(200).json({ success: true, data: order });
