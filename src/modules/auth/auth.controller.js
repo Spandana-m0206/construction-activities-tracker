@@ -15,12 +15,12 @@ exports.login = async (req, res, next) => {
         if(!user || !await user.isPasswordCorrect(password)){
             return res.status(401).json(new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Credentials"));
         }
-        const token = await AuthService.generateToken(user);
+        const accessToken = await AuthService.generateToken(user);
         const refreshToken =await AuthService.generateRefreshToken(user._id,user.org)
         await AuthService.saveRefreshToken(user._id,refreshToken)
         delete user.password
         return res.status(StatusCodes.OK)
-           .json(new ApiResponse(StatusCodes.OK, {token,refreshToken,user}, "User logged in successfully"));
+           .json(new ApiResponse(StatusCodes.OK, {accessToken,refreshToken,user}, "User logged in successfully"));
   } catch (err) {
     next(err);
   }
@@ -44,8 +44,7 @@ exports.refreshAccessToken=async (req,res)=>{
     )
 
 } catch (error) {
-  
-    
+   return res.status(StatusCodes.INTERNAL_SERVER_ERROR),json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Somethiong Went Wrong",error))
   }
 
 }

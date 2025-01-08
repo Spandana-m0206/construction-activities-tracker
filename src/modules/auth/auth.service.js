@@ -95,14 +95,14 @@ exports.forgetPassword= async (email)=> {
     return user;
 }
 exports.generateRefreshToken=async (userId,orgId)=>{
-    const token =await jwt.sign({
+    const refreshToken =await jwt.sign({
         userId,
         orgId
     },process.env.REFRESH_SECRET,{
         expiresIn:"7d"
     })
     
-   return token  
+   return refreshToken; 
     
 }
 exports.saveRefreshToken=async (userId,token)=>{
