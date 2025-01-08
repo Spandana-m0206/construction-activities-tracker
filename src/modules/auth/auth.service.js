@@ -5,6 +5,7 @@ const sendEmail = require('../../utils/sentgrid');
 const UserService = require("../user/user.service");
 const ApiError  = require("../../utils/apiError");
 const { StatusCodes } = require("http-status-codes");
+
 exports.generateToken = async (user) => {
     try {
             const org = await OrgService.findById(user.org);
@@ -93,3 +94,28 @@ exports.forgetPassword= async (email)=> {
     await user.save();
     return user;
 }
+exports.generateRefreshToken=async (userId,orgId)=>{
+    const refreshToken =await jwt.sign({
+        userId,
+        orgId
+    },process.env.REFRESH_SECRET,{
+        expiresIn:"7d"
+    })
+    
+   return refreshToken; 
+    
+}
+exports.saveRefreshToken=async (userId,token)=>{
+    const user= await UserService.findById(userId);
+    user.refreshToken=token;
+    await user.save();
+}
+exports.getPayLoadFromToken=async (refreshToken)=>{
+  const payLoad= await jwt.verify(refreshToken,process.env.REFRESH_SECRET)
+  if(!payLoad){
+    return false;
+  }
+  return payLoad;
+
+}
+

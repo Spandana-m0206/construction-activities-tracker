@@ -18,6 +18,7 @@ const userFields = {
     resetOTP: { type: String, default: null },
     resetOTPExpiry: { type: Date, default: null },
     isActive: { type: Boolean, required: true, default: true },
+    refreshToken:{type:String}
 };
 
 // Create the extended schema
