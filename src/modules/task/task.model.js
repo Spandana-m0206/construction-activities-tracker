@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { TaskStatuses, TaskPriorities, TaskTypes, TaskDepartments, TriggerTask } = require('../../utils/enums'); // Enums
-const { type } = require('os');
 const enumToArray = require('../../utils/EnumToArray');
 
 // Define Task-specific fields
@@ -19,7 +18,7 @@ const taskFields = {
     assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }], // Users assigned to the task
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required:true }, // Organization reference
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required:true }, // Site reference
-    priority: { type: String, enum: TaskPriorities,  }, // Task priority
+    priority: { type: String, enum: enumToArray(TaskPriorities),  }, // Task priority
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // Creator of the task
     attachments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File', default: [] }], // File attachments
     changeHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: [] }], // History of task changes
@@ -31,7 +30,7 @@ const taskFields = {
     level: { type: Number },
     floor: { type: Number }, 
     tempId: { type: Number }, // Temporary ID for mapping
-    trigger: { type:String, enum: TriggerTask}
+    trigger: { type:String, enum: enumToArray(TriggerTask)}
 };
 
 // Create the extended schema with timestamps

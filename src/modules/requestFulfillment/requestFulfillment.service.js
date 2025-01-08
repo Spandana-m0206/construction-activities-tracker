@@ -6,11 +6,8 @@ const {
     UsageTypes,
 } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
-const OrderModel = require('../order/order.model');
-const StockModel = require('../stock/stock.model');
 const stockService = require('../stock/stock.service');
 const orderService = require('../order/order.service');
-const requestFulfillmentService = require('./requestFulfillment.service');
 const RequestFulfillment = require('./requestFulfillment.model');
 const materialListItemService = require('../materialListItem/materialListItem.service');
 const usageService = require('../usage/usage.service');
@@ -34,11 +31,7 @@ class RequestFulfillmentService extends BaseService {
     }
 
     async createFulfillment(data) {
-        const {
-            orderId,
-            materialList,
-            fulfilledBy,
-        } = data;
+        const { orderId, materialList, fulfilledBy } = data;
     
         // Validate required fields
         if (!orderId || !materialList || materialList.length === 0) {
@@ -48,8 +41,8 @@ class RequestFulfillmentService extends BaseService {
         // Fetch the order and extract transfer details
         const order = await orderService.findById(orderId);
         if (!order) throw new Error('Order not found');
-
         if (!(order.status === OrderStatuses.APPROVED)) throw new Error('Order is not approved');
+    
         // Determine transferFrom and transferTo dynamically
         let transferredFrom, transferFromType, transferredTo, transferToType;
     
@@ -79,57 +72,14 @@ class RequestFulfillmentService extends BaseService {
             );
         }
     
-        const validationErrors = [];
-    
-        // Step 1: Validation Phase
-        for (const item of materialList) {
-            if (!item.materialMetadata || !item.qty || item.qty <= 0) {
-                throw new Error(
-                    `Invalid material data: ${JSON.stringify(item)}`,
-                );
-            }
-    
-            const stockQuery = {
-                materialMetaData: item.materialMetadata,
-                site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
-                inventory: transferFromType === TransferFromType.INVENTORY ? transferredFrom : null,
-            };
-    
-            const stock = await StockItemModel.findOne(stockQuery).populate({
-                path: 'material',
-                options: { sort: { createdAt: -1 } }, // Sort MaterialListItems by most recent
-            });
-    
-            if (!stock || stock.material.length === 0) {
-                validationErrors.push(
-                    `No stock available for material ${item.materialMetadata}`,
-                );
-                continue;
-            }
-    
-            const totalAvailableQty = stock.material.reduce(
-                (total, listItem) => total + listItem.qty,
-                0,
-            );
-    
-            if (totalAvailableQty < item.qty) {
-                validationErrors.push(
-                    `Insufficient stock for material ${item.materialMetadata}. Available: ${totalAvailableQty}, Requested: ${item.qty}`,
-                );
-            }
-        }
-    
-        if (validationErrors.length > 0) {
-            throw new Error(
-                `Stock validation failed: ${validationErrors.join('; ')}`,
-            );
-        }
-    
-        // Step 2: Fulfillment Phase
         const fulfilledMaterialListItems = [];
         const usageData = [];
     
         for (const item of materialList) {
+            if (!item.materialMetadata || !item.qty || item.qty <= 0) {
+                throw new Error(`Invalid material data: ${JSON.stringify(item)}`);
+            }
+    
             const stockQuery = {
                 materialMetaData: item.materialMetadata,
                 site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
@@ -141,8 +91,20 @@ class RequestFulfillmentService extends BaseService {
                 options: { sort: { createdAt: -1 } },
             });
     
-            let remainingQty = item.qty;
+            if (!stock || stock.material.length === 0) {
+                throw new Error(`No stock available for material ${item.materialMetadata}`);
+            }
     
+            let remainingQty = item.qty;
+            const totalAvailableQty = stock.material.reduce((total, listItem) => total + listItem.qty, 0);
+    
+            if (totalAvailableQty < item.qty) {
+                throw new Error(
+                    `Insufficient stock for material ${item.materialMetadata}. Available: ${totalAvailableQty}, Requested: ${item.qty}`,
+                );
+            }
+    
+            // Fulfill the stock
             for (const listItem of stock.material) {
                 if (listItem.qty > 0) {
                     const deductQty = Math.min(listItem.qty, remainingQty);
@@ -191,13 +153,12 @@ class RequestFulfillmentService extends BaseService {
             transferType: `${transferFromType}-${transferToType}`, // Derive transfer type dynamically
             fulfilledBy,
             fulfilledOn: new Date(),
-            // receivedBy: receivedBy,
-            // receivedOn: new Date(),
             status: FulfillmentStatuses.IN_TRANSIT,
         });
+    
         order.dispatchedOn = new Date();
         return fulfillment;
-    }
+    }    
 
     async acknowledgeReceipt(fulfillmentId, data) {
         const fulfillment =

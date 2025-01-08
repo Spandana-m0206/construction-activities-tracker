@@ -83,8 +83,7 @@ const FulfillmentStatuses = {
     CANCELLED: 'cancelled',
     RETURNED: 'returned'
 }
-const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
-const StockSources = ["inventory", "site"];
+
 const MessageTypes = ["status", "approval"];
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',
@@ -92,9 +91,38 @@ const CarpetAreaUnitType = {
 };
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
-const TaskTypes = ["Payment", "materials", "plumbing"]
-const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
-const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
+const TaskTypes = {
+    PAYMENT: 'Payment',
+    MATERIALS: 'materials',
+    PLUMBING: 'plumbing'
+}
+
+const TaskDepartments = {
+    INVENTORY: 'Inventory',
+    FINANCE: 'Finance',
+    SALES: 'Sales',
+    SITE: 'Site'
+}
+
+const TriggerTask = {
+    ONE_TIME: 'ONE_TIME',
+    ONE_TIME_FOR_EVERY_LEVEL: 'ONE_TIME_FOR_EVERY_LEVEL'
+}
+
+const TransferTypes = {
+    SITE_TO_SITE: 'site-site',
+    SITE_TO_INVENTORY: 'site-inventory',
+    INVENTORY_TO_SITE: 'inventory-site',
+    INVENTORY_TO_INVENTORY: 'inventory-inventory',
+    FINANCE_TO_SITE: 'finance-site',
+    FINANCE_TO_INVENTORY: 'finance-inventory'
+}
+
+const StockSources = {
+    INVENTORY: 'inventory',
+    SITE: 'site'
+}
+
 const TransferFromType = {
     SITE: 'site',
     INVENTORY: 'inventory'
