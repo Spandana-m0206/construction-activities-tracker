@@ -12,5 +12,6 @@ router.delete('/:id', SiteController.delete.bind(SiteController)); // Delete sit
 
 // Custom route: Get sites by status
 router.get('/status/:status', SiteController.getSitesByStatus.bind(SiteController)); // Find sites by status
+router.get('/progress/:siteId', SiteController.getSiteProgress.bind(SiteController));
 
 module.exports = router;

@@ -384,10 +384,13 @@ class TaskService extends BaseService {
       .populate('parentTask')
       .exec();
   
-    // Update status and progressPercentage
+    if (!task) {
+      throw new ApiError(404, "Task not found");
+    }
+  
+    // Update status and progressPercentage based on your custom logic
     task.status = newStatus;
   
-    // Update progressPercentage based on status using enums
     switch (newStatus) {
       case TaskStatuses.PENDING:
       case TaskStatuses.OPEN:
@@ -403,7 +406,7 @@ class TaskService extends BaseService {
         task.progressPercentage = 100;
         break;
       case TaskStatuses.NEVER:
-        task.progressPercentage = 0; // Define specific behavior if required
+        task.progressPercentage = 0; // Or some other logic
         break;
     }
   
@@ -416,62 +419,37 @@ class TaskService extends BaseService {
       if (task.nextTasks && task.nextTasks.length > 0) {
         if (task.isParallel) {
           // Parallel Flow: Start all next tasks simultaneously
-          await Promise.all(task.nextTasks.map(async (nextTask) => {
-            if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
-              nextTask.status = TaskStatuses.IN_PROGRESS;
-              await nextTask.save();
-            }
-          }));
+          await Promise.all(
+            task.nextTasks.map(async (nextTask) => {
+              if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
+                nextTask.status = TaskStatuses.IN_PROGRESS;
+                nextTask.progressPercentage = 50; // optional
+                await nextTask.save();
+              }
+            })
+          );
         } else {
           // Sequential Flow: Start only the immediate next task
-          const firstPending = task.nextTasks.find(t =>
+          const firstPending = task.nextTasks.find((t) =>
             [TaskStatuses.OPEN, TaskStatuses.PENDING].includes(t.status)
           );
           if (firstPending) {
             firstPending.status = TaskStatuses.IN_PROGRESS;
+            firstPending.progressPercentage = 50; // optional
             await firstPending.save();
-          }
-        }
-      }
-  
-      // Handle Parent Task Completion
-      if (task.parentTask) {
-        const parent = await this.model.findById(task.parentTask)
-          .populate('subtasks')
-          .exec();
-  
-        if (parent) {
-          const allSubtasksCompleted = parent.subtasks.every(sub => sub.status === TaskStatuses.COMPLETED);
-          if (allSubtasksCompleted && parent.status !== TaskStatuses.COMPLETED) {
-            parent.status = TaskStatuses.COMPLETED;
-            parent.progressPercentage = 100;
-            await parent.save();
-  
-            if (parent.nextTasks && parent.nextTasks.length > 0) {
-              if (parent.isParallel) {
-                await Promise.all(parent.nextTasks.map(async (nextTask) => {
-                  if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
-                    nextTask.status = TaskStatuses.IN_PROGRESS;
-                    await nextTask.save();
-                  }
-                }));
-              } else {
-                const firstPendingParentNext = parent.nextTasks.find(t =>
-                  [TaskStatuses.OPEN, TaskStatuses.PENDING].includes(t.status)
-                );
-                if (firstPendingParentNext) {
-                  firstPendingParentNext.status = TaskStatuses.IN_PROGRESS;
-                  await firstPendingParentNext.save();
-                }
-              }
-            }
           }
         }
       }
     }
   
+    // Now, update the parent's progress, if a parent exists:
+    if (task.parentTask) {
+      await this.updateParentProgressRecursively(task.parentTask);
+    }
+  
     // Return the updated task with populated references
-    const updatedTask = await this.model.findById(taskId)
+    const updatedTask = await this.model
+      .findById(taskId)
       .populate('subtasks')
       .populate('nextTasks')
       .populate('parentTask')
@@ -483,6 +461,54 @@ class TaskService extends BaseService {
     };
   }
   
+  async updateParentProgressRecursively(parentTaskId) {
+    const parent = await this.model.findById(parentTaskId)
+      .populate('subtasks')
+      .populate('parentTask')
+      .exec();
+  
+    if (!parent) {
+      return;
+    }
+  
+    if (!parent.subtasks || parent.subtasks.length === 0) {
+      return; // No subtasks => nothing to update
+    }
+  
+    // Check if ALL subtasks are completed
+    const allSubtasksCompleted = parent.subtasks.every(
+      (sub) => sub.status === TaskStatuses.COMPLETED
+    );
+  
+    if (allSubtasksCompleted) {
+      // If all are completed, set parent to COMPLETED and 100% progress
+      parent.status = TaskStatuses.COMPLETED;
+      parent.progressPercentage = 100;
+    } else {
+      // Otherwise, compute the average progress of subtasks
+      let total = 0;
+      parent.subtasks.forEach((sub) => {
+        total += sub.progressPercentage || 0;
+      });
+      const averageProgress = total / parent.subtasks.length;
+  
+      // Set parent's status accordingly (here we assume IN_PROGRESS, but you can pick your logic)
+      if (averageProgress > 0 && averageProgress < 100) {
+        parent.status = TaskStatuses.IN_PROGRESS;
+      }
+      // If you want to handle PENDING or REVIEW states differently, add logic here
+      parent.progressPercentage = averageProgress;
+    }
+  
+    // Save
+    await parent.save();
+  
+    // If parent's parent exists, bubble up
+    if (parent.parentTask) {
+      await this.updateParentProgressRecursively(parent.parentTask);
+    }
+  }
+
   async addSubTask(parentTaskId, subTaskData) {
     try {
       // 1. Validate subTaskData

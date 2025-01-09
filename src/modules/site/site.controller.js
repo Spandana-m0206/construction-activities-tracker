@@ -171,6 +171,16 @@ class SiteController extends BaseController {
         return res.status(StatusCodes.OK)
         .json(new ApiResponse(StatusCodes.OK, validSite, "Site retrieved successfully"));
     }
+
+    async getSiteProgress(req, res) {
+        try {
+          const { siteId } = req.params;
+          const result = await this.service.getSiteProgress(siteId);
+          return res.status(201).json({ success: true, data: result });
+        } catch (error) {
+            next(error)
+        }
+      }      
 }
 
 module.exports = new SiteController();
