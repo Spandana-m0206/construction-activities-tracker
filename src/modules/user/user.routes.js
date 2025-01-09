@@ -1,8 +1,12 @@
 const express = require('express');
 const UserController = require('./user.controller');
+const upload = require('../file/file.storage');
 
 const router = express.Router();
 
+router.post('/profile-photo/:id', 
+    upload.single('profilePhoto'),
+    UserController.uploadProfilePhoto.bind(UserController)); // Upload profile photo
 // Base routes from BaseController
 router.post('/', UserController.create.bind(UserController)); // Create user
 router.get('/', UserController.find.bind(UserController)); // Get all users
