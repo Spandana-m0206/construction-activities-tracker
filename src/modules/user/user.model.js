@@ -18,7 +18,8 @@ const userFields = {
     resetOTP: { type: String, default: null },
     resetOTPExpiry: { type: Date, default: null },
     isActive: { type: Boolean, required: true, default: true },
-    refreshToken:{type:String}
+    refreshToken:{type:String},
+    profilePhoto: { type:mongoose.Schema.Types.ObjectId, ref: 'File', required: false },
 };
 
 // Create the extended schema

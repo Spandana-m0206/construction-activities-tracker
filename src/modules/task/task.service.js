@@ -482,6 +482,13 @@ class TaskService extends BaseService {
       data: updatedTask,
     };
   }
+  async findTasksBySite(siteId) {
+    return await this.model.find({ site: siteId })
+        .populate('subtasks', 'title status')
+        .populate('assignedTo', 'name email')
+        .populate('org', 'name')
+        .populate('site', 'name');
+}
   
   async addSubTask(parentTaskId, subTaskData) {
     try {
