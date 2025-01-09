@@ -54,6 +54,21 @@ class TaskController extends BaseController {
             next(error);
         }
     }
+    async getTaskCountForSite(req, res) {
+        try {
+            const { siteId, ...filters } = req.query;
+
+            if (!siteId) {
+                return res.status(400).json({ error: 'siteId is required' });
+            }
+
+            const count = await this.service.countTasksForSite(siteId, filters);
+            res.status(200).json({ siteId, taskCount: count });
+        } catch (error) {
+            console.error(`[TaskController Error - getTaskCountForSite]: ${error.message}`);
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = new TaskController();

@@ -608,6 +608,16 @@ class TaskService extends BaseService {
       throw new ApiError(500, "An unexpected error occurred while fetching subtasks");
     }
   }
+
+  async countTasksForSite(siteId, filters) {
+    try {
+        const query = { site: siteId, ...filters };
+        return await this.model.countDocuments(query);
+    } catch (error) {
+        console.error(`[TaskService Error - countTasksForSite]: ${error.message}`);
+        throw new Error('Failed to fetch task count');
+    }
+}
 }
 
 module.exports = new TaskService();
