@@ -22,6 +22,13 @@ class BaseService {
         return this.handleOperation(this.model.create.bind(this.model), 'create', data);
     }
 
+    async createBulk(dataArray) {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) {
+            throw new Error('Data array is required for bulk creation');
+        }
+        return this.handleOperation(this.model.insertMany.bind(this.model), 'createBulk', dataArray);
+    }
+    
     async find(filter = {}, projection = {}, options = {}) {
         return this.handleOperation(this.model.find.bind(this.model), 'find', filter, projection, options);
     }

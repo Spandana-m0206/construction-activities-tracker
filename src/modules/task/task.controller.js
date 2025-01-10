@@ -6,23 +6,19 @@ class TaskController extends BaseController {
     constructor() {
         super(TaskService); // Pass TaskService to the BaseController
     }
-
-    async getTasksBySite(req, res, next) {
+    async findOne(req, res, next) {
         try {
-            const tasks = await this.service.findTasksBySite(req.params.siteId);
+            const tasks = await this.service.findOne(req.query);
             return res.status(200).json({ success: true, data: tasks });
         } catch (error) {
             next(error);
         }
     }
 
-    // New controller method to create tasks from a map
-    async createTasksFromMap(req, res, next) {
+    async getTasksBySite(req, res, next) {
         try {
-            const {siteId} = req.body; 
-
-            const createdTasks = await TaskService.createTasksForFloors(siteId);
-            return res.status(201).json({ success: true, data: createdTasks });
+            const tasks = await this.service.findTasksBySite(req.params.siteId);
+            return res.status(200).json({ success: true, data: tasks });
         } catch (error) {
             next(error);
         }
@@ -60,7 +56,7 @@ class TaskController extends BaseController {
     async updateTask(req, res, next) {
         try {
             const {taskId} = req.params;
-            const data = await TaskService.updateTaskStatus(taskId, req.body.status);
+            const data = await TaskService.updateTaskStatus(taskId, req.body.status, req.body.progressPercentage);
             return res.status(201).json({ success: true, data: data });
         } catch (error) {
             next(error);

@@ -1,17 +1,16 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { OrderStatuses, OrderPriorities } = require('../../utils/enums'); // Enums for statuses and priorities
-const { type } = require('os');
-const { request } = require('http');
+const enumToArray = require('../../utils/EnumToArray');
 
 // Define Order-specific fields
 const orderFields = {
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to Site
     inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
-    // fromInventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
-    // fromSite: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to Site
-    status: { type: String, enum: OrderStatuses, required: true }, // Enum for statuses
+    fromInventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
+    fromSite: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to Site
+    status: { type: String, enum: enumToArray(OrderStatuses), required: true, default: OrderStatuses.IN_PROGRESS}, // Enum for statuses
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
     task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: null }, // Nullable reference to Task
     materials: [
@@ -20,11 +19,17 @@ const orderFields = {
             quantity: { type: Number, required: true },
         },
     ],
-    priority: { type: String, enum: OrderPriorities, required: true }, // Enum for priorities
-    // approvedOn: { type: Date, required: false }, // Nullable
-    // dispatchedOn: { type: Date, required: false }, // Nullable
+    priority: { type: String, enum: enumToArray(OrderPriorities), required: true }, // Enum for priorities
+    approvedOn: { type: Date, required: false }, // Nullable
+    dispatchedOn: { type: Date, required: false }, // Nullable
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'requestFulfillment', required: true     }
+    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'requestFulfillment', required: true     },
+    fulfilledMaterials: [
+        {
+            material: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata' },
+            quantity: { type: Number, required: true }
+        }
+    ]   
 };
 
 // Create the extended schema

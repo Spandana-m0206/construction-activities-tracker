@@ -33,7 +33,7 @@ const SiteStatuses = {
     COMPLETED: 'completed',
 };
 
-const MaterialCategories = ['furniture interior', 'electrical', 'plumbing']; // Add more as needed
+const MaterialCategories = ['furniture interior', 'electrical', 'plumbing', 'cement']; // Add more as needed
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = {
     PENDING: 'PENDING',
@@ -56,28 +56,90 @@ const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
 const PaymentStatuses = ['approved', 'rejected', 'in review'];
-const OrderStatuses = ['in progress', 'approved', 'rejected', 'in transit'];
+const OrderStatuses = {
+    IN_PROGRESS: 'in progress',
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+    IN_TRANSIT: 'in transit',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+    PARTIALLY_FULFILLED: 'partially fulfilled'
+}
 const OrderPriorities = ['high', 'medium', 'low'];
-const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
-const ApprovalTypes = ['show progress', 'task completed'];
-const UsageTypes = ['used', 'wasted', 'transfer'];
+const ApprovalStatuses = {
+    IN_REVIEW: 'in review',
+    APPROVED: 'approved',
+    DISAPPROVED: 'disapproved'
+};
+
+const ApprovalTypes = {
+    SHOW_PROGRESS: 'show progress',
+    TASK_COMPLETED: 'task completed'
+};
+const UsageTypes = {
+    USED: 'used',
+    WASTED: 'wasted',
+    TRANSFER: 'transfer'
+};
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
-const FulfillmentStatuses = ['in progress', 'in transit', 'received', 'cancelled', 'returned'];
 const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
 const StockSources = ["inventory", "site"];
 const MessageTypes = ["status", "approval","text"];
+const FulfillmentStatuses = {
+    IN_PROGRESS: 'in progress',
+    IN_TRANSIT: 'in transit',
+    RECEIVED: 'received',
+    CANCELLED: 'cancelled',
+    RETURNED: 'returned'
+}
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',
     SQUARE_METER: 'sq. mt.',
 };
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
 const PaymentTypes = ['credit', 'debit']
-const TaskTypes = ["Payment", "materials", "plumbing"]
-const TaskDepartments =['Inventory', 'Finance', 'Sales', 'Site']
-const TriggerTask = ["ONE_TIME", "ONE_TIME_FOR_EVERY_LEVEL"]
+const TaskTypes = {
+    PAYMENT: 'Payment',
+    MATERIALS: 'materials',
+    PLUMBING: 'plumbing'
+}
 
+const TaskDepartments = {
+    INVENTORY: 'Inventory',
+    FINANCE: 'Finance',
+    SALES: 'Sales',
+    SITE: 'Site'
+}
+
+const TriggerTask = {
+    ONE_TIME: 'ONE_TIME',
+    ONE_TIME_FOR_EVERY_LEVEL: 'ONE_TIME_FOR_EVERY_LEVEL'
+}
+
+const TransferTypes = {
+    SITE_TO_SITE: 'site-site',
+    SITE_TO_INVENTORY: 'site-inventory',
+    INVENTORY_TO_SITE: 'inventory-site',
+    INVENTORY_TO_INVENTORY: 'inventory-inventory',
+    FINANCE_TO_SITE: 'finance-site',
+    FINANCE_TO_INVENTORY: 'finance-inventory'
+}
+
+const StockSources = {
+    INVENTORY: 'inventory',
+    SITE: 'site'
+}
+
+const TransferFromType = {
+    SITE: 'site',
+    INVENTORY: 'inventory'
+}
+const TransferToType = {
+    SITE: 'site',
+    INVENTORY: 'inventory'
+}
 module.exports = {
     UsageTypes,
     ApprovalStatuses,
@@ -114,5 +176,7 @@ module.exports = {
     TaskDepartments,
     LandType,
     TriggerTask,
-    StatusOrder
+    StatusOrder,
+    TransferFromType,
+    TransferToType
 };

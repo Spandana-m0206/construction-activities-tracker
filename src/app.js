@@ -5,12 +5,14 @@ const {app,server}=require('./socket')
 const helmet = require("helmet");
 const compression = require("compression");
 const routes = require("./modules");
+const cors = require("cors");
 const { connectDB } = require("./config/database");
 
  
 
 // Security Middlewares
 app.use(helmet());
+app.use(cors());
 app.use(compression());
 
 // Body Parser

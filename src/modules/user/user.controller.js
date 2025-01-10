@@ -12,6 +12,19 @@ class UserController extends BaseController {
         super(UserService); // Pass the UserService to the BaseController
     }
 
+    async uploadProfilePhoto(req, res, next) {
+        try {
+            const user = req.user;
+            if (!req.file) {
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid file"));
+            }
+            user.profilePhoto = req.file.id;
+            await user.save();
+            res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED, user, "Profile photo uploaded successfully"));
+        } catch (error) {
+            next(error);
+        }
+    }
     // Example of a custom controller method: Get users by role
     async getUsersByRole(req, res, next) {
         try {

@@ -7,6 +7,7 @@ const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
 const enumToArray = require('../../utils/EnumToArray');
 const { ProjectCurrencies, SiteTypes, SiteStatuses } = require('../../utils/enums');
 const UserService = require('../user/user.service');
+const taskService = require('../task/task.service');
 
 class SiteController extends BaseController {
     constructor() {
@@ -46,6 +47,8 @@ class SiteController extends BaseController {
             }
             if(!siteData?.status)siteData.status = SiteStatuses.WAITING;
             const newSite = await SiteService.create(siteData);
+            await taskService.createTasksForFloors(newSite._id);
+ 
             res.status(StatusCodes.CREATED)
                 .json(new ApiResponse(StatusCodes.CREATED, newSite, "New Site Created"))
             
@@ -168,6 +171,27 @@ class SiteController extends BaseController {
         return res.status(StatusCodes.OK)
         .json(new ApiResponse(StatusCodes.OK, validSite, "Site retrieved successfully"));
     }
+
+    async getSiteProgress(req, res) {
+        try {
+          const { siteId } = req.params;
+          const result = await this.service.getSiteProgress(siteId);
+          return res.status(201).json({ success: true, data: result });
+        } catch (error) {
+            next(error)
+        }
+      }
+      
+      async getTaskCountForSite(req, res) {
+        try {
+            const filters  = req.query;
+            const orgId = req.user.org;
+            const count = await this.service.countTasksForOrg(orgId, filters);
+            return res.status(201).json({ success: true, data: count });
+        } catch (error) {
+            next(error);
+        }
+    }      
 }
 
 module.exports = new SiteController();
