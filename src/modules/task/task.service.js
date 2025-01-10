@@ -2,6 +2,7 @@ const ApiError = require('../../utils/apiError');
 const { TaskStatuses, StatusOrder } = require('../../utils/enums');
 const {taskMap, TaskIDs, Triggers} = require('../../utils/taskMap');
 const BaseService = require('../base/BaseService');
+const siteService = require('../site/site.service');
 const SiteModel = require('../site/site.model');
 const Task = require('./task.model');
 
@@ -609,15 +610,37 @@ class TaskService extends BaseService {
     }
   }
 
-  async countTasksForSite(siteId, filters) {
+  async countTasksForOrg(orgId, filters) {
     try {
-        const query = { site: siteId, ...filters };
-        return await this.model.countDocuments(query);
+        const sites = await SiteModel.find({ org: orgId }).select('_id');
+        const siteIds = sites.map((s) => s._id);
+
+        if (siteIds.length === 0) {
+            return [];
+        }
+
+        const pipeline = [
+            {
+                $match: {
+                    site: { $in: siteIds },
+                    ...filters, 
+                },
+            },
+            {
+                $group: {
+                    _id: '$site', 
+                    taskCount: { $sum: 1 }, 
+                },
+            },
+        ];
+
+        const taskCounts = await this.model.aggregate(pipeline);
+        return taskCounts;
     } catch (error) {
-        console.error(`[TaskService Error - countTasksForSite]: ${error.message}`);
-        throw new Error('Failed to fetch task count');
+        console.error(`[TaskService Error - countTasksForOrg]: ${error.message}`);
+        throw new Error('Failed to fetch task counts');
     }
-}
+  }
 }
 
 module.exports = new TaskService();
