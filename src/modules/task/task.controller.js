@@ -6,6 +6,14 @@ class TaskController extends BaseController {
     constructor() {
         super(TaskService); // Pass TaskService to the BaseController
     }
+    async findOne(req, res, next) {
+        try {
+            const tasks = await this.service.findOne(req.query);
+            return res.status(200).json({ success: true, data: tasks });
+        } catch (error) {
+            next(error);
+        }
+    }
 
     async getTasksBySite(req, res, next) {
         try {

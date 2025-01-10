@@ -1,6 +1,6 @@
 const ApiError = require('../../utils/apiError');
 const { ApprovalStatuses, ApprovalTypes, Roles } = require('../../utils/enums');
-const { default: enumToArray } = require('../../utils/EnumToArray');
+const enumToArray = require('../../utils/EnumToArray');
 const BaseController = require('../base/BaseController');
 const ApprovalService = require('./approval.service');
 const { StatusCodes } = require("http-status-codes");
@@ -37,10 +37,19 @@ class ApprovalController extends BaseController {
     async find(req, res, next) {
         try {
             const user= req.user;
+
             if(user.role !== Roles.ADMIN && user.role !== Roles.SITE_SUPERVISOR){ 
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'You are not authorized to view approvals' ));
             }
-            const data = await this.service.find({org: user.org});
+            // Extract filters from query parameters
+            const filters = { org: user.org };
+            if (req.query.status) {
+                filters.status = req.query.status;
+            }
+            if (req.query.type) {
+                filters.type = req.query.type;
+            }
+            const data = await this.service.find(filters);
             res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, data, 'Approvals retrieved successfully'));
         } catch (error) {
             next(error);
