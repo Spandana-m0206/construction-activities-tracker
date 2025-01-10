@@ -3,6 +3,10 @@ const PurchaseController = require('./purchase.controller');
 
 const router = express.Router();
 
+router.post('/consolidated-materials', PurchaseController.getConsolidatedMaterials.bind(PurchaseController));
+router.post('/create-purchases', PurchaseController.createPurchase.bind(PurchaseController));
+router.post('/mark-received/:id', PurchaseController.markPurchaseAsReceived.bind(PurchaseController));
+
 // Base routes from BaseController
 router.post('/', PurchaseController.create.bind(PurchaseController)); // Create purchase
 router.get('/', PurchaseController.find.bind(PurchaseController)); // Get all purchases
@@ -12,6 +16,5 @@ router.delete('/:id', PurchaseController.delete.bind(PurchaseController)); // De
 
 // Custom route: Get purchases by vendor
 router.get('/vendor/:vendorId', PurchaseController.getPurchasesByVendor.bind(PurchaseController)); // Find purchases by vendor
-// router.get('/create-purchase', PurchaseController.createPurchase.bind(PurchaseController)); // Find purchases by vendor
 
 module.exports = router;
