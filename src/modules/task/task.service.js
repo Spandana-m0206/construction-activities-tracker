@@ -10,6 +10,13 @@ class TaskService extends BaseService {
     super(Task);
   }
 
+  async findOne(filters) {
+    return await this.model.findOne(filters)
+      .populate('subtasks', 'title description startTime endTime status attachments')
+      .populate('assignedTo', 'name email')
+      .populate('org', 'name')
+      .populate('site', 'name');
+  }
   async createTasksForFloors(
     siteId
   ) {
