@@ -22,6 +22,6 @@ const messageFields = {
 const messageSchema = extendSchema(messageFields);
 
 // Create and export the Mongoose model
-MessageModel = mongoose.model('Message', messageSchema);
+const MessageModel = mongoose.model('Message', messageSchema);
 
 module.exports = MessageModel;
