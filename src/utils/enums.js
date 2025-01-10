@@ -84,7 +84,6 @@ const UsageTypes = {
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
-const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
 const StockSources = ["inventory", "site"];
 const MessageTypes = ["status", "approval","text"];
 const FulfillmentStatuses = {
