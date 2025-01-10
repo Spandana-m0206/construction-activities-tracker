@@ -13,16 +13,15 @@ const messageFields = {
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order
     paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null }, // Nullable reference to Payment Request
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
-    type: { type: String, enum: MessageTypes, required: true }, 
-    reaction: { type: [String], required: true }, 
-    taggedMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message', required: true }, 
-    isDeleted: { type: Boolean, required: true }, 
+    type: { type: String, enum: MessageTypes, required: true,default:"text" }, 
+    taggedMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message'}, 
+    isDeleted: { type: Boolean, required: true,default:false }, 
 };
 
 // Create the extended schema
 const messageSchema = extendSchema(messageFields);
 
 // Create and export the Mongoose model
-const MessageModel = mongoose.model('Message', messageSchema);
+MessageModel = mongoose.model('Message', messageSchema);
 
 module.exports = MessageModel;

@@ -67,7 +67,7 @@ const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
 const FulfillmentStatuses = ['in progress', 'in transit', 'received', 'cancelled', 'returned'];
 const TransferTypes = ['site-site', 'site-inventory', 'inventory-site', 'inventory-inventory', 'finance-site', 'finance-inventory'];
 const StockSources = ["inventory", "site"];
-const MessageTypes = ["status", "approval"];
+const MessageTypes = ["status", "approval","text"];
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',
     SQUARE_METER: 'sq. mt.',

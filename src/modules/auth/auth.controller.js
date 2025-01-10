@@ -32,7 +32,7 @@ exports.refreshAccessToken=async (req,res)=>{
     if(!refreshToken){
       return res.status(401).json(new ApiError(StatusCodes.UNAUTHORIZED,"Token Not Found","Token Not Found"))
     }
-    const {userId}=await AuthService.getPayLoadFromToken(refreshToken)
+    const {userId}=await AuthService.getPayLoadFromToken(refreshToken,process.env.REFRESH_SECRET)
     const user=await UserService.findById(userId)
     if(user.refreshToken!=refreshToken){
       return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED,"Invalid Token","Invalid Token"))

@@ -1,9 +1,11 @@
 // src/index.js
 const cluster = require("cluster");
 const os = require("os");
-const app = require("./app");
+// const app = require("./app");
+const {app}=require('./socket')
 const logger = require("./utils/logger");
 const listEndpoints = require("express-list-endpoints");
+const startServer = require("./app");
 
 const PORT = process.env.PORT;
 
@@ -33,8 +35,8 @@ if (cluster.isMaster) {
       logger.info(`${method} ${endpoint.path}`);
     });
   });
-
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT} and worker ${process.pid}`);
-  });
+ startServer()
+  // app.listen(PORT, () => {
+  //   logger.info(`Server is running on port ${PORT} and worker ${process.pid}`);
+  // });
 }

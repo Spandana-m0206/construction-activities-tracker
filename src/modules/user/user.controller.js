@@ -47,7 +47,7 @@ class UserController extends BaseController {
                 return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
             }
             const password = generateRandomPassword()
-            const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password})
+            const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password,org:req.user.org})
             //TODO: send a create user email 
             delete newUser.password
             return res.status(StatusCodes.CREATED)
