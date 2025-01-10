@@ -66,8 +66,16 @@ const OrderStatuses = {
     PARTIALLY_FULFILLED: 'partially fulfilled'
 }
 const OrderPriorities = ['high', 'medium', 'low'];
-const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
-const ApprovalTypes = ['show progress', 'task completed'];
+const ApprovalStatuses = {
+    IN_REVIEW: 'in review',
+    APPROVED: 'approved',
+    DISAPPROVED: 'disapproved'
+};
+
+const ApprovalTypes = {
+    SHOW_PROGRESS: 'show progress',
+    TASK_COMPLETED: 'task completed'
+};
 const UsageTypes = {
     USED: 'used',
     WASTED: 'wasted',
