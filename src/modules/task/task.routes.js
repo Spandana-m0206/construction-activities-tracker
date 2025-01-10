@@ -17,6 +17,6 @@ router.post('/add-subtask/:parentTaskId', TaskController.addSubTask.bind(TaskCon
 router.get('/get-subtasks/:parentTaskId', TaskController.getSubTasks.bind(TaskController)); 
 router.delete('/delete-subtask/:subTaskId', TaskController.deleteSubtask.bind(TaskController)); 
 router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); 
-router.get('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
+router.post('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
 
 module.exports = router;
