@@ -48,7 +48,7 @@ class TaskController extends BaseController {
     async updateTask(req, res, next) {
         try {
             const {taskId} = req.params;
-            const data = await TaskService.updateTaskStatus(taskId, req.body.status);
+            const data = await TaskService.updateTaskStatus(taskId, req.body.status, req.body.progressPercentage);
             return res.status(201).json({ success: true, data: data });
         } catch (error) {
             next(error);

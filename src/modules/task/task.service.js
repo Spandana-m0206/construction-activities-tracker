@@ -374,7 +374,7 @@ class TaskService extends BaseService {
     return true; // All checks passed
   }
 
-  async updateTaskStatus(taskId, newStatus) {
+  async updateTaskStatus(taskId, newStatus, progressPercentage) {
     // Validate if the task can be updated
     await this.canUpdateTask(taskId, newStatus);
   
@@ -391,17 +391,21 @@ class TaskService extends BaseService {
   
     // Update status and progressPercentage based on your custom logic
     task.status = newStatus;
-  
+    if(progressPercentage){
+      task.progressPercentage = progressPercentage;
+    } else{
+
+    
     switch (newStatus) {
       case TaskStatuses.PENDING:
       case TaskStatuses.OPEN:
         task.progressPercentage = 0;
         break;
       case TaskStatuses.IN_PROGRESS:
-        task.progressPercentage = 50;
+        task.progressPercentage = 0;
         break;
       case TaskStatuses.REVIEW:
-        task.progressPercentage = 75;
+        task.progressPercentage = 0;
         break;
       case TaskStatuses.COMPLETED:
         task.progressPercentage = 100;
@@ -410,7 +414,7 @@ class TaskService extends BaseService {
         task.progressPercentage = 0; // Or some other logic
         break;
     }
-  
+    }
     // Save the updated task
     await task.save();
   
@@ -424,7 +428,7 @@ class TaskService extends BaseService {
             task.nextTasks.map(async (nextTask) => {
               if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
                 nextTask.status = TaskStatuses.IN_PROGRESS;
-                nextTask.progressPercentage = 50; // optional
+                nextTask.progressPercentage = 0; // optional
                 await nextTask.save();
               }
             })
@@ -436,7 +440,7 @@ class TaskService extends BaseService {
           );
           if (firstPending) {
             firstPending.status = TaskStatuses.IN_PROGRESS;
-            firstPending.progressPercentage = 50; // optional
+            firstPending.progressPercentage = 0; // optional
             await firstPending.save();
           }
         }
