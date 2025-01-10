@@ -609,38 +609,6 @@ class TaskService extends BaseService {
       throw new ApiError(500, "An unexpected error occurred while fetching subtasks");
     }
   }
-
-  async countTasksForOrg(orgId, filters) {
-    try {
-        const sites = await SiteModel.find({ org: orgId }).select('_id');
-        const siteIds = sites.map((s) => s._id);
-
-        if (siteIds.length === 0) {
-            return [];
-        }
-
-        const pipeline = [
-            {
-                $match: {
-                    site: { $in: siteIds },
-                    ...filters, 
-                },
-            },
-            {
-                $group: {
-                    _id: '$site', 
-                    taskCount: { $sum: 1 }, 
-                },
-            },
-        ];
-
-        const taskCounts = await this.model.aggregate(pipeline);
-        return taskCounts;
-    } catch (error) {
-        console.error(`[TaskService Error - countTasksForOrg]: ${error.message}`);
-        throw new Error('Failed to fetch task counts');
-    }
-  }
 }
 
 module.exports = new TaskService();

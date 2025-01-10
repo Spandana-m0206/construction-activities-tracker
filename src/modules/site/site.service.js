@@ -1,6 +1,8 @@
 const ApiError = require('../../utils/apiError');
 const BaseService = require('../base/BaseService');
+const TaskModel = require('../task/task.model');
 const taskService = require('../task/task.service');
+const SiteModel = require('./site.model');
 const Site = require('./site.model');
 
 class SiteService extends BaseService {
@@ -53,6 +55,36 @@ class SiteService extends BaseService {
         };
     }
 
+    async countTasksForOrg(orgId, filters) {
+      try {
+          const sites = await this.model.find({ org: orgId }).select('_id');
+          const siteIds = sites.map((s) => s._id);
+          if (siteIds.length === 0) {
+              return [];
+          }
+  
+          const pipeline = [
+              {
+                  $match: {
+                      site: { $in: siteIds },
+                      ...filters, 
+                  },
+              },
+              {
+                  $group: {
+                      _id: '$site', 
+                      taskCount: { $sum: 1 }, 
+                  },
+              },
+          ];
+  
+          const taskCounts = await TaskModel.aggregate(pipeline);
+          return taskCounts;
+      } catch (error) {
+          console.error(`[TaskService Error - countTasksForOrg]: ${error.message}`);
+          throw new Error('Failed to fetch task counts');
+      }
+    }
 }
 
 module.exports = new SiteService();

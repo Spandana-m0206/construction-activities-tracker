@@ -180,7 +180,18 @@ class SiteController extends BaseController {
         } catch (error) {
             next(error)
         }
-      }      
+      }
+      
+      async getTaskCountForSite(req, res) {
+        try {
+            const filters  = req.query;
+            const orgId = req.user.org;
+            const count = await this.service.countTasksForOrg(orgId, filters);
+            return res.status(201).json({ success: true, data: count });
+        } catch (error) {
+            next(error);
+        }
+    }      
 }
 
 module.exports = new SiteController();
