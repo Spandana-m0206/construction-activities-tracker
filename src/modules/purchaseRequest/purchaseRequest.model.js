@@ -5,7 +5,7 @@ const { PurchaseRequestPriorities, PurchaseRequestStatuses } = require('../../ut
 // Define Purchase Request-specific fields
 const purchaseRequestFields = {
     raisedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // User who raised the request
-    inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', required: true }, // Reference to Inventory
+    inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', required: true, default: null }, // Reference to Inventory
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // User who approved the request
     approvedOn: { type: Date, required: false }, // Approval date
     materialList: [

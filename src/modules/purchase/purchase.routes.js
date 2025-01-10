@@ -12,5 +12,6 @@ router.delete('/:id', PurchaseController.delete.bind(PurchaseController)); // De
 
 // Custom route: Get purchases by vendor
 router.get('/vendor/:vendorId', PurchaseController.getPurchasesByVendor.bind(PurchaseController)); // Find purchases by vendor
+// router.get('/create-purchase', PurchaseController.createPurchase.bind(PurchaseController)); // Find purchases by vendor
 
 module.exports = router;
