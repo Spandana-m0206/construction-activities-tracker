@@ -3,6 +3,8 @@ const PurchaseRequestFulfillmentController = require('./purchaseRequestFulfillme
 
 const router = express.Router();
 
+router.post('/mark-received/:id', PurchaseRequestFulfillmentController.markPurchaseAsReceived.bind(PurchaseRequestFulfillmentController));
+
 // Base routes from BaseController
 router.post('/', PurchaseRequestFulfillmentController.create.bind(PurchaseRequestFulfillmentController)); // Create fulfillment
 router.get('/', PurchaseRequestFulfillmentController.find.bind(PurchaseRequestFulfillmentController)); // Get all fulfillments

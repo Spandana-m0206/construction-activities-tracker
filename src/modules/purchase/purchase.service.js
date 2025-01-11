@@ -5,6 +5,9 @@ const PurchaseRequestFulfillmentModel = require('../purchaseRequestFulfillment/p
 const StockModel = require('../stock/stock.model');
 const PurchaseModel = require('./purchase.model');
 const { FulfillmentStatuses, StockSources } = require('../../utils/enums');
+const stockService = require('../stock/stock.service');
+const materialListItemService = require('../materialListItem/materialListItem.service');
+const purchaseRequestService = require('../purchaseRequest/purchaseRequest.service');
 
 // Optional priority mapping if you're using textual priorities
 const PRIORITY_MAP = {
@@ -16,62 +19,6 @@ const PRIORITY_MAP = {
 class PurchaseService extends BaseService {
   constructor() {
     super(PurchaseModel); // Pass the Purchase model to the BaseService
-  }
-
-  // --------------------------------------------------------------------------
-  // 1. GET CONSOLIDATED MATERIALS
-  //    Sums up the needed quantities across multiple PRs, subtracting out fulfilled amounts.
-  // --------------------------------------------------------------------------
-  async getConsolidatedMaterials(purchaseRequestIds) {
-    const purchaseRequests = await PurchaseRequestModel.find({
-      _id: { $in: purchaseRequestIds },
-    })
-      .populate('materialList.material')
-      .lean();
-
-    if (!purchaseRequests.length) return [];
-
-    // Find all Fulfillments linked to these requests
-    const fulfillments = await PurchaseRequestFulfillmentModel.find({
-      purchaseRequest: { $in: purchaseRequestIds },
-    }).lean();
-
-    // Sum up already fulfilled quantities by material
-    const fulfilledQuantities = {};
-    fulfillments.forEach((f) => {
-      f.materialFulfilled.forEach((mf) => {
-        const materialId = mf.material.toString();
-        if (!fulfilledQuantities[materialId]) {
-          fulfilledQuantities[materialId] = 0;
-        }
-        fulfilledQuantities[materialId] += mf.quantity;
-      });
-    });
-
-    // Build consolidated requirements
-    const consolidated = {};
-    purchaseRequests.forEach((pr) => {
-      pr.materialList.forEach((item) => {
-        const materialId = item.material._id.toString();
-        const alreadyFulfilled = fulfilledQuantities[materialId] || 0;
-        const needed = Math.max(0, item.qty - alreadyFulfilled);
-
-        if (needed > 0) {
-          if (!consolidated[materialId]) {
-            consolidated[materialId] = {
-              material: item.material._id,
-              totalQty: 0,
-            };
-          }
-          consolidated[materialId].totalQty += needed;
-        }
-      });
-    });
-
-    return Object.values(consolidated).map((c) => ({
-      material: c.material,
-      qty: c.totalQty,
-    }));
   }
 
   // --------------------------------------------------------------------------
@@ -109,7 +56,7 @@ class PurchaseService extends BaseService {
     }
 
     // --- B) Consolidate materials needed
-    const consolidatedMaterials = await this.getConsolidatedMaterials(
+    const consolidatedMaterials = await purchaseRequestService.getConsolidatedMaterials(
       purchaseRequestIds,
     );
     if (!consolidatedMaterials.length) {
@@ -126,10 +73,10 @@ class PurchaseService extends BaseService {
       purchaseDetails: null,
       org,
     }));
-    const createdItems = await MaterialListItemModel.create(materialListItemsData);
+    const createdItems = await materialListItemService.create(materialListItemsData);
 
     // --- D) Create the Purchase
-    const purchase = await PurchaseModel.create({
+    const purchase = await this.model.create({
       purchasedBy,
       amount,
       vendor,
@@ -142,7 +89,7 @@ class PurchaseService extends BaseService {
     // Link back each MaterialListItem to this Purchase
     await Promise.all(
       createdItems.map((item) =>
-        MaterialListItemModel.updateOne(
+        materialListItemService.updateOne(
           { _id: item._id },
           { purchaseDetails: purchase._id },
         ),
@@ -218,69 +165,6 @@ class PurchaseService extends BaseService {
     if (fulfillmentsToInsert.length) {
       await PurchaseRequestFulfillmentModel.insertMany(fulfillmentsToInsert);
     }
-
-    return purchase;
-  }
-
-  // --------------------------------------------------------------------------
-  // 3. MARK PURCHASE AS RECEIVED (Stock Model uses "material" array of MLI refs)
-  //    a) Populate purchase’s materialListItems
-  //    b) For each item, push the item._id into Stock model's "material" array
-  // --------------------------------------------------------------------------
-  async markPurchaseAsReceived(purchaseId, receivedBy) {
-    // 1) Fetch purchase, populate items
-    const purchase = await PurchaseModel.findById(purchaseId).populate(
-      'materialListItems',
-    );
-
-    if (!purchase) {
-      throw new Error('Purchase not found');
-    }
-
-    // 2) Fetch the PurchaseRequests to see which inventory (or site) we target
-    //    (Assuming all requests are for the same inventory, or your logic may vary)
-    const purchaseRequests = await PurchaseRequestModel.find({
-      _id: { $in: purchase.purchaseRequests },
-    }).lean();
-
-    if (!purchaseRequests.length) {
-      throw new Error('No PurchaseRequests found on this Purchase');
-    }
-
-    // Let's assume they all share the same inventory:
-    const targetInventory = purchaseRequests[0].inventory; // or `null` if it's site-based
-    // If you need a "site" instead, you can adapt the logic similarly.
-
-    // 3) For each MaterialListItem, push it into the Stock model
-    //    (which references an array of MaterialListItems instead of a numeric quantity)
-    await Promise.all(
-      purchase.materialListItems.map(async (item) => {
-        // Upsert the Stock doc for (org, materialMetaData, inventory, source)
-        // If you're sure this is always from an Inventory, source='inventory'.
-        // Or if you store that in the purchaseRequest, you can read it.
-        await StockModel.findOneAndUpdate(
-          {
-            org: item.org, // or purchase.org if that's how you store it
-            materialMetaData: item.materialMetadata,
-            inventory: targetInventory,
-            // If you have a site-based scenario, set `site: xyz` instead
-            // if targetInventory === null, possibly site is not null.
-            // You may also handle `source` logic here.
-            source: StockSources.INVENTORY, // or 'site' if needed
-          },
-          {
-            // Push this new MaterialListItem ID into the array
-            $push: { material: item._id },
-          },
-          { upsert: true, new: true },
-        );
-      }),
-    );
-
-    // 4) Mark purchase as received
-    purchase.receivedBy = receivedBy;
-    purchase.receivedOn = new Date();
-    await purchase.save();
 
     return purchase;
   }

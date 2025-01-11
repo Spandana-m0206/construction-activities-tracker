@@ -16,47 +16,29 @@ class PurchaseRequestController extends BaseController {
             next(error);
         }
     }
-
-    async consolidateMaterials(req, res, next) {
-        try {
-            const { purchaseRequestIds } = req.body;
-            const consolidatedMaterials =
-                await PurchaseRequestService.consolidateMaterials(purchaseRequestIds);
-            res.status(200).json({ success: true, data: consolidatedMaterials });
-        } catch (error) {
-            next(error);
+        /**
+     * 1) Get consolidated materials for multiple Purchase Requests
+     *    - Accepts an array of purchaseRequestIds
+     *    - Returns an array of { material, qty } objects
+     */
+        async getConsolidatedMaterials(req, res, next) {
+            try {
+                // You can pass IDs as req.body or req.query
+                // Assuming it's in req.body for a POST request (or use req.query for GET)
+                const { purchaseRequestIds } = req.body;
+                if (!purchaseRequestIds || !purchaseRequestIds.length) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'purchaseRequestIds are required',
+                    });
+                }
+    
+                const data = await PurchaseRequestService.getConsolidatedMaterials(purchaseRequestIds);
+                return res.status(200).json({ success: true, data });
+            } catch (error) {
+                next(error);
+            }
         }
-    }
-
-    async createPurchase(req, res, next) {
-        try {
-            const { purchaseRequestIds, purchasedBy, amount, vendor, attachment } =
-                req.body;
-            const purchase = await PurchaseRequestService.createPurchase({
-                purchaseRequestIds,
-                purchasedBy: req.user,
-                amount,
-                vendor,
-                attachment,
-            });
-            res.status(200).json({ success: true, data: purchase });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async markReceived(req, res, next) {
-        try {
-            const { purchaseRequestFulfillmentId, receivedBy } = req.body;
-            const fulfillment = await PurchaseRequestService.markReceived(
-                purchaseRequestFulfillmentId,
-                { receivedBy: req.user._id },
-            );
-            res.status(200).json({ success: true, data: fulfillment });
-        } catch (error) {
-            next(error);
-        }
-    }
 }
 
 module.exports = new PurchaseRequestController();

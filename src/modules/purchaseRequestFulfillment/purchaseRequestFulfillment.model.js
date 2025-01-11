@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { FulfillmentStatuses } = require('../../utils/enums'); // Ensure this enum exists
+const enumToArray = require('../../utils/EnumToArray');
 
 // Define Purchase Request Fulfillment-specific fields
 const purchaseRequestFulfillmentFields = {
@@ -16,7 +17,7 @@ const purchaseRequestFulfillmentFields = {
     fulfilledOn: { type: Date, required: true },
     receivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Made optional
     receivedOn: { type: Date, required: false }, // Made optional
-    status: { type: String, enum: FulfillmentStatuses, required: true },
+    status: { type: String, enum: enumToArray(FulfillmentStatuses), required: true },
 };
 
 // Create the extended schema

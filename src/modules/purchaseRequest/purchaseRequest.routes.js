@@ -3,9 +3,7 @@ const PurchaseRequestController = require('./purchaseRequest.controller');
 
 const router = express.Router();
 
-router.post('/consolidate-materials', PurchaseRequestController.consolidateMaterials);
-router.post('/create-purchase', PurchaseRequestController.createPurchase);
-router.post('/mark-received', PurchaseRequestController.markReceived);
+router.post('/consolidated-materials', PurchaseRequestController.getConsolidatedMaterials.bind(PurchaseRequestController));
 
 // Base routes from BaseController
 router.post('/', PurchaseRequestController.create.bind(PurchaseRequestController)); // Create purchase request
@@ -16,6 +14,5 @@ router.delete('/:id', PurchaseRequestController.delete.bind(PurchaseRequestContr
 
 // Custom route: Get purchase requests by inventory
 router.get('/inventory/:inventoryId', PurchaseRequestController.getRequestsByInventory.bind(PurchaseRequestController)); // Find purchase requests by inventory
-// router.post('/create-purchase-request', PurchaseRequestController.consolidateMaterials.bind(PurchaseRequestController)); // Find purchase requests by inventory
 
 module.exports = router;

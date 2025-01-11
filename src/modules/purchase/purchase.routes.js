@@ -3,9 +3,7 @@ const PurchaseController = require('./purchase.controller');
 
 const router = express.Router();
 
-router.post('/consolidated-materials', PurchaseController.getConsolidatedMaterials.bind(PurchaseController));
 router.post('/create-purchases', PurchaseController.createPurchase.bind(PurchaseController));
-router.post('/mark-received/:id', PurchaseController.markPurchaseAsReceived.bind(PurchaseController));
 
 // Base routes from BaseController
 router.post('/', PurchaseController.create.bind(PurchaseController)); // Create purchase
