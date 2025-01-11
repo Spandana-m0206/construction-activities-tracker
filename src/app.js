@@ -1,13 +1,14 @@
 require("dotenv").config();
-
-const express = require("express");
+const logger = require("./utils/logger");
+const express=require('express')
+const {app,server}=require('./socket')
 const helmet = require("helmet");
 const compression = require("compression");
 const routes = require("./modules");
 const cors = require("cors");
 const { connectDB } = require("./config/database");
 
-const app = express();
+ 
 
 // Security Middlewares
 app.use(helmet());
@@ -24,6 +25,14 @@ app.use("/api", routes);
 app.use(require("./middlewares/error.middleware"));
 
 // Connect to Database
-connectDB();
 
-module.exports = app;
+const startServer = () => {
+    connectDB().then(()=>{
+        server.listen(process.env.PORT || 6010, ()=> {
+            logger.info(`Server is running on port ${process.env.PORT} and worker ${process.pid}`);  
+        })
+    })
+}
+
+
+module.exports =startServer;

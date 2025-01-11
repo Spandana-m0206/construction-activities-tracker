@@ -84,6 +84,7 @@ const UsageTypes = {
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
+const MessageTypes = ["status", "approval","text"];
 const FulfillmentStatuses = {
     IN_PROGRESS: 'in progress',
     IN_TRANSIT: 'in transit',
@@ -91,8 +92,6 @@ const FulfillmentStatuses = {
     CANCELLED: 'cancelled',
     RETURNED: 'returned'
 }
-
-const MessageTypes = ["status", "approval"];
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',
     SQUARE_METER: 'sq. mt.',
