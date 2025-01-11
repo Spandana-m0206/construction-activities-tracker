@@ -66,8 +66,16 @@ const OrderStatuses = {
     PARTIALLY_FULFILLED: 'partially fulfilled'
 }
 const OrderPriorities = ['high', 'medium', 'low'];
-const ApprovalStatuses = ['in review', 'approved', 'disapproved'];
-const ApprovalTypes = ['show progress', 'task completed'];
+const ApprovalStatuses = {
+    IN_REVIEW: 'in review',
+    APPROVED: 'approved',
+    DISAPPROVED: 'disapproved'
+};
+
+const ApprovalTypes = {
+    SHOW_PROGRESS: 'show progress',
+    TASK_COMPLETED: 'task completed'
+};
 const UsageTypes = {
     USED: 'used',
     WASTED: 'wasted',
@@ -75,12 +83,12 @@ const UsageTypes = {
 };
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
-
 const PurchaseRequestStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',
     CANCELLED: 'cancelled',
 }
+const MessageTypes = ["status", "approval","text"];
 const FulfillmentStatuses = {
     IN_PROGRESS: 'in progress',
     IN_TRANSIT: 'in transit',
@@ -88,8 +96,6 @@ const FulfillmentStatuses = {
     CANCELLED: 'cancelled',
     RETURNED: 'returned'
 }
-
-const MessageTypes = ["status", "approval"];
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',
     SQUARE_METER: 'sq. mt.',

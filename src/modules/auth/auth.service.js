@@ -110,12 +110,13 @@ exports.saveRefreshToken=async (userId,token)=>{
     user.refreshToken=token;
     await user.save();
 }
-exports.getPayLoadFromToken=async (refreshToken)=>{
-  const payLoad= await jwt.verify(refreshToken,process.env.REFRESH_SECRET)
+exports.getPayLoadFromToken=async (token,secretCode)=>{
+  const payLoad= await jwt.verify(token,secretCode)
   if(!payLoad){
     return false;
   }
   return payLoad;
 
 }
+
 

@@ -3,8 +3,8 @@ const  ApiError  = require('../../utils/apiError');
 const BaseController = require('../base/BaseController');
 const SiteService = require('./site.service');
 const ApiResponse = require('../../utils/apiResponse');
-const { default: PaginatedApiResponse } = require('../../utils/paginatedApiResponse');
-const enumToArray  = require('../../utils/EnumToArray');
+const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
+const enumToArray = require('../../utils/EnumToArray');
 const { ProjectCurrencies, SiteTypes, SiteStatuses } = require('../../utils/enums');
 const UserService = require('../user/user.service');
 const taskService = require('../task/task.service');
@@ -171,6 +171,37 @@ class SiteController extends BaseController {
         return res.status(StatusCodes.OK)
         .json(new ApiResponse(StatusCodes.OK, validSite, "Site retrieved successfully"));
     }
+
+    async getProgressForAllSites(req, res, next) {
+        try {
+          const orgId = req.user.org; // Extract organization ID from the authenticated user
+          const filters = req.query; // Optional query parameters for task filtering
+          const progressData = await this.service.getProgressForAllSites(orgId, filters);
+          return res.status(200).json({ success: true, data: progressData });
+        } catch (error) {
+          next(error);
+        }
+      }
+    async getSiteProgress(req, res) {
+        try {
+            const { siteId } = req.params;
+            const result = await this.service.getSiteProgress(siteId);
+            return res.status(201).json({ success: true, data: result });
+        } catch (error) {
+            next(error)
+        }
+    }
+
+      async getTaskCountForSite(req, res) {
+        try {
+            const filters  = req.query;
+            const orgId = req.user.org;
+            const count = await this.service.countTasksForOrg(orgId, filters);
+            return res.status(201).json({ success: true, data: count });
+        } catch (error) {
+            next(error);
+        }
+    }      
 }
 
 module.exports = new SiteController();

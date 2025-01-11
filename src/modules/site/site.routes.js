@@ -3,6 +3,8 @@ const SiteController = require('./site.controller');
 
 const router = express.Router();
 
+router.get('/progress', SiteController.getProgressForAllSites.bind(SiteController));
+router.get('/progress/:siteId', SiteController.getSiteProgress.bind(SiteController));
 // Base routes from BaseController
 router.post('/', SiteController.create.bind(SiteController)); // Create site
 router.get('/', SiteController.find.bind(SiteController)); // Get all sites
@@ -12,5 +14,6 @@ router.delete('/:id', SiteController.delete.bind(SiteController)); // Delete sit
 
 // Custom route: Get sites by status
 router.get('/status/:status', SiteController.getSitesByStatus.bind(SiteController)); // Find sites by status
+router.get('/site-tasks/count', SiteController.getTaskCountForSite.bind(SiteController));
 
 module.exports = router;
