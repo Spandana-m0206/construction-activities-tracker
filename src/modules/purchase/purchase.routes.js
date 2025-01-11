@@ -3,6 +3,8 @@ const PurchaseController = require('./purchase.controller');
 
 const router = express.Router();
 
+router.post('/create-purchases', PurchaseController.createPurchase.bind(PurchaseController));
+
 // Base routes from BaseController
 router.post('/', PurchaseController.create.bind(PurchaseController)); // Create purchase
 router.get('/', PurchaseController.find.bind(PurchaseController)); // Get all purchases
