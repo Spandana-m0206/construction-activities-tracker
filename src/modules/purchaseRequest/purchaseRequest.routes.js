@@ -3,8 +3,6 @@ const PurchaseRequestController = require('./purchaseRequest.controller');
 
 const router = express.Router();
 
-router.post('/consolidated-materials', PurchaseRequestController.getConsolidatedMaterials.bind(PurchaseRequestController));
-
 // Base routes from BaseController
 router.post('/', PurchaseRequestController.create.bind(PurchaseRequestController)); // Create purchase request
 router.get('/', PurchaseRequestController.find.bind(PurchaseRequestController)); // Get all purchase requests
