@@ -18,7 +18,7 @@ class MessageService extends BaseService {
             .populate('attachment', 'url name');
     }
     
-    async findMessagesBySite(siteId,page=1,limit=20){
+    async findMessagesBySite(siteId,page=1,limit=50){
        
       
         const pipeline = [

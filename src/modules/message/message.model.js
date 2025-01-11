@@ -7,13 +7,13 @@ const messageFields = {
     content: { type: String, default: null }, // Content of the message
     attachment: { type: mongoose.Schema.Types.ObjectId, ref: 'File', default: null }, // Optional file attachment
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // Reference to User
-    task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: null }, // Nullable reference to Task
+    task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: null }, // Nullable reference to Task y
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required: true }, // Reference to Site
     approvalRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Approval', default: null }, // Nullable reference to Approval
-    order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order
+    order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order material req
     paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null }, // Nullable reference to Payment Request
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
-    type: { type: String, enum: MessageTypes, required: true,default:"text" }, 
+    type: { type: String, enum: MessageTypes, required: true,default:"MessageTypes.text"}, 
     taggedMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message'}, 
     isDeleted: { type: Boolean, required: true,default:false }, 
 };

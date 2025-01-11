@@ -20,7 +20,7 @@ io.on('connection',(socket)=>{
     try {
         console.log(`${socket.id} connected`)
         socket.on('authentication',async (accessToken)=>{
-         const payLoad=await AuthService.getPayLoadFromToken(accessToken,process.env.JWT_SECTRET)
+         const payLoad=await AuthService.getPayLoadFromToken(accessToken,process.env.JWT_SECRET)
 
         if(!payLoad || !payLoad.orgId){
             return

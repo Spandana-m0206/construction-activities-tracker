@@ -92,7 +92,7 @@ class MessageController extends BaseController {
                 page="1"
             }
             if(!limit){
-                limit="20"
+                limit="50"
             }
             const {messages,pagination}=await this.service.findMessagesBySite(site._id,parseInt(page),parseInt(limit))
             
