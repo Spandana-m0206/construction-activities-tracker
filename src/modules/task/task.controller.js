@@ -1,6 +1,7 @@
 // task.controller.js
 const ApprovalModel = require('../approval/approval.model');
 const BaseController = require('../base/BaseController');
+const FileModel = require('../file/file.model');
 const TaskModel = require('./task.model');
 const TaskService = require('./task.service');
 
@@ -64,10 +65,19 @@ class TaskController extends BaseController {
             ]);
     
             // Map latest approvals to a dictionary for quick lookup
-            const subtaskApprovalMap = subtaskApprovals.reduce((map, approval) => {
-                map[approval._id] = approval.latestApproval;
-                return map;
-            }, {});
+            const subtaskApprovalMap = await subtaskApprovals.reduce(async (accPromise, approval) => {
+                const acc = await accPromise; // Wait for previous reductions
+                const imageIds = approval.latestApproval.images;
+            
+                // Fetch URLs for the image IDs
+                const images = await FileModel.find({ _id: { $in: imageIds } }).select('_id url').lean();
+            
+                acc[approval._id] = {
+                    ...approval.latestApproval,
+                    images: images.map((img) => img.url), // Map to URLs
+                };
+                return acc;
+            }, Promise.resolve({}));
     
             // Attach approval details to subtasks
             task.subtasks = task.subtasks.map((subtask) => {
@@ -78,6 +88,7 @@ class TaskController extends BaseController {
                     approvalStatus: approval ? approval.status : null,
                     approvedBy: approval ? approval.approvedBy : null,
                     approvedAt: approval ? approval.approvedAt : null,
+                    images: approval ? approval.images : [], // Include image IDs
                 };
             });
     
@@ -96,6 +107,7 @@ class TaskController extends BaseController {
                 approvalStatus: mainTaskApproval?.status || null,
                 approvedBy: mainTaskApproval?.approvedBy || null,
                 approvedAt: mainTaskApproval?.approvedAt || null,
+                images: mainTaskApproval?.images || [], // Include image IDs for main task
                 subtasks: task.subtasks,
             };
     
@@ -108,7 +120,7 @@ class TaskController extends BaseController {
             console.error("Error in getTaskDetails:", error.message);
             next(error);
         }
-    }                
+    }                        
 
     async getTasksBySite(req, res, next) {
         try {
