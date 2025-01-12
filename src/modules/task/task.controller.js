@@ -8,6 +8,14 @@ class TaskController extends BaseController {
     constructor() {
         super(TaskService); // Pass TaskService to the BaseController
     }
+    async find(req, res, next) {
+        try {
+            const tasks = await this.service.find(req.query);
+            return res.status(200).json({ success: true, data: tasks });
+        } catch (error) {
+            next(error);
+        }
+    }
     async findOne(req, res, next) {
         try {
             const tasks = await this.service.findOne(req.query);
@@ -16,7 +24,6 @@ class TaskController extends BaseController {
             next(error);
         }
     }
-    // get task details with subtasks and approvals
     async getTaskDetails(req, res, next) {
         try {
             const { taskId } = req.params;
@@ -36,6 +43,11 @@ class TaskController extends BaseController {
             if (!task) {
                 return res.status(404).json({ success: false, message: 'Task not found' });
             }
+    
+            // Fetch the latest approval for the main task
+            const mainTaskApproval = await ApprovalModel.findOne({ task: taskId })
+                .sort({ approvedAt: -1 }) // Get the latest approval
+                .lean();
     
             // Fetch the latest approval for each subtask using aggregation
             const subtaskIds = task.subtasks.map((subtask) => subtask._id);
@@ -69,26 +81,34 @@ class TaskController extends BaseController {
                 };
             });
     
+            // Prepare the response
+            const responseData = {
+                name: task.title,
+                description: task.description,
+                status: task.status,
+                progressPercentage: task.progressPercentage,
+                startTime: task.startTime,
+                endTime: task.endTime,
+                siteId: task.site?._id || null,
+                siteName: task.site?.name || null,
+                location: task.site?.location || null,
+                approvalId: mainTaskApproval?._id || null,
+                approvalStatus: mainTaskApproval?.status || null,
+                approvedBy: mainTaskApproval?.approvedBy || null,
+                approvedAt: mainTaskApproval?.approvedAt || null,
+                subtasks: task.subtasks,
+            };
+    
             // Respond with task details
             res.status(200).json({
                 success: true,
-                data: {
-                    name: task.title,
-                    description: task.description,
-                    progressPercentage: task.progressPercentage,
-                    startTime: task.startTime,
-                    endTime: task.endTime,
-                    siteId: task.site?._id || null,
-                    siteName: task.site?.name || null,
-                    location: task.site?.location || null,
-                    subtasks: task.subtasks,
-                },
+                data: responseData,
             });
         } catch (error) {
             console.error("Error in getTaskDetails:", error.message);
             next(error);
         }
-    }        
+    }                
 
     async getTasksBySite(req, res, next) {
         try {
