@@ -35,6 +35,67 @@ class FileController extends BaseController {
         }
     }
 
+    async getDownloadFile  (req, res, next)  {
+        try {
+            const { origin } = req.headers;
+    
+            // const { fileStream, metadata } = await FileService.getFileStream(res, req.params.fileId);
+            await FileService.getFileStream(res, req.params.fileId);
+            // if (!fileStream) {
+            //     return res.status(StatusCodes.NOT_FOUND).json({
+            //         success: false,
+            //         message: 'File not found',
+            //     });
+            // }
+            // // Set Content-Security-Policy based on the request origin
+            // const allowedOrigins = [process.env.STUDENT_APP_URL, process.env.ADMIN_APP_URL];
+            // if (allowedOrigins.includes(origin)) {
+            //     res.setHeader('Content-Security-Policy', `frame-ancestors 'self' ${origin}`);
+            // } else {
+            //     res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+            // }
+    
+                    // Set appropriate headers
+            // res.setHeader('Content-Disposition', `attachment; filename="${metadata.filename}"`);
+            // res.setHeader('Content-Type', metadata.type || 'application/octet-stream');
+    
+            // Pipe the file stream to the response
+            // fileStream.pipe(res);
+        } catch (error) {
+            next(error);
+        }
+    };
+    // async getDownloadFile  (req, res, next)  {
+    //     try {
+    //         const { origin } = req.headers;
+    
+    //         const { fileStream, metadata } = await FileService.getFileDownloadStream(res, req.params.fileId);
+    //         if (!fileStream) {
+    //             return res.status(StatusCodes.NOT_FOUND).json({
+    //                 success: false,
+    //                 message: 'File not found',
+    //             });
+    //         }
+    //         // Set Content-Security-Policy based on the request origin
+    //         const allowedOrigins = [process.env.STUDENT_APP_URL, process.env.ADMIN_APP_URL];
+    //         if (allowedOrigins.includes(origin)) {
+    //             res.setHeader('Content-Security-Policy', `frame-ancestors 'self' ${origin}`);
+    //         } else {
+    //             res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+    //         }
+    
+    //                 // Set appropriate headers
+    //         res.setHeader('Content-Disposition', `attachment; filename="${metadata.filename}"`);
+    //         res.setHeader('Content-Type', metadata.contentType || 'application/octet-stream');
+    
+    //         // Pipe the file stream to the response
+    //         fileStream.pipe(res);
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // };
+
+    
     // // Method to handle file download
     // async downloadFile(req, res, next) {
     //     try {
