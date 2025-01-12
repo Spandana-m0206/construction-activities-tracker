@@ -5,8 +5,9 @@ const { StatusCodes } = require('http-status-codes');
 const ApiError = require('../../utils/apiError');
 const ApiResponse = require('../../utils/apiResponse');
 const { Roles } = require('../../utils/enums');
-const {emitMessage}=require('../../utils/socketMessageEmitter');
+const {emitMessage, emitDeleteMessage}=require('../../utils/socketMessageEmitter');
 const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
+const fileService = require('../file/file.service');
  
 
 class MessageController extends BaseController {
@@ -33,16 +34,29 @@ class MessageController extends BaseController {
         if(site.org.toString()!=req.user.org.toString()){
             return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED,"You Are Not Authorised To Message In This Site","You Are Not Authorised To Message In This Site"))
         }
-        if(!message.content && !message.attachment && !message.task && !message.approvalRequest && !message.paymentRequest && !message.taggedMessage && !message.order){
+        if(!message.content && !req.file && !message.task && !message.approvalRequest && !message.paymentRequest && !message.taggedMessage && !message.order){
             return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Nothing In The Message To Save","Nothing In The Message To Save"))
             
         } 
         message.createdBy=req.user.userId
         message.org=req.user.org
         message.site=site._id
+
+        if(req.file){
+            const attachment = await fileService.create({
+                filename: req.file.originalname,
+                type: req.file.mimetype,
+                size: req.file.size,
+                org: req.user.org,
+                uploadedBy: req.user.userId, // Assuming userId is in the request user object
+                url: `${process.env.BASE_URL}/api/v1/files/link/${req.file.id}`, // Example URL format
+            })
+            message.attachment = attachment._id
+        }
         const newMessage=await this.service.create(message)
-        emitMessage(newMessage)
-        res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED,newMessage,"Message Sent Successfully"))
+        const {messages} = await this.service.getFormattedMessage(newMessage._id)
+        emitMessage(messages[0], req.user.org.toString())
+        res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED,messages[0],"Message Sent Successfully"))
 
             
         } catch (error) {
@@ -74,6 +88,8 @@ class MessageController extends BaseController {
             
             message.isDeleted=true;
             await message.save()
+            const {messages} = await MessageService.getFormattedMessage(message._id)
+            emitDeleteMessage(messages[0], req.user.org)
             res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED,{},"Successfully Deleted"))
             
         } catch (error) {

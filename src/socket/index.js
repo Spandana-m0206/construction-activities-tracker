@@ -20,17 +20,18 @@ io.on('connection',(socket)=>{
     try {
         console.log(`${socket.id} connected`)
         socket.on('authentication',async (accessToken)=>{
-         const payLoad=await AuthService.getPayLoadFromToken(accessToken,process.env.JWT_SECTRET)
+         const payLoad=await AuthService.getPayLoadFromToken(accessToken,process.env.JWT_SECRET)
 
         if(!payLoad || !payLoad.orgId){
             return
         }
 
-    const userOrgSites=await SiteServive.find({org:payLoad.orgId})
-    userOrgSites.forEach((site)=>{
-        socket.join(`site:${site._id}`)
-        console.log(`${payLoad.name} joined ${site._id}`)
-})
+//     const userOrgSites=await SiteServive.find({org:payLoad.orgId})
+//     userOrgSites.forEach((site)=>{
+//         socket.join(`site:${site._id}`)
+//         console.log(`${payLoad.name} joined ${site._id}`)
+// })
+        socket.join(`org:${payLoad.orgId}`)
                
 })
     } catch (error) {

@@ -3,6 +3,9 @@ const ReactionService=require('./reaction.service')
 const { StatusCodes } = require('http-status-codes');
 const ApiError = require('../../utils/apiError');
 const ApiResponse = require('../../utils/apiResponse');
+const MessageService = require('../message/message.service');
+const { emitReactionOnMessage } = require('../../utils/socketMessageEmitter');
+const { default: mongoose } = require('mongoose');
  
 
 class ReactionController extends BaseController {
@@ -19,6 +22,8 @@ class ReactionController extends BaseController {
                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Emoji Not Found","Emoji Not Found")) 
             }
             const createReaction=await this.service.create(req.params.messageId,req.user.userId,reaction)
+            const {messages} = await MessageService.getFormattedMessage(new mongoose.Types.ObjectId(req.params.messageId))
+            emitReactionOnMessage(messages[0], req.user.org.toString())
             res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED,{},"Emoji Added"))
         } 
         catch (error) {
