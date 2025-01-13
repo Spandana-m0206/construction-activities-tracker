@@ -29,7 +29,7 @@ class TaskController extends BaseController {
             // Fetch task details
             const task = await TaskModel.findById(taskId)
                 .populate('site', '_id name location') // Populate site details
-                .populate('subtasks', '_id title description status startTime endTime') // Populate subtasks
+                .populate('subtasks', '_id title description status startTime endTime progressPercentage') // Populate subtasks
                 .lean();
     
             // If task not found
@@ -87,6 +87,7 @@ class TaskController extends BaseController {
                     approvedBy: approval ? approval.approvedBy : null,
                     approvedAt: approval ? approval.approvedAt : null,
                     images: approval ? approval.images : [], // Include image IDs
+                    approvalProgressPercentage: approval ? approval.progressPercentage : null,
                 };
             });
     
