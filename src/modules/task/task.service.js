@@ -13,6 +13,11 @@ class TaskService extends BaseService {
     super(Task);
   }
 
+  async find(filters) {
+    return await this.model.find(filters)
+      .populate('site', 'name')
+      .populate('createdBy', '_id name');
+  }
   async findOne(filters) {
     return await this.model.findOne(filters)
       .populate('subtasks', 'title description startTime endTime status attachments')
@@ -343,10 +348,6 @@ class TaskService extends BaseService {
       throw new ApiError(400, "Invalid status value");
     }
   
-    // Prevent invalid status transitions (e.g., from COMPLETED back to IN_PROGRESS)
-    if (StatusOrder[desiredStatus] < StatusOrder[task.status]) {
-      throw new ApiError(400, "Cannot move to a previous status");
-    }
   
     // Additional validation for COMPLETED status
     if (desiredStatus === TaskStatuses.COMPLETED) {
@@ -489,6 +490,7 @@ class TaskService extends BaseService {
     return await this.model.find({ site: siteId })
         .populate('subtasks', 'title status')
         .populate('assignedTo', 'name email')
+        .populate('createdBy', '_id name')
         .populate('org', 'name')
         .populate('site', 'name');
 }

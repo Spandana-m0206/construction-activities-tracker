@@ -1,6 +1,7 @@
 // task.controller.js
 const ApprovalModel = require('../approval/approval.model');
 const BaseController = require('../base/BaseController');
+const fileService = require('../file/file.service');
 const TaskModel = require('./task.model');
 const TaskService = require('./task.service');
 
@@ -16,7 +17,6 @@ class TaskController extends BaseController {
             next(error);
         }
     }
-    // get task details with subtasks and approvals
     async getTaskDetails(req, res, next) {
         try {
             const { taskId } = req.params;
@@ -29,13 +29,18 @@ class TaskController extends BaseController {
             // Fetch task details
             const task = await TaskModel.findById(taskId)
                 .populate('site', '_id name location') // Populate site details
-                .populate('subtasks', '_id title description status startTime endTime') // Populate subtasks
+                .populate('subtasks', '_id title description status startTime endTime progressPercentage') // Populate subtasks
                 .lean();
     
             // If task not found
             if (!task) {
                 return res.status(404).json({ success: false, message: 'Task not found' });
             }
+    
+            // Fetch the latest approval for the main task
+            const mainTaskApproval = await ApprovalModel.findOne({ task: taskId })
+                .sort({ approvedAt: -1 }) // Get the latest approval
+                .lean();
     
             // Fetch the latest approval for each subtask using aggregation
             const subtaskIds = task.subtasks.map((subtask) => subtask._id);
@@ -52,10 +57,25 @@ class TaskController extends BaseController {
             ]);
     
             // Map latest approvals to a dictionary for quick lookup
-            const subtaskApprovalMap = subtaskApprovals.reduce((map, approval) => {
-                map[approval._id] = approval.latestApproval;
-                return map;
-            }, {});
+            const subtaskApprovalMap = await subtaskApprovals.reduce(async (accPromise, approval) => {
+                const acc = await accPromise; // Wait for previous reductions
+                const imageIds = approval.latestApproval.images;
+            
+                // Fetch URLs for the image IDs
+                const images = await Promise.all(
+                    imageIds.map(async (id) => {
+                        const fileDetails = await fileService.findById(id); // Assuming findById exists in FileService
+                        return fileDetails ? fileDetails.url : null;
+                    })
+                );
+                
+            
+                acc[approval._id] = {
+                    ...approval.latestApproval,
+                    images: images.map((img) => img), // Map to URLs
+                };
+                return acc;
+            }, Promise.resolve({}));
     
             // Attach approval details to subtasks
             task.subtasks = task.subtasks.map((subtask) => {
@@ -66,29 +86,41 @@ class TaskController extends BaseController {
                     approvalStatus: approval ? approval.status : null,
                     approvedBy: approval ? approval.approvedBy : null,
                     approvedAt: approval ? approval.approvedAt : null,
+                    images: approval ? approval.images : [], // Include image IDs
+                    approvalProgressPercentage: approval ? approval.progressPercentage : null,
                 };
             });
+    
+            // Prepare the response
+            const responseData = {
+                _id: task._id,
+                name: task.title,
+                description: task.description,
+                status: task.status,
+                progressPercentage: task.progressPercentage,
+                startTime: task.startTime,
+                endTime: task.endTime,
+                siteId: task.site?._id || null,
+                siteName: task.site?.name || null,
+                location: task.site?.location || null,
+                approvalId: mainTaskApproval?._id || null,
+                approvalStatus: mainTaskApproval?.status || null,
+                approvedBy: mainTaskApproval?.approvedBy || null,
+                approvedAt: mainTaskApproval?.approvedAt || null,
+                images: mainTaskApproval?.images || [], // Include image IDs for main task
+                subtasks: task.subtasks,
+            };
     
             // Respond with task details
             res.status(200).json({
                 success: true,
-                data: {
-                    name: task.title,
-                    description: task.description,
-                    progressPercentage: task.progressPercentage,
-                    startTime: task.startTime,
-                    endTime: task.endTime,
-                    siteId: task.site?._id || null,
-                    siteName: task.site?.name || null,
-                    location: task.site?.location || null,
-                    subtasks: task.subtasks,
-                },
+                data: responseData,
             });
         } catch (error) {
             console.error("Error in getTaskDetails:", error.message);
             next(error);
         }
-    }        
+    }                        
 
     async getTasksBySite(req, res, next) {
         try {
