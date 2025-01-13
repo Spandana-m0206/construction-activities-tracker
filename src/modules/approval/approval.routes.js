@@ -1,6 +1,6 @@
 const express = require('express');
 const ApprovalController = require('./approval.controller');
-
+const upload = require('../file/file.storage');
 const router = express.Router();
 
 // Base routes from BaseController
@@ -12,5 +12,10 @@ router.delete('/:id', ApprovalController.delete.bind(ApprovalController)); // De
 
 // Custom route: Get approvals by site
 router.get('/site/:siteId', ApprovalController.getApprovalsBySite.bind(ApprovalController)); // Find approvals by site
+router.post(
+    '/:id/images',
+    upload.array('files'),
+    ApprovalController.uploadImages.bind(ApprovalController)
+);
 
 module.exports = router;

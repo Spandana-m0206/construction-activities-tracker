@@ -116,6 +116,34 @@ class ApprovalController extends BaseController {
             next(error);
         }
     }
+    async uploadImages(req, res, next) {
+        try {
+            // Check if files are uploaded
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ success: false, message: 'No files uploaded' });
+            }
+    
+            // Extract approval ID
+            const approvalId = req.params.id;
+    
+            // Build file data for each uploaded file
+            const uploadedFiles = req.files.map((file) => ({
+                filename: file.filename,
+                type: file.mimetype,
+                size: file.size,
+                org: req.user.org, // Assuming org is provided in the request body
+                uploadedBy: req.user.userId, // Assuming userId is in the authenticated user object
+                url: `${process.env.BASE_URL}/api/v1/files/link/${file.id}`, // Example URL format
+            }));
+    
+            // Call service to save files and link to the approval
+            const updatedApproval = await this.service.addImagesToApproval(approvalId, uploadedFiles);
+    
+            res.status(200).json({ success: true, data: updatedApproval });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new ApprovalController();
