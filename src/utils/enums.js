@@ -84,8 +84,12 @@ const UsageTypes = {
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = ['in progress', 'approved', 'cancelled'];
-const MessageTypes = ["status", "approval","text"];
-const FulfillmentStatuses = {
+const MessageTypes = {
+    STATUS: "status",
+    APPROVAL: "approval",
+    TEXT: "text"
+  };
+  const FulfillmentStatuses = {
     IN_PROGRESS: 'in progress',
     IN_TRANSIT: 'in transit',
     RECEIVED: 'received',

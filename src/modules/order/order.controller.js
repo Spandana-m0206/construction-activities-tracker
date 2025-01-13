@@ -3,6 +3,8 @@ const BaseController = require('../base/BaseController');
 const siteService = require('../site/site.service');
 const inventoryService = require('../inventory/inventory.service');
 const OrderService = require('./order.service');
+const messageService = require('../message/message.service');
+const { emitMessage } = require('../../utils/socketMessageEmitter');
 
 class OrderController extends BaseController {
     constructor() {
@@ -52,7 +54,14 @@ class OrderController extends BaseController {
                 fromInventory,
                 fromSite
             });
-    
+
+           order.content=`Material Request Created For: ${order.materials
+          .map((material) => `${material.name} (Qty: ${material.quantity})`)
+          .join(', ')}`;
+           const orderCreatedMessage=await messageService.materialOrderStatusMessage(order)
+
+           emitMessage(orderCreatedMessage)
+
             res.status(200).json({ success: true, data: order });
         } catch (error) {
             next(error);
