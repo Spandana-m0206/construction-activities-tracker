@@ -54,13 +54,12 @@ class OrderController extends BaseController {
                 fromInventory,
                 fromSite
             });
-
-           order.content=`Material Request Created For: ${order.materials
-          .map((material) => `${material.name} (Qty: ${material.quantity})`)
-          .join(', ')}`;
+          const siteData=await siteService.findById(site)
+           order.content=`Added Material Request For ${siteData.name}`;
            const orderCreatedMessage=await messageService.materialOrderStatusMessage(order)
-
-           emitMessage(orderCreatedMessage)
+           const {messages} = await messageService.getFormattedMessage(orderCreatedMessage._id)
+           emitMessage(messages[0], req.user.org.toString())
+            
 
             res.status(200).json({ success: true, data: order });
         } catch (error) {

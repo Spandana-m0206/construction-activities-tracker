@@ -234,18 +234,18 @@ class MessageService extends BaseService {
         //   })
         //   return successMessage
         // }
-        // async approvalRequestSuccessMessage(approvalData){
-        //   const successMessage=await this.model.create({
-        //     content:approvalData.content,
-        //     createdBy:approvalData.approvedBy,
-        //     site:approvalData.site,
-        //     org:approvalData.org,
-        //     type:MessageTypes.approval,
-        //     approvalRequest:approvalData._id
+        async approvalRequestSuccessMessage(approvalData){
+          const successMessage=await this.model.create({
+            content:approvalData.content,
+            createdBy:approvalData.approvedBy,
+            site:approvalData.site,
+            org:approvalData.org,
+            type:MessageTypes.approval,
+            approvalRequest:approvalData._id
         
-        //   })
-        //   return successMessage
-        // }
+          })
+          return successMessage
+        }
     async getFormattedMessage(messageId){
        
       

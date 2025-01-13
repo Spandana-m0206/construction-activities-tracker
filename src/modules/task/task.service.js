@@ -442,7 +442,8 @@ class TaskService extends BaseService {
                 //message status: started with next task
                 nextTask.content=`We Have Started With ${nextTask.title}`
                 const messageStatus=await messageService.taskStatusMessage(nextTask)
-                emitMessage(messageStatus)
+                const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+                emitMessage(messages[0], req.user.org.toString())
                 await nextTask.save();
               }
             })
@@ -462,7 +463,8 @@ class TaskService extends BaseService {
       //message for successfull completion of the work
       task.content=`We Have Completed The ${task.title}`
       const messageStatus=await messageService.create(task)
-      emitMessage(messageStatus)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
     }
   
     // Now, update the parent's progress, if a parent exists:
@@ -517,7 +519,8 @@ class TaskService extends BaseService {
       //message status for sub tasks completion under main task
       parent.content=`We Have Completed All SubTasks Under ${parent.title}`
       const messageStatus=await messageService.create(parent)
-      emitMessage(messageStatus)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
     } else {
       // Otherwise, compute the average progress of subtasks
       let total = 0;
@@ -532,7 +535,8 @@ class TaskService extends BaseService {
         //message status for the parent task in progress
         parent.content=`${parent.title} In Progress`
       const messageStatus=await messageService.create(parent)
-      emitMessage(messageStatus)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
       }
       // If you want to handle PENDING or REVIEW states differently, add logic here
       parent.progressPercentage = averageProgress;
