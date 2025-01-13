@@ -89,7 +89,15 @@ class BaseService {
             throw new Error(`Failed to perform paginated query. ${error.message || 'Unknown error occurred.'}`);
         }
     }
-
+    async findOneAndUpdate(filter, updateData, options = {}) {
+        return this.handleOperation(
+            this.model.findOneAndUpdate.bind(this.model),
+            'findOneAndUpdate',
+            filter,
+            updateData,
+            options
+        );
+    }
 }
 
 module.exports = BaseService;

@@ -1,3 +1,4 @@
+const { PurchaseRequestStatuses } = require('../../utils/enums');
 const BaseController = require('../base/BaseController');
 const PurchaseRequestService = require('./purchaseRequest.service');
 

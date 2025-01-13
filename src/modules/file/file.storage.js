@@ -35,6 +35,7 @@ const allowedMimeTypes = [
     'image/png',
     'image/jpg',
     'image/gif',
+    'image/heic',
     // Documents
     'application/pdf',
     'application/msword',
@@ -47,10 +48,13 @@ const allowedMimeTypes = [
     'audio/mpeg',
     'audio/wav',
     'audio/ogg',
+    'audio/m4a',
+    'audio/x-m4a',
     // Video
     'video/mp4',
     'video/x-msvideo',
     'video/mpeg',
+    'video/quicktime'
 ];
 
 // Multer upload configuration

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { PurchaseRequestPriorities, PurchaseRequestStatuses } = require('../../utils/enums'); // Enums for priorities and statuses
+const enumToArray = require('../../utils/EnumToArray');
 
 // Define Purchase Request-specific fields
 const purchaseRequestFields = {
@@ -14,8 +15,8 @@ const purchaseRequestFields = {
             qty: { type: Number, required: true }, // Quantity of material
         },
     ], // Array of material items
-    priority: { type: String, enum: PurchaseRequestPriorities, required: true }, // Priority of the request
-    status: { type: String, enum: PurchaseRequestStatuses, required: true }, // Status of the request
+    priority: { type: String, enum: enumToArray(PurchaseRequestPriorities), required: true }, // Priority of the request
+    status: { type: String, enum: enumToArray(PurchaseRequestStatuses), required: true }, // Status of the request
 };
 
 // Create the extended schema

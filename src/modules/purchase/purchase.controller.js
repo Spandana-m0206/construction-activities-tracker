@@ -15,6 +15,43 @@ class PurchaseController extends BaseController {
             next(error);
         }
     }
+
+    /**
+     * 2) Create a Purchase for the specified Purchase Requests
+     *    - Accepts purchaseRequestIds, vendor, purchasedBy, amount, attachment, org
+     *    - Creates MaterialListItems, Purchase, and PurchaseRequestFulfillments
+     */
+    async createPurchase(req, res, next) {
+        try {
+            const {
+                purchaseRequestIds,
+                vendor,
+                purchasedBy,
+                amount,
+                attachment,
+            } = req.body;
+
+            if (!purchaseRequestIds || !purchaseRequestIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'purchaseRequestIds array is required',
+                });
+            }
+
+            const newPurchase = await this.service.createPurchase({
+                purchaseRequestIds,
+                vendor,
+                purchasedBy:req.user.userId,
+                amount,
+                attachment,
+                org: req.user.org,
+            });
+
+            return res.status(201).json({ success: true, data: newPurchase });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new PurchaseController();

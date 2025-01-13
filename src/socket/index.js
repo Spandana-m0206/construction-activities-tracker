@@ -26,11 +26,12 @@ io.on('connection',(socket)=>{
             return
         }
 
-    const userOrgSites=await SiteServive.find({org:payLoad.orgId})
-    userOrgSites.forEach((site)=>{
-        socket.join(`site:${site._id}`)
-        console.log(`${payLoad.name} joined ${site._id}`)
-})
+//     const userOrgSites=await SiteServive.find({org:payLoad.orgId})
+//     userOrgSites.forEach((site)=>{
+//         socket.join(`site:${site._id}`)
+//         console.log(`${payLoad.name} joined ${site._id}`)
+// })
+        socket.join(`org:${payLoad.orgId}`)
                
 })
     } catch (error) {
