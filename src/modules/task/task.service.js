@@ -341,10 +341,6 @@ class TaskService extends BaseService {
       throw new ApiError(400, "Invalid status value");
     }
   
-    // Prevent invalid status transitions (e.g., from COMPLETED back to IN_PROGRESS)
-    if (StatusOrder[desiredStatus] < StatusOrder[task.status]) {
-      throw new ApiError(400, "Cannot move to a previous status");
-    }
   
     // Additional validation for COMPLETED status
     if (desiredStatus === TaskStatuses.COMPLETED) {
