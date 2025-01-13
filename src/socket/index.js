@@ -3,8 +3,6 @@ const app=express()
 const http= require('http')
 const {Server}=require('socket.io')
 const AuthService=require('../modules/auth/auth.service')
-const jwt=require('jsonwebtoken')
-const SiteServive=require('../modules/site/site.service')
  
 
 const server=http.createServer(app)
@@ -26,11 +24,6 @@ io.on('connection',(socket)=>{
             return
         }
 
-//     const userOrgSites=await SiteServive.find({org:payLoad.orgId})
-//     userOrgSites.forEach((site)=>{
-//         socket.join(`site:${site._id}`)
-//         console.log(`${payLoad.name} joined ${site._id}`)
-// })
         socket.join(`org:${payLoad.orgId}`)
                
 })
