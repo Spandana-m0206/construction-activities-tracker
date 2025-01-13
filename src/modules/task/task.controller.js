@@ -1,21 +1,13 @@
 // task.controller.js
 const ApprovalModel = require('../approval/approval.model');
 const BaseController = require('../base/BaseController');
-const FileModel = require('../file/file.model');
+const fileService = require('../file/file.service');
 const TaskModel = require('./task.model');
 const TaskService = require('./task.service');
 
 class TaskController extends BaseController {
     constructor() {
         super(TaskService); // Pass TaskService to the BaseController
-    }
-    async find(req, res, next) {
-        try {
-            const tasks = await this.service.find(req.query);
-            return res.status(200).json({ success: true, data: tasks });
-        } catch (error) {
-            next(error);
-        }
     }
     async findOne(req, res, next) {
         try {
@@ -70,11 +62,17 @@ class TaskController extends BaseController {
                 const imageIds = approval.latestApproval.images;
             
                 // Fetch URLs for the image IDs
-                const images = await FileModel.find({ _id: { $in: imageIds } }).select('_id url').lean();
+                const images = await Promise.all(
+                    imageIds.map(async (id) => {
+                        const fileDetails = await fileService.findById(id); // Assuming findById exists in FileService
+                        return fileDetails ? fileDetails.url : null;
+                    })
+                );
+                
             
                 acc[approval._id] = {
                     ...approval.latestApproval,
-                    images: images.map((img) => img.url), // Map to URLs
+                    images: images.map((img) => img), // Map to URLs
                 };
                 return acc;
             }, Promise.resolve({}));
@@ -94,6 +92,7 @@ class TaskController extends BaseController {
     
             // Prepare the response
             const responseData = {
+                _id: task._id,
                 name: task.title,
                 description: task.description,
                 status: task.status,
