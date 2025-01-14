@@ -4,7 +4,7 @@ const upload = require('../file/file.storage');
 const router = express.Router();
 
 // Base routes from BaseController
-router.post('/', ApprovalController.create.bind(ApprovalController)); // Create approval
+router.post('/', upload.array('files'), ApprovalController.create.bind(ApprovalController)); // Create approval
 router.get('/', ApprovalController.find.bind(ApprovalController)); // Get all approvals
 router.get('/:id', ApprovalController.findOne.bind(ApprovalController)); // Get approval by ID
 router.put('/:id', ApprovalController.update.bind(ApprovalController)); // Update approval
