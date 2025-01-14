@@ -60,7 +60,7 @@ class TaskController extends BaseController {
             const subtaskApprovalMap = await subtaskApprovals.reduce(async (accPromise, approval) => {
                 const acc = await accPromise; // Wait for previous reductions
                 const imageIds = approval.latestApproval.images;
-            
+    
                 // Fetch URLs for the image IDs
                 const images = await Promise.all(
                     imageIds.map(async (id) => {
@@ -68,11 +68,11 @@ class TaskController extends BaseController {
                         return fileDetails ? fileDetails.url : null;
                     })
                 );
+    
                 
-            
                 acc[approval._id] = {
                     ...approval.latestApproval,
-                    images: images.map((img) => img), // Map to URLs
+                    images: images.filter((img) => img), // Filter out null values
                 };
                 return acc;
             }, Promise.resolve({}));
@@ -86,10 +86,20 @@ class TaskController extends BaseController {
                     approvalStatus: approval ? approval.status : null,
                     approvedBy: approval ? approval.approvedBy : null,
                     approvedAt: approval ? approval.approvedAt : null,
-                    images: approval ? approval.images : [], // Include image IDs
+                    images: approval ? approval.images : [], // Include image URLs
                     approvalProgressPercentage: approval ? approval.progressPercentage : null,
                 };
             });
+    
+            // Fetch URLs for main task images
+            const mainTaskImages = mainTaskApproval?.images
+                ? await Promise.all(
+                      mainTaskApproval.images.map(async (id) => {
+                          const fileDetails = await fileService.findById(id);
+                          return fileDetails ? fileDetails.url : null;
+                      })
+                  )
+                : [];
     
             // Prepare the response
             const responseData = {
@@ -107,7 +117,7 @@ class TaskController extends BaseController {
                 approvalStatus: mainTaskApproval?.status || null,
                 approvedBy: mainTaskApproval?.approvedBy || null,
                 approvedAt: mainTaskApproval?.approvedAt || null,
-                images: mainTaskApproval?.images || [], // Include image IDs for main task
+                images: mainTaskImages.filter((img) => img), // Include main task image URLs
                 subtasks: task.subtasks,
             };
     
@@ -120,7 +130,7 @@ class TaskController extends BaseController {
             console.error("Error in getTaskDetails:", error.message);
             next(error);
         }
-    }                        
+    }                            
 
     async getTasksBySite(req, res, next) {
         try {
