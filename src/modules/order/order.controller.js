@@ -3,6 +3,8 @@ const BaseController = require('../base/BaseController');
 const siteService = require('../site/site.service');
 const inventoryService = require('../inventory/inventory.service');
 const OrderService = require('./order.service');
+const messageService = require('../message/message.service');
+const { emitMessage } = require('../../utils/socketMessageEmitter');
 
 class OrderController extends BaseController {
     constructor() {
@@ -52,7 +54,13 @@ class OrderController extends BaseController {
                 fromInventory,
                 fromSite
             });
-    
+          const siteData=await siteService.findById(site)
+           order.content=`Added Material Request For ${siteData.name}`;
+           const orderCreatedMessage=await messageService.materialOrderStatusMessage(order)
+           const {messages} = await messageService.getFormattedMessage(orderCreatedMessage._id)
+           emitMessage(messages[0], req.user.org.toString())
+            
+
             res.status(200).json({ success: true, data: order });
         } catch (error) {
             next(error);

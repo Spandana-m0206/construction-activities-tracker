@@ -1,5 +1,9 @@
-const {io}=require("../socket")
+// const {io}=require('../socket')
+let io;
 
+exports.setSocket = (socket) => {
+  io = socket;
+};
 
 exports.emitMessage=(messageData, org)=>{
     io.to(`org:${org}`).emit("newMessages",messageData)

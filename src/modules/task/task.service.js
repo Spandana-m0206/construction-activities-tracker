@@ -5,6 +5,8 @@ const BaseService = require('../base/BaseService');
 const siteService = require('../site/site.service');
 const SiteModel = require('../site/site.model');
 const Task = require('./task.model');
+const messageService = require('../message/message.service');
+const { emitMessage } = require('../../utils/socketMessageEmitter');
 
 class TaskService extends BaseService {
   constructor() {
@@ -377,6 +379,7 @@ class TaskService extends BaseService {
           }
         }
       }
+      
     }
   
     return true; // All checks passed
@@ -437,6 +440,11 @@ class TaskService extends BaseService {
               if ([TaskStatuses.OPEN, TaskStatuses.PENDING].includes(nextTask.status)) {
                 nextTask.status = TaskStatuses.IN_PROGRESS;
                 nextTask.progressPercentage = 0; // optional
+                //message status: started with next task
+                nextTask.content=`We Have Started With ${nextTask.title}`
+                const messageStatus=await messageService.taskStatusMessage(nextTask)
+                const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+                emitMessage(messages[0], req.user.org.toString())
                 await nextTask.save();
               }
             })
@@ -453,6 +461,11 @@ class TaskService extends BaseService {
           }
         }
       }
+      //message for successfull completion of the work
+      task.content=`We Have Completed The ${task.title}`
+      const messageStatus=await messageService.create(task)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
     }
   
     // Now, update the parent's progress, if a parent exists:
@@ -505,6 +518,11 @@ class TaskService extends BaseService {
       // If all are completed, set parent to COMPLETED and 100% progress
       parent.status = TaskStatuses.COMPLETED;
       parent.progressPercentage = 100;
+      //message status for sub tasks completion under main task
+      parent.content=`We Have Completed All SubTasks Under ${parent.title}`
+      const messageStatus=await messageService.create(parent)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
     } else {
       // Otherwise, compute the average progress of subtasks
       let total = 0;
@@ -516,6 +534,11 @@ class TaskService extends BaseService {
       // Set parent's status accordingly (here we assume IN_PROGRESS, but you can pick your logic)
       if (averageProgress > 0 && averageProgress < 100) {
         parent.status = TaskStatuses.IN_PROGRESS;
+        //message status for the parent task in progress
+        parent.content=`${parent.title} In Progress`
+      const messageStatus=await messageService.create(parent)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], req.user.org.toString())
       }
       // If you want to handle PENDING or REVIEW states differently, add logic here
       parent.progressPercentage = averageProgress;

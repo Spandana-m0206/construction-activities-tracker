@@ -88,8 +88,12 @@ const PurchaseRequestStatuses = {
     APPROVED: 'approved',
     CANCELLED: 'cancelled',
 }
-const MessageTypes = ["status", "approval","text"];
-const FulfillmentStatuses = {
+const MessageTypes = {
+    STATUS: "status",
+    APPROVAL: "approval",
+    TEXT: "text"
+  };
+  const FulfillmentStatuses = {
     IN_PROGRESS: 'in progress',
     IN_TRANSIT: 'in transit',
     RECEIVED: 'received',

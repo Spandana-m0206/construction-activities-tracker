@@ -4,6 +4,15 @@ const http= require('http')
 const {Server}=require('socket.io')
 const AuthService=require('../modules/auth/auth.service')
  
+const jwt=require('jsonwebtoken')
+const SiteServive=require('../modules/site/site.service')
+const { setSocket } = require('../utils/socketMessageEmitter');
+
+
+
+
+ 
+
 
 const server=http.createServer(app)
 const io=new Server(server,{
@@ -31,6 +40,7 @@ io.on('connection',(socket)=>{
         console.error(error.message);
     }
 })
+setSocket(io);
 module.exports={
     io:io,
     server:server,

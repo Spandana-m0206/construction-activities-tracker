@@ -5,6 +5,8 @@ const BaseController = require('../base/BaseController');
 const ApprovalService = require('./approval.service');
 const { StatusCodes } = require("http-status-codes");
 const ApiResponse = require('../../utils/apiResponse');
+const messageService = require('../message/message.service');
+const taskService = require('../task/task.service');
 class ApprovalController extends BaseController {
     constructor() {
         super(ApprovalService); // Pass the ApprovalService to the BaseController
@@ -29,6 +31,12 @@ class ApprovalController extends BaseController {
             approvalData.org = user.org;
 
             const data = await this.service.create(approvalData);
+            const task=await taskService.findById(approvalData.task)
+            //TODO: what should be the content ? 
+                  data.content=`${task.progressPercentage}% Completed ${task.name}`;
+                       const approvalRequestMessage=await messageService.approvalRequestSuccessMessage(order)
+                       const {messages} = await messageService.getFormattedMessage(approvalRequestMessage._id)
+                       emitMessage(messages[0], req.user.org.toString())
             res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED, data, 'Approval created successfully'));
         } catch (error) {
             next(error);
