@@ -697,6 +697,431 @@ class MessageService extends BaseService {
         //     },
         //   },
         // ];
+        // const pipeline = [
+        //   // Match messages for the specific site
+        //   { $match: { site: siteId } },
+        
+        //   // Lookup for attachment details
+        //   {
+        //     $lookup: {
+        //       from: "files",
+        //       localField: "attachment",
+        //       foreignField: "_id",
+        //       as: "attachmentDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$attachmentDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for createdBy details
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "createdBy",
+        //       foreignField: "_id",
+        //       as: "createdByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //               // Lookup for taggedMessage details
+        //     {
+        //       $lookup: {
+        //         from: "messages",
+        //         localField: "taggedMessage",
+        //         foreignField: "_id",
+        //         as: "taggedMessageDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
+        
+        //     // Lookup for createdBy of taggedMessage
+        //     {
+        //       $lookup: {
+        //         from: "users",
+        //         localField: "taggedMessageDetails.createdBy",
+        //         foreignField: "_id",
+        //         as: "taggedMessageDetails.createdByDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //     // Add fields for taggedMessage createdBy
+        //     {
+        //       $addFields: {
+        //         "taggedMessageDetails.createdBy": {
+        //           _id: "$taggedMessageDetails.createdByDetails._id",
+        //           name: "$taggedMessageDetails.createdByDetails.name",
+        //         },
+        //       },
+        //     },
+        //   // Lookup for task details
+        //   {
+        //     $lookup: {
+        //       from: "tasks",
+        //       localField: "task",
+        //       foreignField: "_id",
+        //       as: "taskDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$taskDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for approvalRequest details
+        //   {
+        //     $lookup: {
+        //       from: "approvals",
+        //       localField: "approvalRequest",
+        //       foreignField: "_id",
+        //       as: "approvalRequestDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$approvalRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for image details in approvalRequest
+        //   {
+        //     $lookup: {
+        //       from: "files",
+        //       localField: "approvalRequestDetails.images",
+        //       foreignField: "_id",
+        //       as: "approvalRequestImages",
+        //     },
+        //   },
+        
+        //   // Lookup for raisedBy details in approvalRequest
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "approvalRequestDetails.raisedBy",
+        //       foreignField: "_id",
+        //       as: "approvalRequestRaisedByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$approvalRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for paymentRequest details
+        //   {
+        //     $lookup: {
+        //       from: "payments",
+        //       localField: "paymentRequest",
+        //       foreignField: "_id",
+        //       as: "paymentRequestDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$paymentRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for raisedBy details in paymentRequest
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "paymentRequestDetails.raisedBy",
+        //       foreignField: "_id",
+        //       as: "paymentRequestRaisedByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$paymentRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Add fields to map data
+        //   {
+        //     $project: {
+        //       _id: 1,
+        //       content: 1,
+        //       site: 1,
+        //       type: 1,
+        //       isDeleted: 1,
+        //       createdAt: 1,
+        //       attachment: {
+        //         filename: "$attachmentDetails.filename",
+        //         type: "$attachmentDetails.type",
+        //         size: "$attachmentDetails.size",
+        //         org: "$attachmentDetails.org",
+        //         uploadedBy: "$attachmentDetails.uploadedBy",
+        //         url: "$attachmentDetails.url",
+        //       },
+        //       createdBy: {
+        //         _id: "$createdByDetails._id",
+        //         name: "$createdByDetails.name",
+        //         avatar: "$createdByDetails.profilePhoto",
+        //       },
+        //       task: {
+        //         _id: "$taskDetails._id",
+        //         title: "$taskDetails.title",
+        //         status: "$taskDetails.status",
+        //         progressPercentage: "$taskDetails.progressPercentage",
+        //         attachment: "$taskDetails.attachments",
+        //       },
+        //       approvalRequest: {
+        //         _id: "$approvalRequestDetails._id",
+        //         status: "$approvalRequestDetails.status",
+        //         images: { $map: { input: "$approvalRequestImages", as: "img", in: "$$img.url" } },
+        //         raisedBy: {
+        //           _id: "$approvalRequestRaisedByDetails._id",
+        //           name: "$approvalRequestRaisedByDetails.name",
+        //         },
+        //       },
+        //       paymentRequest: {
+        //         _id: "$paymentRequestDetails._id",
+        //         amount: "$paymentRequestDetails.amount",
+        //         raisedBy: {
+        //           _id: "$paymentRequestRaisedByDetails._id",
+        //           name: "$paymentRequestRaisedByDetails.name",
+        //         },
+        //         attachments: "$paymentRequestDetails.attachments",
+        //       },
+        //       taggedMessage: {
+        //         _id: "$taggedMessageDetails._id",
+        //         content: "$taggedMessageDetails.content",
+        //         createdBy: "$taggedMessageDetails.createdBy",
+        //         isDeleted: "$taggedMessageDetails.isDeleted",
+        //         attachment: "$taggedMessageDetails.attachment",
+        //       },
+        //       reactions: "$reactions",
+        //     },
+        //   },
+        
+        //   // Pagination and metadata
+        //   {
+        //     $facet: {
+        //       metadata: [{ $count: "totalMessages" }, { $addFields: { page, limit } }],
+        //       messages: [
+        //         { $sort: { createdAt: -1 } },
+        //         { $skip: (page - 1) * limit },
+        //         { $limit: limit },
+        //       ],
+        //     },
+        //   },
+        //   {
+        //     $project: {
+        //       messages: 1,
+        //       pagination: {
+        //         currentPage: page,
+        //         totalMessages: { $arrayElemAt: ["$metadata.totalMessages", 0] },
+        //       },
+        //     },
+        //   },
+        // ];
+        // const pipeline = [
+        //   // Match messages for the specific site
+        //   { $match: { site: siteId } },
+        
+        //   // Lookup for attachment details
+        //   {
+        //     $lookup: {
+        //       from: "files",
+        //       localField: "attachment",
+        //       foreignField: "_id",
+        //       as: "attachmentDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$attachmentDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for createdBy details
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "createdBy",
+        //       foreignField: "_id",
+        //       as: "createdByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for taggedMessage details
+        //   {
+        //     $lookup: {
+        //       from: "messages",
+        //       localField: "taggedMessage",
+        //       foreignField: "_id",
+        //       as: "taggedMessageDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for createdBy of taggedMessage
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "taggedMessageDetails.createdBy",
+        //       foreignField: "_id",
+        //       as: "taggedMessageDetails.createdByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Add fields for taggedMessage createdBy
+        //   {
+        //     $addFields: {
+        //       "taggedMessageDetails.createdBy": {
+        //         _id: "$taggedMessageDetails.createdByDetails._id",
+        //         name: "$taggedMessageDetails.createdByDetails.name",
+        //         avatar: "$taggedMessageDetails.createdByDetails.avatar",
+        //       },
+        //     },
+        //   },
+        
+        //   // Lookup for task details
+        //   {
+        //     $lookup: {
+        //       from: "tasks",
+        //       localField: "task",
+        //       foreignField: "_id",
+        //       as: "taskDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$taskDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for approvalRequest details
+        //   {
+        //     $lookup: {
+        //       from: "approvals",
+        //       localField: "approvalRequest",
+        //       foreignField: "_id",
+        //       as: "approvalRequestDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$approvalRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for image details in approvalRequest
+        //   {
+        //     $lookup: {
+        //       from: "files",
+        //       localField: "approvalRequestDetails.images",
+        //       foreignField: "_id",
+        //       as: "approvalRequestImages",
+        //     },
+        //   },
+        
+        //   // Lookup for raisedBy details in approvalRequest
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "approvalRequestDetails.raisedBy",
+        //       foreignField: "_id",
+        //       as: "approvalRequestRaisedByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$approvalRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for paymentRequest details
+        //   {
+        //     $lookup: {
+        //       from: "payments",
+        //       localField: "paymentRequest",
+        //       foreignField: "_id",
+        //       as: "paymentRequestDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$paymentRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for raisedBy details in paymentRequest
+        //   {
+        //     $lookup: {
+        //       from: "users",
+        //       localField: "paymentRequestDetails.raisedBy",
+        //       foreignField: "_id",
+        //       as: "paymentRequestRaisedByDetails",
+        //     },
+        //   },
+        //   { $unwind: { path: "$paymentRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+        //   // Lookup for reactions
+        //   {
+        //     $lookup: {
+        //       from: "reactions",
+        //       localField: "_id",
+        //       foreignField: "message",
+        //       as: "reactions",
+        //     },
+        //   },
+        
+        //   // Add fields to map data
+        //   {
+        //     $project: {
+        //       _id: 1,
+        //       content: 1,
+        //       site: 1,
+        //       type: 1,
+        //       isDeleted: 1,
+        //       createdAt: 1,
+        //       attachment: {
+        //         filename: "$attachmentDetails.filename",
+        //         type: "$attachmentDetails.type",
+        //         size: "$attachmentDetails.size",
+        //         org: "$attachmentDetails.org",
+        //         uploadedBy: "$attachmentDetails.uploadedBy",
+        //         url: "$attachmentDetails.url",
+        //       },
+        //       createdBy: {
+        //         _id: "$createdByDetails._id",
+        //         name: "$createdByDetails.name",
+        //         avatar: "$createdByDetails.profilePhoto",
+        //       },
+        //       task: {
+        //         _id: "$taskDetails._id",
+        //         title: "$taskDetails.title",
+        //         status: "$taskDetails.status",
+        //         progressPercentage: "$taskDetails.progressPercentage",
+        //         attachment: "$taskDetails.attachments",
+        //       },
+        //       approvalRequest: {
+        //         _id: "$approvalRequestDetails._id",
+        //         status: "$approvalRequestDetails.status",
+        //         images: { $map: { input: "$approvalRequestImages", as: "img", in: "$$img.url" } },
+        //         raisedBy: {
+        //           _id: "$approvalRequestRaisedByDetails._id",
+        //           name: "$approvalRequestRaisedByDetails.name",
+        //         },
+        //       },
+        //       paymentRequest: {
+        //         _id: "$paymentRequestDetails._id",
+        //         amount: "$paymentRequestDetails.amount",
+        //         raisedBy: {
+        //           _id: "$paymentRequestRaisedByDetails._id",
+        //           name: "$paymentRequestRaisedByDetails.name",
+        //         },
+        //         attachments: "$paymentRequestDetails.attachments",
+        //       },
+        //       taggedMessage: {
+        //         _id: "$taggedMessageDetails._id",
+        //         content: "$taggedMessageDetails.content",
+        //         createdBy: "$taggedMessageDetails.createdBy",
+        //         isDeleted: "$taggedMessageDetails.isDeleted",
+        //         attachment: "$taggedMessageDetails.attachment",
+        //       },
+        //       reactions: {
+        //         $map: {
+        //           input: "$reactions",
+        //           as: "reaction",
+        //           in: {
+        //             _id: "$$reaction._id",
+        //             reaction: "$$reaction.reaction",
+        //             reactedBy: "$$reaction.reactedBy",
+        //           },
+        //         },
+        //       },
+        //     },
+        //   },
+        
+        //   // Pagination and metadata
+        //   {
+        //     $facet: {
+        //       metadata: [{ $count: "totalMessages" }, { $addFields: { page, limit } }],
+        //       messages: [
+        //         { $sort: { createdAt: -1 } },
+        //         { $skip: (page - 1) * limit },
+        //         { $limit: limit },
+        //       ],
+        //     },
+        //   },
+        //   {
+        //     $project: {
+        //       messages: 1,
+        //       pagination: {
+        //         currentPage: page,
+        //         totalMessages: { $arrayElemAt: ["$metadata.totalMessages", 0] },
+        //       },
+        //     },
+        //   },
+        // ];
+        
         const pipeline = [
           // Match messages for the specific site
           { $match: { site: siteId } },
@@ -723,7 +1148,39 @@ class MessageService extends BaseService {
           },
           { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
         
-          
+          // Lookup for taggedMessage details
+          {
+            $lookup: {
+              from: "messages",
+              localField: "taggedMessage",
+              foreignField: "_id",
+              as: "taggedMessageDetails",
+            },
+          },
+          { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for createdBy of taggedMessage
+          {
+            $lookup: {
+              from: "users",
+              localField: "taggedMessageDetails.createdBy",
+              foreignField: "_id",
+              as: "taggedMessageDetails.createdByDetails",
+            },
+          },
+          { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Add fields for taggedMessage createdBy
+          {
+            $addFields: {
+              "taggedMessageDetails.createdBy": {
+                _id: "$taggedMessageDetails.createdByDetails._id",
+                name: "$taggedMessageDetails.createdByDetails.name",
+                avatar: "$taggedMessageDetails.createdByDetails.avatar",
+              },
+            },
+          },
+        
           // Lookup for task details
           {
             $lookup: {
@@ -789,6 +1246,26 @@ class MessageService extends BaseService {
           },
           { $unwind: { path: "$paymentRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
         
+          // Lookup for reactions
+          {
+            $lookup: {
+              from: "reactions",
+              localField: "_id",
+              foreignField: "message",
+              as: "reactions",
+            },
+          },
+        
+          // Lookup for reactedBy details in reactions
+          {
+            $lookup: {
+              from: "users",
+              localField: "reactions.reactedBy",
+              foreignField: "_id",
+              as: "reactionUserDetails",
+            },
+          },
+        
           // Add fields to map data
           {
             $project: {
@@ -843,7 +1320,20 @@ class MessageService extends BaseService {
                 isDeleted: "$taggedMessageDetails.isDeleted",
                 attachment: "$taggedMessageDetails.attachment",
               },
-              reactions: "$reactions",
+              reactions: {
+                $map: {
+                  input: "$reactions",
+                  as: "reaction",
+                  in: {
+                    _id: "$$reaction._id",
+                    reaction: "$$reaction.reaction",
+                    reactedBy: {
+                      _id: { $arrayElemAt: ["$reactionUserDetails._id", 0] },
+                      name: { $arrayElemAt: ["$reactionUserDetails.name", 0] },
+                    },
+                  },
+                },
+              },
             },
           },
         
@@ -868,7 +1358,6 @@ class MessageService extends BaseService {
             },
           },
         ];
-        
         
             const result = await MessageModel.aggregate(pipeline);
             return result[0];
@@ -935,156 +1424,386 @@ class MessageService extends BaseService {
     async getFormattedMessage(messageId){
        
       
-        const pipeline = [
-            // Match messages for the specific site
-            { $match: { _id:messageId} },
+        // const pipeline = [
+        //     // Match messages for the specific site
+        //     { $match: { _id:messageId} },
         
-            // Lookup for attachment details
-            {
-              $lookup: {
-                from: "files",
-                localField: "attachment",
-                foreignField: "_id",
-                as: "attachmentDetails",
-              },
-            },
-            { $unwind: { path: "$attachmentDetails", preserveNullAndEmptyArrays: true } },
+        //     // Lookup for attachment details
+        //     {
+        //       $lookup: {
+        //         from: "files",
+        //         localField: "attachment",
+        //         foreignField: "_id",
+        //         as: "attachmentDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$attachmentDetails", preserveNullAndEmptyArrays: true } },
         
-            // Lookup for createdBy details
-            {
-              $lookup: {
-                from: "users",
-                localField: "createdBy",
-                foreignField: "_id",
-                as: "createdByDetails",
-              },
-            },
-            { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
+        //     // Lookup for createdBy details
+        //     {
+        //       $lookup: {
+        //         from: "users",
+        //         localField: "createdBy",
+        //         foreignField: "_id",
+        //         as: "createdByDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
         
-            // Lookup for taggedMessage details
-            {
-              $lookup: {
-                from: "messages",
-                localField: "taggedMessage",
-                foreignField: "_id",
-                as: "taggedMessageDetails",
-              },
-            },
-            { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
+        //     // Lookup for taggedMessage details
+        //     {
+        //       $lookup: {
+        //         from: "messages",
+        //         localField: "taggedMessage",
+        //         foreignField: "_id",
+        //         as: "taggedMessageDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
         
-            // Lookup for createdBy of taggedMessage
-            {
-              $lookup: {
-                from: "users",
-                localField: "taggedMessageDetails.createdBy",
-                foreignField: "_id",
-                as: "taggedMessageDetails.createdByDetails",
-              },
-            },
-            { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
+        //     // Lookup for createdBy of taggedMessage
+        //     {
+        //       $lookup: {
+        //         from: "users",
+        //         localField: "taggedMessageDetails.createdBy",
+        //         foreignField: "_id",
+        //         as: "taggedMessageDetails.createdByDetails",
+        //       },
+        //     },
+        //     { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
         
-            // Add fields for taggedMessage createdBy
-            {
-              $addFields: {
-                "taggedMessageDetails.createdBy": {
-                  _id: "$taggedMessageDetails.createdByDetails._id",
-                  name: "$taggedMessageDetails.createdByDetails.name",
-                },
-              },
-            },
+        //     // Add fields for taggedMessage createdBy
+        //     {
+        //       $addFields: {
+        //         "taggedMessageDetails.createdBy": {
+        //           _id: "$taggedMessageDetails.createdByDetails._id",
+        //           name: "$taggedMessageDetails.createdByDetails.name",
+        //         },
+        //       },
+        //     },
         
-            // Lookup for reactions
-            {
-              $lookup: {
-                from: "reactions",
-                localField: "_id",
-                foreignField: "message",
-                as: "reactions",
-              },
-            },
+        //     // Lookup for reactions
+        //     {
+        //       $lookup: {
+        //         from: "reactions",
+        //         localField: "_id",
+        //         foreignField: "message",
+        //         as: "reactions",
+        //       },
+        //     },
         
-            // Lookup for reactedBy user details in reactions with projection
-            {
-              $lookup: {
-                from: "users",
-                let: { reactedById: "$reactions.reactedBy" },
-                pipeline: [
-                  { $match: { $expr: { $in: ["$_id", "$$reactedById"] } } },
-                  { $project: { _id: 1, name: 1, avatar: 1 } },
-                ],
-                as: "reactionUserDetails",
-              },
-            },
+        //     // Lookup for reactedBy user details in reactions with projection
+        //     {
+        //       $lookup: {
+        //         from: "users",
+        //         let: { reactedById: "$reactions.reactedBy" },
+        //         pipeline: [
+        //           { $match: { $expr: { $in: ["$_id", "$$reactedById"] } } },
+        //           { $project: { _id: 1, name: 1, avatar: 1 } },
+        //         ],
+        //         as: "reactionUserDetails",
+        //       },
+        //     },
         
-            // Add fields to map reaction details with user names
-            {
-              $addFields: {
-                reactions: {
-                  $map: {
-                    input: "$reactions",
-                    as: "reaction",
-                    in: {
-                      _id: "$$reaction._id",
-                      reaction: "$$reaction.reaction",
-                      reactedBy: {
-                        $arrayElemAt: [
-                          {
-                            $filter: {
-                              input: "$reactionUserDetails",
-                              as: "user",
-                              cond: { $eq: ["$$user._id", "$$reaction.reactedBy"] },
-                            },
-                          },
-                          0,
-                        ],
-                      },
-                      createdAt: "$$reaction.createdAt",
-                    },
-                  },
-                },
-              },
-            },
+        //     // Add fields to map reaction details with user names
+        //     {
+        //       $addFields: {
+        //         reactions: {
+        //           $map: {
+        //             input: "$reactions",
+        //             as: "reaction",
+        //             in: {
+        //               _id: "$$reaction._id",
+        //               reaction: "$$reaction.reaction",
+        //               reactedBy: {
+        //                 $arrayElemAt: [
+        //                   {
+        //                     $filter: {
+        //                       input: "$reactionUserDetails",
+        //                       as: "user",
+        //                       cond: { $eq: ["$$user._id", "$$reaction.reactedBy"] },
+        //                     },
+        //                   },
+        //                   0,
+        //                 ],
+        //               },
+        //               createdAt: "$$reaction.createdAt",
+        //             },
+        //           },
+        //         },
+        //       },
+        //     },
         
-            // Pagination and projection
-            {
-              $facet: {
-                messages: [
-                  {
-                    $project: {
-                      _id: 1,
-                      content: 1,
-                      attachment: {
-                        filename: "$attachmentDetails.filename",
-                        type: "$attachmentDetails.type",
-                        size: "$attachmentDetails.size",
-                        url: "$attachmentDetails.url",
-                      },
-                      createdBy: {
-                        _id: "$createdByDetails._id",
-                        name: "$createdByDetails.name",
-                        avatar: "$createdByDetails.profilePhoto",
-                      },
-                      taggedMessage: {
-                        _id: "$taggedMessageDetails._id",
-                        content: "$taggedMessageDetails.content",
-                        createdBy: "$taggedMessageDetails.createdBy",
-                      },
-                      reactions: "$reactions",
-                      isDeleted: 1,
-                      createdAt: 1,
-                      site: 1
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              $project: {
-                messages: 1,
-              },
-            },
-          ];
+        //     // Pagination and projection
+        //     {
+        //       $facet: {
+        //         messages: [
+        //           {
+        //             $project: {
+        //               _id: 1,
+        //               content: 1,
+        //               attachment: {
+        //                 filename: "$attachmentDetails.filename",
+        //                 type: "$attachmentDetails.type",
+        //                 size: "$attachmentDetails.size",
+        //                 url: "$attachmentDetails.url",
+        //               },
+        //               createdBy: {
+        //                 _id: "$createdByDetails._id",
+        //                 name: "$createdByDetails.name",
+        //                 avatar: "$createdByDetails.profilePhoto",
+        //               },
+        //               taggedMessage: {
+        //                 _id: "$taggedMessageDetails._id",
+        //                 content: "$taggedMessageDetails.content",
+        //                 createdBy: "$taggedMessageDetails.createdBy",
+        //               },
+        //               reactions: "$reactions",
+        //               isDeleted: 1,
+        //               createdAt: 1,
+        //               site: 1
+        //             },
+        //           },
+        //         ],
+        //       },
+        //     },
+        //     {
+        //       $project: {
+        //         messages: 1,
+        //       },
+        //     },
+        //   ];
           
+        const pipeline = [
+          // Match messages for the specific site
+          { $match: { _id: messageId } },
+        
+          // Lookup for attachment details
+          {
+            $lookup: {
+              from: "files",
+              localField: "attachment",
+              foreignField: "_id",
+              as: "attachmentDetails",
+            },
+          },
+          { $unwind: { path: "$attachmentDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for createdBy details
+          {
+            $lookup: {
+              from: "users",
+              localField: "createdBy",
+              foreignField: "_id",
+              as: "createdByDetails",
+            },
+          },
+          { $unwind: { path: "$createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for taggedMessage details
+          {
+            $lookup: {
+              from: "messages",
+              localField: "taggedMessage",
+              foreignField: "_id",
+              as: "taggedMessageDetails",
+            },
+          },
+          { $unwind: { path: "$taggedMessageDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for createdBy of taggedMessage
+          {
+            $lookup: {
+              from: "users",
+              localField: "taggedMessageDetails.createdBy",
+              foreignField: "_id",
+              as: "taggedMessageDetails.createdByDetails",
+            },
+          },
+          { $unwind: { path: "$taggedMessageDetails.createdByDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Add fields for taggedMessage createdBy
+          {
+            $addFields: {
+              "taggedMessageDetails.createdBy": {
+                _id: "$taggedMessageDetails.createdByDetails._id",
+                name: "$taggedMessageDetails.createdByDetails.name",
+                avatar: "$taggedMessageDetails.createdByDetails.avatar",
+              },
+            },
+          },
+        
+          // Lookup for task details
+          {
+            $lookup: {
+              from: "tasks",
+              localField: "task",
+              foreignField: "_id",
+              as: "taskDetails",
+            },
+          },
+          { $unwind: { path: "$taskDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for approvalRequest details
+          {
+            $lookup: {
+              from: "approvals",
+              localField: "approvalRequest",
+              foreignField: "_id",
+              as: "approvalRequestDetails",
+            },
+          },
+          { $unwind: { path: "$approvalRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for image details in approvalRequest
+          {
+            $lookup: {
+              from: "files",
+              localField: "approvalRequestDetails.images",
+              foreignField: "_id",
+              as: "approvalRequestImages",
+            },
+          },
+        
+          // Lookup for raisedBy details in approvalRequest
+          {
+            $lookup: {
+              from: "users",
+              localField: "approvalRequestDetails.raisedBy",
+              foreignField: "_id",
+              as: "approvalRequestRaisedByDetails",
+            },
+          },
+          { $unwind: { path: "$approvalRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for paymentRequest details
+          {
+            $lookup: {
+              from: "payments",
+              localField: "paymentRequest",
+              foreignField: "_id",
+              as: "paymentRequestDetails",
+            },
+          },
+          { $unwind: { path: "$paymentRequestDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for raisedBy details in paymentRequest
+          {
+            $lookup: {
+              from: "users",
+              localField: "paymentRequestDetails.raisedBy",
+              foreignField: "_id",
+              as: "paymentRequestRaisedByDetails",
+            },
+          },
+          { $unwind: { path: "$paymentRequestRaisedByDetails", preserveNullAndEmptyArrays: true } },
+        
+          // Lookup for reactions
+          {
+            $lookup: {
+              from: "reactions",
+              localField: "_id",
+              foreignField: "message",
+              as: "reactions",
+            },
+          },
+        
+          // Lookup for reactedBy details in reactions
+          {
+            $lookup: {
+              from: "users",
+              localField: "reactions.reactedBy",
+              foreignField: "_id",
+              as: "reactionUserDetails",
+            },
+          },
+        
+          // Add fields to map data
+          {
+            $project: {
+              _id: 1,
+              content: 1,
+              site: 1,
+              type: 1,
+              isDeleted: 1,
+              createdAt: 1,
+              attachment: {
+                filename: "$attachmentDetails.filename",
+                type: "$attachmentDetails.type",
+                size: "$attachmentDetails.size",
+                org: "$attachmentDetails.org",
+                uploadedBy: "$attachmentDetails.uploadedBy",
+                url: "$attachmentDetails.url",
+              },
+              createdBy: {
+                _id: "$createdByDetails._id",
+                name: "$createdByDetails.name",
+                avatar: "$createdByDetails.profilePhoto",
+              },
+              task: {
+                _id: "$taskDetails._id",
+                title: "$taskDetails.title",
+                status: "$taskDetails.status",
+                progressPercentage: "$taskDetails.progressPercentage",
+                attachment: "$taskDetails.attachments",
+              },
+              approvalRequest: {
+                _id: "$approvalRequestDetails._id",
+                status: "$approvalRequestDetails.status",
+                images: { $map: { input: "$approvalRequestImages", as: "img", in: "$$img.url" } },
+                raisedBy: {
+                  _id: "$approvalRequestRaisedByDetails._id",
+                  name: "$approvalRequestRaisedByDetails.name",
+                },
+              },
+              paymentRequest: {
+                _id: "$paymentRequestDetails._id",
+                amount: "$paymentRequestDetails.amount",
+                raisedBy: {
+                  _id: "$paymentRequestRaisedByDetails._id",
+                  name: "$paymentRequestRaisedByDetails.name",
+                },
+                attachments: "$paymentRequestDetails.attachments",
+              },
+              taggedMessage: {
+                _id: "$taggedMessageDetails._id",
+                content: "$taggedMessageDetails.content",
+                createdBy: "$taggedMessageDetails.createdBy",
+                isDeleted: "$taggedMessageDetails.isDeleted",
+                attachment: "$taggedMessageDetails.attachment",
+              },
+              reactions: {
+                $map: {
+                  input: "$reactions",
+                  as: "reaction",
+                  in: {
+                    _id: "$$reaction._id",
+                    reaction: "$$reaction.reaction",
+                    reactedBy: {
+                      _id: { $arrayElemAt: ["$reactionUserDetails._id", 0] },
+                      name: { $arrayElemAt: ["$reactionUserDetails.name", 0] },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        
+          // Pagination and metadata
+          {
+            $facet: {
+              messages: [
+                { $sort: { createdAt: -1 } },
+              ],
+            },
+          },
+          {
+            $project: {
+              messages: 1,
+            },
+          },
+        ];
+        
             const result = await MessageModel.aggregate(pipeline);
             return result[0];
           };

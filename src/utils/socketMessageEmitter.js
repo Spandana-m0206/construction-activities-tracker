@@ -17,3 +17,7 @@ exports.emitDeleteMessage=(message, org)=>{
 exports.emitReactionOnMessage=(message, org)=>{
     io.to(`org:${org}`).emit("reactOnMessage",message)
 }
+
+exports.emitActions = (message, org) => {
+    io.to(`org:${org}`).emit("actions", message);a
+}

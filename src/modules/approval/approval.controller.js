@@ -7,8 +7,9 @@ const { StatusCodes } = require("http-status-codes");
 const ApiResponse = require('../../utils/apiResponse');
 const messageService = require('../message/message.service');
 const taskService = require('../task/task.service');
-const { emitMessage } = require('../../utils/socketMessageEmitter');
+const { emitMessage, emitActions } = require('../../utils/socketMessageEmitter');
 const { default: mongoose } = require('mongoose');
+const fileService = require('../file/file.service');
 class ApprovalController extends BaseController {
     constructor() {
         super(ApprovalService); // Pass the ApprovalService to the BaseController
@@ -16,7 +17,7 @@ class ApprovalController extends BaseController {
 
     async create(req, res, next) {
         try {
-            const approvalData = req.body;
+            let approvalData = req.body;
             const user= req.user;
             if(!approvalData.task || !approvalData.site || !req.files || !approvalData.status || !approvalData.type) {
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'Please fill all required fields' ));
@@ -31,6 +32,22 @@ class ApprovalController extends BaseController {
             // if(user.role !== Roles.ADMIN && user.role !== Roles.SITE_SUPERVISOR){ 
             //     return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'You are not authorized to create approvals' ));
             // }
+
+            if (req.files?.length) {
+                approvalData.images = [];
+                for (const file of req.files) {
+                    const attachment = await fileService.create({
+                        filename: file.originalname,
+                        type: file.mimetype,
+                        size: file.size,
+                        org: req.user.org,
+                        uploadedBy: req.user.userId, 
+                        url: `${process.env.BASE_URL}/api/v1/files/link/${file.id}`, 
+                    });
+                    approvalData.images.push(attachment._id); 
+                }
+            }
+            
             approvalData.org = user.org;
             approvalData.raisedBy = req.user.userId
 
@@ -101,7 +118,7 @@ class ApprovalController extends BaseController {
                 // data.content=`${task.progressPercentage}% Completed ${task.title}`;
                     //    const approvalRequestMessage=await messageService.approvalRequestSuccessMessage(data)
                        const {messages} = await messageService.getFormattedMessage(new mongoose.Types.ObjectId(messageId))
-                       emitMessage(messages[0], req.user.org.toString())
+                       emitActions(messages[0], req.user.org.toString())
             }
             res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, data, 'Approval updated successfully'));
         } catch (error) {
