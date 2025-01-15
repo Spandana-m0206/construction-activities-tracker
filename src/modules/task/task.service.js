@@ -170,23 +170,32 @@ class TaskService extends BaseService {
   }
 
   computeTimesForAllTasks(taskMap, projectStartDate) {
-    const rootIds = TaskIDs.ROOT_IDS
     const baseDate = projectStartDate ? new Date(projectStartDate) : new Date();
-
+    const rootIds = TaskIDs.ROOT_IDS; // e.g. [1]
+  
     for (const rId of rootIds) {
-      this.assignTimes(taskMap, rId, 0);
-      this.convertOffsetsToDates(taskMap, rId, baseDate);
+      // Pass a new visited set so each root is traversed fresh.
+      this.assignTimes(taskMap, rId, 0, new Set());
+      this.convertOffsetsToDates(taskMap, rId, baseDate, new Set());
     }
-  }
+  }  
 
-  assignTimes(taskMap, taskId, currentStart) {
+  assignTimes(taskMap, taskId, currentStart, visited = new Set()) {
+
+    if (visited.has(taskId)) {
+      return;
+    }
+    visited.add(taskId);
+  
     const task = taskMap[taskId];
     if (!task) return;
-
-    let dur = task.duration || 0;
+  
+    // Normal offset logic
+    const dur = task.duration || 0;
     task.startOffset = currentStart;
     task.endOffset = currentStart + dur;
-
+  
+    // Subtasks get the same start/end offset
     if (task.subtasks && task.subtasks.length > 0) {
       for (const subId of task.subtasks) {
         const sub = taskMap[subId];
@@ -195,19 +204,25 @@ class TaskService extends BaseService {
         sub.endOffset = task.endOffset;
       }
     }
-
+  
+    // Now, move on to nextTasks
     const nextStart = task.endOffset;
     if (task.nextTasks && task.nextTasks.length > 0) {
       for (const nId of task.nextTasks) {
-        this.assignTimes(taskMap, nId, nextStart);
+        this.assignTimes(taskMap, nId, nextStart, visited);
       }
     }
   }
+  
 
-  convertOffsetsToDates(taskMap, taskId, baseDate) {
+  convertOffsetsToDates(taskMap, taskId, baseDate, visited = new Set()) {
+    if (visited.has(taskId)) return;
+    visited.add(taskId);
+  
     const task = taskMap[taskId];
     if (!task) return;
-
+  
+    // Convert numeric offsets to actual Dates
     if (typeof task.startOffset === 'number') {
       const sDate = new Date(baseDate);
       sDate.setDate(sDate.getDate() + task.startOffset);
@@ -218,18 +233,21 @@ class TaskService extends BaseService {
       eDate.setDate(eDate.getDate() + task.endOffset);
       task.endTime = eDate;
     }
-
-    if (task.subtasks && task.subtasks.length > 0) {
+  
+    // Recurse for subtasks
+    if (Array.isArray(task.subtasks)) {
       for (const subId of task.subtasks) {
-        this.convertOffsetsToDates(taskMap, subId, baseDate);
+        this.convertOffsetsToDates(taskMap, subId, baseDate, visited);
       }
     }
-    if (task.nextTasks && task.nextTasks.length > 0) {
+  
+    // Recurse for nextTasks
+    if (Array.isArray(task.nextTasks)) {
       for (const nId of task.nextTasks) {
-        this.convertOffsetsToDates(taskMap, nId, baseDate);
+        this.convertOffsetsToDates(taskMap, nId, baseDate, visited);
       }
     }
-  }
+  }  
 
   async createTasksFromMap(taskMap) {
     try {
