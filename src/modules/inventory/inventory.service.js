@@ -6,6 +6,10 @@ class InventoryService extends BaseService {
         super(Inventory); // Pass the Inventory model to the BaseService
     }
 
+    async find(filter = {}) {
+        return await this.model.find(filter).populate('manager', 'name email');
+    }
+
     // Example custom service method: Find inventories by manager
     async findInventoriesByManager(filter = {}) {
         return await this.model.find(filter).populate('manager', 'name email');

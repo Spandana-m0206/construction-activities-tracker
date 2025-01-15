@@ -8,7 +8,7 @@ router.put('/review/:id', OrderController.reviewMaterialRequest);
 // router.post('/material-transfers', OrderController.transferMaterials);
 
 // Base routes from BaseController
-router.post('/', OrderController.create.bind(OrderController)); // Create order
+// router.post('/', OrderController.create.bind(OrderController)); // Create order
 router.get('/', OrderController.find.bind(OrderController)); // Get all orders
 router.get('/:id', OrderController.findOne.bind(OrderController)); // Get order by ID
 router.put('/:id', OrderController.update.bind(OrderController)); // Update order
