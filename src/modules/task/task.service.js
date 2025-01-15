@@ -460,9 +460,10 @@ class TaskService extends BaseService {
                 nextTask.progressPercentage = 0; // optional
                 //message status: started with next task
                 nextTask.content=`We Have Started With ${nextTask.title}`
+                //TODO: check this message function 
                 const messageStatus=await messageService.taskStatusMessage(nextTask)
                 const {messages} = await messageService.getFormattedMessage(messageStatus._id)
-                emitMessage(messages[0], req.user.org.toString())
+                emitMessage(messages[0], task.org.toString())
                 await nextTask.save();
               }
             })
@@ -479,13 +480,11 @@ class TaskService extends BaseService {
           }
         }
       }
-      //message for successfull completion of the work
-      task.content=`We Have Completed The ${task.title}`
-      const messageStatus=await messageService.create(task)
-      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
-      emitMessage(messages[0], req.user.org.toString())
     }
-  
+      task.content = `Task ${newStatus?.toLowerCase()?.replace(/_/g, ' ')?.replace(/\b\w/g, char => char?.toUpperCase())}: ${task.title}`
+      const messageStatus=await messageService.taskStatusMessage(task)
+      const {messages} = await messageService.getFormattedMessage(messageStatus._id)
+      emitMessage(messages[0], task.org.toString())
     // Now, update the parent's progress, if a parent exists:
     if (task.parentTask) {
       await this.updateParentProgressRecursively(task.parentTask);
@@ -538,7 +537,7 @@ class TaskService extends BaseService {
       parent.progressPercentage = 100;
       //message status for sub tasks completion under main task
       parent.content=`We Have Completed All SubTasks Under ${parent.title}`
-      const messageStatus=await messageService.create(parent)
+      const messageStatus=await messageService.taskStatusMessage(parent)
       const {messages} = await messageService.getFormattedMessage(messageStatus._id)
       emitMessage(messages[0], req.user.org.toString())
     } else {

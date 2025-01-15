@@ -25,7 +25,7 @@ class SiteController extends BaseController {
     }
     async create (req, res) {
         try {
-            const siteData = req.body;
+            const {siteData} = req.body;
             if(siteData.startDate>siteData.endDate) {
                 return res.status(400)
                     .json(new ApiError(StatusCodes.BAD_REQUEST, "Invalid Date Duration"));
