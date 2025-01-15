@@ -65,7 +65,7 @@ const OrderStatuses = {
     CANCELLED: 'cancelled',
     PARTIALLY_FULFILLED: 'partially fulfilled'
 }
-const OrderPriorities = ['high', 'medium', 'low'];
+const OrderPriorities = ['High', 'Medium', 'Low'];
 const ApprovalStatuses = {
     IN_REVIEW: 'in review',
     APPROVED: 'approved',

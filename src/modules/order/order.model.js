@@ -29,7 +29,8 @@ const orderFields = {
             material: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata' },
             quantity: { type: Number, required: true }
         }
-    ]   
+    ],
+    orderDeadline: { type: Date, required: true },
 };
 
 // Create the extended schema

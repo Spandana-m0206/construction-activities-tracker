@@ -6,7 +6,14 @@ class OrderService extends BaseService {
     constructor() {
         super(Order); // Pass the Order model to the BaseService
     }
-
+    async findTodayOrder(filter={}) {
+        // Calculate start and end of today
+        const data = await this.model.find(filter)
+        .populate('fromSite','_id name')
+        .populate('fromInventory','_id name');
+        
+        return data;
+    }
     // Example custom service method: Get orders by organization
     async findOrdersByOrg(orgId) {
         return await this.model.model.find({ org: orgId })

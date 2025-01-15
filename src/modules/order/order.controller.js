@@ -5,7 +5,9 @@ const inventoryService = require('../inventory/inventory.service');
 const OrderService = require('./order.service');
 const messageService = require('../message/message.service');
 const { emitMessage } = require('../../utils/socketMessageEmitter');
-
+const OrderModel = require('./order.model');
+const {StatusCodes} = require('http-status-codes');
+const ApiResponse = require('../../utils/apiResponse');
 class OrderController extends BaseController {
     constructor() {
         super(OrderService); // Pass the OrderService to the BaseController
@@ -16,6 +18,57 @@ class OrderController extends BaseController {
         try {
             const orders = await this.service.findOrdersByOrg(req.params.orgId);
             res.status(200).json({ success: true, data: orders });
+        } catch (error) {
+            next(error);
+        }
+    }
+    async getSummary(req, res, next) {
+        try {
+          const orgId = req.user.org;
+          const summary = await OrderModel.aggregate([
+            {
+              $match: { org: orgId }, // Match orders for the organization
+            },
+            {
+              $group: {
+                _id: '$status', // Group by the 'status' field
+                count: { $sum: 1 }, // Count the number of orders for each status
+              },
+            },
+          ]);
+      
+          // Extract counts for COMPLETED and calculate pending requests
+          const completedCount = summary.find(item => item._id === 'COMPLETED')?.count || 0;
+          const totalCount = summary.reduce((sum, item) => sum + item.count, 0);
+          const pendingCount = totalCount - completedCount;
+      
+          // Return only completed and pending counts
+          const data = {
+            completed: completedCount,
+            pending: pendingCount,
+          };
+          res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, data, 'Order summary retrieved successfully'));
+        } catch (error) {
+          next(error);
+        }
+    }      
+    async getTodayOrders(req, res, next) {
+        try {
+            // Extract organization ID from req.user
+            const orgId = req.user.org;  
+            // Calculate start and end of today
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0); // Midnight
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999); // End of the day
+        
+            // Query today's orders for the organization
+            const todaysOrders = await this.service.findTodayOrder({
+              org: orgId,
+              createdAt: { $gte: startOfDay, $lt: endOfDay },
+            });
+        
+            res.status(StatusCodes.OK).json(new ApiResponse(200, todaysOrders, 'Today\'s orders retrieved successfully'));
         } catch (error) {
             next(error);
         }
