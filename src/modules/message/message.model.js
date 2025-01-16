@@ -17,7 +17,6 @@ const messageFields = {
     type: { type: String, enum: enumToArray(MessageTypes), required: true,default:MessageTypes.TEXT}, 
     taggedMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message'}, 
     isDeleted: { type: Boolean, required: true,default:false }, 
-    
 };
 
 // Create the extended schema
