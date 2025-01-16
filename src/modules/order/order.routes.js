@@ -6,7 +6,8 @@ const router = express.Router();
 router.post('/request', OrderController.createMaterialRequest);
 router.put('/review/:id', OrderController.reviewMaterialRequest);
 // router.post('/material-transfers', OrderController.transferMaterials);
-
+router.get('/summary', OrderController.getSummary.bind(OrderController)); // Get order summary
+router.get('/today', OrderController.getTodayOrders.bind(OrderController)); // Get today's orders
 // Base routes from BaseController
 // router.post('/', OrderController.create.bind(OrderController)); // Create order
 router.get('/', OrderController.find.bind(OrderController)); // Get all orders
