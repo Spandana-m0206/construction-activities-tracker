@@ -23,7 +23,7 @@ const orderFields = {
     approvedOn: { type: Date, required: false }, // Nullable
     dispatchedOn: { type: Date, required: false }, // Nullable
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'requestFulfillment', required: true},
+    fulfillment: { type: [mongoose.Schema.Types.ObjectId], ref: 'RequestFulfillment', required: true},
     fulfilledMaterials: [
         {
             material: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata' },

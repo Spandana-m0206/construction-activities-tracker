@@ -10,6 +10,8 @@ router.get('/summary', OrderController.getSummary.bind(OrderController)); // Get
 router.get('/today', OrderController.getTodayOrders.bind(OrderController)); // Get today's orders
 // Base routes from BaseController
 // router.post('/', OrderController.create.bind(OrderController)); // Create order
+router.get("/my-orders", OrderController.getMyOrders.bind(OrderController));
+router.get("/transfer-requests", OrderController.getTransferRequests.bind(OrderController));
 router.get('/', OrderController.find.bind(OrderController)); // Get all orders
 router.get('/:id', OrderController.findOne.bind(OrderController)); // Get order by ID
 router.put('/:id', OrderController.update.bind(OrderController)); // Update order

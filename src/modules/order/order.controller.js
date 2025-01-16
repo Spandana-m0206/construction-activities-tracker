@@ -73,9 +73,9 @@ class OrderController extends BaseController {
             next(error);
         }
     }
-    async createMaterialRequest  (req, res, next)  {
+    async createMaterialRequest(req, res, next) {
         try {
-            const { site, materials, priority, task, fromInventory, fromSite} = req.body;
+            const { site, materials, priority, task, fromInventory, fromSite } = req.body;
 
             let assignedTo;
 
@@ -107,12 +107,12 @@ class OrderController extends BaseController {
                 fromInventory,
                 fromSite
             });
-          const siteData=await siteService.findById(site)
-           order.content=`Added Material Request For ${siteData.name}`;
-           const orderCreatedMessage=await messageService.materialOrderStatusMessage(order)
-           const {messages} = await messageService.getFormattedMessage(orderCreatedMessage._id)
-           emitMessage(messages[0], req.user.org.toString())
-            
+            const siteData = await siteService.findById(site)
+            order.content = `Added Material Request For ${siteData.name}`;
+            const orderCreatedMessage = await messageService.materialOrderStatusMessage(order)
+            const { messages } = await messageService.getFormattedMessage(orderCreatedMessage._id)
+            emitMessage(messages[0], req.user.org.toString())
+
 
             res.status(200).json({ success: true, data: order });
         } catch (error) {
@@ -120,18 +120,48 @@ class OrderController extends BaseController {
         }
     };
 
-    async reviewMaterialRequest (req, res, next){
+    async reviewMaterialRequest(req, res, next) {
         try {
             const { id } = req.params;
             const { status } = req.body;
             const order = await OrderService.reviewOrder(id, status);
-    
+
             res.status(200).json({ success: true, data: order });
         } catch (error) {
             next(error);
         }
     };
-    
+    async getMyOrders(req, res, next) {
+        try {
+            const { site: siteId, inventory: inventoryId } = req.query;
+            const orders = await this.service.getMyOrders(siteId, inventoryId, req.user.org);
+            return res.status(200).json({ success: true, data: orders });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+
+    async getTransferRequests(req, res, next){
+        try{
+            const { fromSite, fromInventory } = req.query;
+            const orders = await this.service.getTransferRequests(fromSite, fromInventory, req.user.org);
+            return res.status(200).json({ success: true, data: orders });
+        }
+        catch (error){
+            next(error);
+        }
+    }
+
+    async findOne(req, res, next) {
+        try {
+            const orders = await this.service.getDetailedOrder({_id: req.params.id });
+            res.status(200).json({ success: true, data: orders });
+        } catch (error) {
+            next(error);
+        }
+    }
+
 }
 
 module.exports = new OrderController();

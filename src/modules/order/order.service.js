@@ -1,6 +1,7 @@
 const { TransferTypes, OrderStatuses } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
 const Order = require('./order.model');
+const fulfillmentService = require('../requestFulfillment/requestFulfillment.service');
 
 class OrderService extends BaseService {
     constructor() {
@@ -16,7 +17,7 @@ class OrderService extends BaseService {
     }
     // Example custom service method: Get orders by organization
     async findOrdersByOrg(orgId) {
-        return await this.model.model.find({ org: orgId })
+        return await this.model.find({ org: orgId })
             .populate('createdBy', 'name email')
             .populate('site', 'name location')
             .populate('inventory', 'name address')
@@ -25,6 +26,181 @@ class OrderService extends BaseService {
             .populate('task', 'title status')
             .populate('materials.material', 'name category')
     }
+
+    async getTransferRequests(fromSite, fromInventory, orgId) {
+        let orders;
+        if(fromSite){
+            console.log('fromSite', fromSite)
+            orders = await this.model.find({ fromSite: fromSite, org: orgId })
+            .populate('site', 'name location')
+            .populate('inventory', 'name address')
+            .populate('fromInventory', 'name address')
+            .populate('fromSite', 'name location')
+            .lean();
+        }
+        if(fromInventory){
+            console.log('fromInventory', fromInventory)
+            orders = await this.model.find({ fromInventory: fromInventory, org: orgId })
+            .populate('site', 'name location')
+            .populate('inventory', 'name address')
+            .populate('fromInventory', 'name address')
+            .populate('fromSite', 'name location')
+            .lean();
+        }
+            const formattedOrders = await Promise.all(orders.map(async (order) => {
+                return {
+                    _id: order._id,
+                    createdAt: order.createdAt,
+                    dispatchedAt: order.dispatchedOn || null,
+                    completedAt: order.completedOn || null,
+                    status: order.status,
+                    totalItems: order.materials ? order.materials.length : 0,
+                    fromSite: order.fromSite ? {
+                        _id: order.fromSite._id,
+                        name: order.fromSite.name,
+                        location: order.fromSite.location,
+                    } : null,
+                    fromInventory: order.fromInventory ? {
+                        _id: order.fromInventory._id,
+                        name: order.fromInventory.name,
+                        location: order.fromInventory.address,
+                    } : null,
+                    site: order.site ? {
+                        _id: order.site._id,
+                        name: order.site.name,
+                        location: order.site.location,
+                    } : null,
+                    inventory: order.inventory ? {
+                        _id: order.inventory._id,
+                        name: order.inventory.name,
+                        location: order.inventory.address,
+                    } : null,
+                };
+            }));
+        
+            return formattedOrders;
+    }
+
+
+    async getMyOrders(siteId, inventoryId, orgId) {
+        let orders;
+        if(siteId){
+            console.log('siteId', siteId)
+            orders = await this.model.find({ site: siteId, org: orgId })
+            .populate('site', 'name location')
+            .populate('inventory', 'name address')
+            .populate('fromInventory', 'name address')
+            .populate('fromSite', 'name location')
+            .lean();
+        }
+        if(inventoryId){
+            console.log('inventoryId', inventoryId)
+            orders = await this.model.find({ site: siteId, org: orgId })
+            .populate('site', 'name location')
+            .populate('inventory', 'name address')
+            .populate('fromInventory', 'name address')
+            .populate('fromSite', 'name location')
+            .lean();
+        }
+
+            const formattedOrders = await Promise.all(orders.map(async (order) => {
+                return {
+                    _id: order._id,
+                    createdAt: order.createdAt,
+                    dispatchedAt: order.dispatchedOn || null,
+                    completedAt: order.completedOn || null,
+                    status: order.status,
+                    totalItems: order.materials ? order.materials.length : 0,
+                    fromSite: order.fromSite ? {
+                        _id: order.fromSite._id,
+                        name: order.fromSite.name,
+                        location: order.fromSite.location,
+                    } : null,
+                    fromInventory: order.fromInventory ? {
+                        _id: order.fromInventory._id,
+                        name: order.fromInventory.name,
+                        location: order.fromInventory.address,
+                    } : null,
+                    site: order.site ? {
+                        _id: order.site._id,
+                        name: order.site.name,
+                        location: order.site.location,
+                    } : null,
+                    inventory: order.inventory ? {
+                        _id: order.inventory._id,
+                        name: order.inventory.name,
+                        location: order.inventory.address,
+                    } : null,
+                };
+            }));
+        
+            return formattedOrders;
+    }
+    async getDetailedOrder(query) {
+        const order = await this.model.findOne(query)
+            .populate('site', 'name location')
+            .populate('inventory', 'name address')
+            .populate('fromInventory', 'name address')
+            .populate('fromSite', 'name location')
+            .populate('materials.material', 'name category')
+            .populate('fulfilledMaterials.material', 'name category')
+            .populate('fulfillment')
+            .lean(); // Use lean for better performance since you're transforming the data
+    
+        if (!order) {
+            return null; // Return null or handle the case where no order is found
+        }
+    
+        const fulfillments = await fulfillmentService.findFulfillmentsByOrder(order._id);
+    
+        return {
+            _id: order._id,
+            createdAt: order.createdAt,
+            dispatchedAt: order.dispatchedOn || null,
+            completedAt: order.completedOn || null,
+            status: order.status,
+            totalItems: order.materials ? order.materials.length : 0,
+            fromSite: order.fromSite ? {
+                _id: order.fromSite._id,
+                name: order.fromSite.name,
+                location: order.fromSite.location,
+            } : null,
+            fromInventory: order.fromInventory ? {
+                _id: order.fromInventory._id,
+                name: order.fromInventory.name,
+                location: order.fromInventory.address,
+            } : null,
+            site: order.site ? {
+                _id: order.site._id,
+                name: order.site.name,
+                location: order.site.location,
+            } : null,
+            inventory: order.inventory ? {
+                _id: order.inventory._id,
+                name: order.inventory.name,
+                location: order.inventory.address,
+            } : null,
+            materials: order.materials.map((material) => ({
+                _id: material.material._id,
+                name: material.material.name,
+                quantity: material.quantity,
+            })),
+            fulfillments: fulfillments.map((fulfillment) => ({
+                _id: fulfillment._id,
+                status: fulfillment.status,
+                transferFromType: fulfillment.transferFromType,
+                transferredFromName: fulfillment.transferredFrom?.name || null,
+                materialList: fulfillment.materialList.map((item) => ({
+                    _id: item.material,
+                    name: item.material.name,
+                    quantity: item.quantity,
+                })),
+                fulfilledOn: fulfillment.fulfilledOn,
+                receivedOn: fulfillment.receivedOn || null,
+            })),
+        };
+    }
+      
 
     async createOrder (orderData) {
         return await this.model.create(orderData);
