@@ -30,7 +30,6 @@ const orderFields = {
             quantity: { type: Number, required: true }
         }
     ],
-    orderDeadline: { type: Date, required: true },
 };
 
 // Create the extended schema
