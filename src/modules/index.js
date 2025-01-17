@@ -24,6 +24,7 @@ const purchaseRoutes = require("./purchase");
 const floorDetailsRoutes = require('./floorDetails')
 const { authMiddleware } = require("../middlewares/auth.middleware");
 const reactionRoutes=require('./messageReaction')
+const lastSeenMessageInfo=require('./lastSeenMessages')
 
 const router = express.Router();
 
@@ -52,6 +53,7 @@ router.use('/v1/request-fulfillments', requestFulfillmentRoutes);
 router.use('/v1/payment-requests', paymentRequestRoutes);
 router.use('/v1/floor-details', floorDetailsRoutes);
 router.use('/v1/purchases', purchaseRoutes);
-router.use('/v1/reaction',reactionRoutes)
+router.use('/v1/reaction',reactionRoutes);
+router.use('/v1/lastseen-message-info',lastSeenMessageInfo)
 
 module.exports = router;

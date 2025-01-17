@@ -8,6 +8,8 @@ const { Roles } = require('../../utils/enums');
 const {emitMessage, emitDeleteMessage}=require('../../utils/socketMessageEmitter');
 const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
 const fileService = require('../file/file.service');
+const lastSeenController = require('../lastSeenMessages/lastSeen.controller');
+const lastSeenService = require('../lastSeenMessages/lastSeen.service');
  
 
 class MessageController extends BaseController {
@@ -111,6 +113,14 @@ class MessageController extends BaseController {
                 limit="50"
             }
             const {messages,pagination}=await this.service.findMessagesBySite(site._id,parseInt(page),parseInt(limit))
+            if(page==="1" && messages.length!=0){
+                const lastMessageData={
+                    message:messages[0]._id,
+                    user:req.user.userId,
+                    site:site._id
+                }
+            await lastSeenService.create(lastMessageData)
+            }
             
             res.status(StatusCodes.OK).json(new PaginatedApiResponse(StatusCodes.OK,messages,"Messages", parseInt(page),parseInt(limit),pagination.totalMessages))
         } catch (error) {

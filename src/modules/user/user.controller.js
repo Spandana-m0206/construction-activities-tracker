@@ -7,18 +7,36 @@ const { Roles } = require('../../utils/enums');
 const ApiError = require('../../utils/apiError');
 const userService = require('./user.service');
 const {generateRandomPassword} = require('../../utils/password');
+const fileService = require('../file/file.service');
 class UserController extends BaseController {
     constructor() {
         super(UserService); // Pass the UserService to the BaseController
     }
-
+    async findOne(req, res, next) {
+        try {
+            const user = await this.service.findUserById(req.params.id);
+            if (!user) {
+                return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND, "User not found"));
+            }
+            res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED, user, "User fetched successfully"));
+        } catch (error) {
+            next(error);
+        }
+    }
     async uploadProfilePhoto(req, res, next) {
         try {
             const user = req.user;
-            if (!req.file) {
-                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid file"));
+            if(req.file){
+                const attachment = await fileService.create({
+                    filename: req.file.originalname,
+                    type: req.file.mimetype,
+                    size: req.file.size,
+                    org: req.user.org,
+                    uploadedBy: req.user.userId, // Assuming userId is in the request user object
+                    url: `${process.env.BASE_URL}/api/v1/files/link/${req.file.id}`, // Example URL format
+                })
+                user.profilePhoto = attachment._id
             }
-            user.profilePhoto = req.file.id;
             await user.save();
             res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED, user, "Profile photo uploaded successfully"));
         } catch (error) {

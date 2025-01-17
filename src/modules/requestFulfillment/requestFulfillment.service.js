@@ -26,8 +26,8 @@ class RequestFulfillmentService extends BaseService {
             .populate('materialList', 'name category')
             .populate('fulfilledBy', 'name email')
             .populate('receivedBy', 'name email')
-            .populate('transferredFrom', 'name location')
-            .populate('transferredTo', 'name location');
+            .populate('transferredFrom', 'name location address')
+            .populate('transferredTo', 'name location address');
     }
 
     async createFulfillment(data) {

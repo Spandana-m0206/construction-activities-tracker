@@ -20,6 +20,7 @@ const userFields = {
     isActive: { type: Boolean, required: true, default: true },
     refreshToken:{type:String},
     profilePhoto: { type:mongoose.Schema.Types.ObjectId, ref: 'File', required: false },
+    address : {type: String, required: false},
 };
 
 // Create the extended schema
