@@ -15,7 +15,7 @@ class FileController extends BaseController {
                 size: req.file.size,
                 org: req.user.org,
                 uploadedBy: req.user.userId, // Assuming userId is in the request user object
-                url: `${process.env.BASE_URL}/file/link/${req.file.id}`, // Example URL format
+                url: `${process.env.BASE_URL}/files/link/${req.file.id}`, // Example URL format
             };
 
             const newFile = await this.service.create(fileData);

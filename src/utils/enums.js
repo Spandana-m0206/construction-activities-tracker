@@ -1,4 +1,9 @@
-const CountryCodes = ['+1', '+91', '+44', '+61']; // Add more as needed
+const CountryCodes = {
+    USA : '+1',
+    IN : '+91',
+    UK : '+44',
+    AUSTRALIA :'+61',
+  }; // Add more as needed
 const Roles = {
     ADMIN : 'Admin',
     INVENTORY_MANAGER : 'Inventory Manager',

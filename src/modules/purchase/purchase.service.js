@@ -168,6 +168,28 @@ class PurchaseService extends BaseService {
 
     return purchase;
   }
+  async findPurchasesByVendor(filter={}) {
+    const purchases = await PurchaseModel.find(filter)
+    .populate({
+        path: 'materialListItems',
+        select: 'id price qty',
+        populate: {
+            path: 'materialMetadata',
+            select: 'id name',
+            model: 'MaterialMetadata'
+        }
+    })
+    .populate({
+        path: 'purchasedBy',
+        select: 'id name',
+    })
+    .populate({
+        path: 'attachment',
+        select: 'id url',
+    });
+
+     return purchases;
+  }
 }
 
 module.exports = new PurchaseService();
