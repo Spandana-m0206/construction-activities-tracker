@@ -6,7 +6,7 @@ const { ApprovalStatuses, ApprovalTypes } = require('../../utils/enums'); // Enu
 // Define Approval-specific fields
 const approvalFields = {
     task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', required: true }, // Reference to Task
-    status: { type: String, enum: enumToArray(ApprovalStatuses), required: true }, // Enum for statuses
+    status: { type: String, enum: enumToArray(ApprovalStatuses), required: true, default:ApprovalStatuses.IN_REVIEW }, // Enum for statuses
     images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File', required: true }], // Array of file references
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required: true }, // Reference to Site
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
@@ -15,6 +15,7 @@ const approvalFields = {
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to User
     approvedAt: { type: Date, default: Date.now()}, // Reference to User
     raisedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
+    comment: { type: String }
 };
 
 // Create the extended schema

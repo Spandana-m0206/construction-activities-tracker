@@ -30,6 +30,7 @@ const orderFields = {
             quantity: { type: Number, required: true }
         }
     ]   
+    // Add comment for task
 };
 
 // Create the extended schema

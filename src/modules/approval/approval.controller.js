@@ -1,5 +1,5 @@
 const ApiError = require('../../utils/apiError');
-const { ApprovalStatuses, ApprovalTypes, Roles } = require('../../utils/enums');
+const { ApprovalStatuses, ApprovalTypes, Roles, TaskStatuses } = require('../../utils/enums');
 const enumToArray = require('../../utils/EnumToArray');
 const BaseController = require('../base/BaseController');
 const ApprovalService = require('./approval.service');
@@ -19,12 +19,12 @@ class ApprovalController extends BaseController {
         try {
             let approvalData = req.body;
             const user= req.user;
-            if(!approvalData.task || !approvalData.site || !req.files || !approvalData.status || !approvalData.type) {
+            if(!approvalData.task || !approvalData.site || !req.files || !approvalData.type || !approvalData.progressPercentage) {
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'Please fill all required fields' ));
             } 
-            if(!enumToArray(ApprovalStatuses).includes(approvalData.status)) {
-                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'Invalid Approval status' ));
-            }
+            // if(!enumToArray(ApprovalStatuses).includes(approvalData.status)) {
+            //     return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'Invalid Approval status' ));
+            // }
             if(!enumToArray(ApprovalTypes).includes(approvalData.type)) {
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,'Invalid Approval type' ));
             }
@@ -54,7 +54,7 @@ class ApprovalController extends BaseController {
             const data = await this.service.create(approvalData);
             const task=await taskService.findById(approvalData.task)
             //TODO: what should be the content ? 
-                  data.content=`${task.progressPercentage}% Completed ${task.title}`;
+                  data.content=`${approvalData.progressPercentage}% Completed ${task.title}`;
                        const approvalRequestMessage=await messageService.approvalRequestSuccessMessage(data)
                        const {messages} = await messageService.getFormattedMessage(approvalRequestMessage._id)
                        emitMessage(messages[0], req.user.org.toString())
@@ -114,6 +114,11 @@ class ApprovalController extends BaseController {
             }
             const filter = { _id: req.params.id, org: user.org };
             const data = await this.service.updateOne(filter, approvalData);
+            const approval = await this.service.findById(req.params.id)
+            if(approvalData.status == ApprovalStatuses.APPROVED && approval.type == ApprovalTypes.TASK_COMPLETED){
+                const task=await taskService.updateTaskStatus(approval.task, TaskStatuses.COMPLETED, 100, req.files)
+                
+            }
             if(approvalData.status && messageId){
                 // data.content=`${task.progressPercentage}% Completed ${task.title}`;
                     //    const approvalRequestMessage=await messageService.approvalRequestSuccessMessage(data)
@@ -122,6 +127,7 @@ class ApprovalController extends BaseController {
             }
             res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, data, 'Approval updated successfully'));
         } catch (error) {
+            res.status(500).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message, error))
             next(error);
         }
     }
