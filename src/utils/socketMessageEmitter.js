@@ -19,5 +19,5 @@ exports.emitReactionOnMessage=(message, org)=>{
 }
 
 exports.emitActions = (message, org) => {
-    io.to(`org:${org}`).emit("actions", message);a
+    io.to(`org:${org}`).emit("actions", message);
 }

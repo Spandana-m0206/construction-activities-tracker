@@ -75,7 +75,7 @@ class MessageController extends BaseController {
                 return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Message Not Found","Message Not Found"))
             }
             if (
-                message.createdBy.toString() !== req.user.userId.toString() && 
+                message.createdBy?.toString() !== req.user.userId.toString() && 
                 (req.user.role !== Roles.ADMIN || message.org.toString() !== req.user.org.toString()) 
               ) {
                 return res.status(StatusCodes.UNAUTHORIZED).json(

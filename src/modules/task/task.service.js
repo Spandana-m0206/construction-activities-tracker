@@ -7,6 +7,7 @@ const SiteModel = require('../site/site.model');
 const Task = require('./task.model');
 const messageService = require('../message/message.service');
 const { emitMessage } = require('../../utils/socketMessageEmitter');
+const fileService = require('../file/file.service');
 
 class TaskService extends BaseService {
   constructor() {
@@ -404,7 +405,7 @@ class TaskService extends BaseService {
     return true; // All checks passed
   }
 
-  async updateTaskStatus(taskId, newStatus, progressPercentage) {
+  async updateTaskStatus(taskId, newStatus, progressPercentage, attachments) {
     // Validate if the task can be updated
     await this.canUpdateTask(taskId, newStatus);
   
@@ -418,6 +419,21 @@ class TaskService extends BaseService {
     if (!task) {
       throw new ApiError(404, "Task not found");
     }
+
+    //TODO: add attachments
+    if (attachments?.length) {
+      for (const file of attachments) {
+          const attachment = await fileService.create({
+              filename: file.originalname,
+              type: file.mimetype,
+              size: file.size,
+              org: req.user.org,
+              uploadedBy: req.user.userId, 
+              url: `${process.env.BASE_URL}/api/v1/files/link/${file.id}`, 
+          });
+          task.attachments.push(attachment._id); 
+      }
+  }
   
     // Update status and progressPercentage based on your custom logic
     task.status = newStatus;
@@ -504,8 +520,8 @@ class TaskService extends BaseService {
       data: updatedTask,
     };
   }
-  async findTasksBySite(siteId) {
-    return await this.model.find({ site: siteId })
+  async findTasksBySite(siteId, filters) {
+    return await this.model.find({ site: siteId, ...filters })
         .populate('subtasks', 'title status')
         .populate('assignedTo', 'name email')
         .populate('createdBy', '_id name')
@@ -537,10 +553,10 @@ class TaskService extends BaseService {
       parent.status = TaskStatuses.COMPLETED;
       parent.progressPercentage = 100;
       //message status for sub tasks completion under main task
-      parent.content=`We Have Completed All SubTasks Under ${parent.title}`
+      parent.content=`All SubTasks Completed Under ${parent.title}`
       const messageStatus=await messageService.taskStatusMessage(parent)
       const {messages} = await messageService.getFormattedMessage(messageStatus._id)
-      emitMessage(messages[0], req.user.org.toString())
+      emitMessage(messages[0], parent.org.toString())
     } else {
       // Otherwise, compute the average progress of subtasks
       let total = 0;
@@ -554,9 +570,9 @@ class TaskService extends BaseService {
         parent.status = TaskStatuses.IN_PROGRESS;
         //message status for the parent task in progress
         parent.content=`${parent.title} In Progress`
-      const messageStatus=await messageService.create(parent)
+      const messageStatus=await messageService.taskStatusMessage(parent)
       const {messages} = await messageService.getFormattedMessage(messageStatus._id)
-      emitMessage(messages[0], req.user.org.toString())
+      emitMessage(messages[0], parent.org.toString())
       }
       // If you want to handle PENDING or REVIEW states differently, add logic here
       parent.progressPercentage = averageProgress;

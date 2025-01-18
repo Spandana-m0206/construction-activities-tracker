@@ -11,7 +11,7 @@ class TaskController extends BaseController {
     }
     async findOne(req, res, next) {
         try {
-            const tasks = await this.service.findOne(req.query);
+            const tasks = await this.service.findOne({...req.query, _id:req.params.id});
             return res.status(200).json({ success: true, data: tasks });
         } catch (error) {
             next(error);
@@ -134,7 +134,7 @@ class TaskController extends BaseController {
 
     async getTasksBySite(req, res, next) {
         try {
-            const tasks = await this.service.findTasksBySite(req.params.siteId);
+            const tasks = await this.service.findTasksBySite(req.params.siteId, req.query);
             return res.status(200).json({ success: true, data: tasks });
         } catch (error) {
             next(error);
@@ -173,7 +173,7 @@ class TaskController extends BaseController {
     async updateTask(req, res, next) {
         try {
             const {taskId} = req.params;
-            const data = await TaskService.updateTaskStatus(taskId, req.body.status, req.body.progressPercentage);
+            const data = await TaskService.updateTaskStatus(taskId, req.body.status, req.body.progressPercentage, req.files);
             return res.status(201).json({ success: true, data: data });
         } catch (error) {
             next(error);

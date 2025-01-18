@@ -2,6 +2,7 @@
 
 const express = require('express');
 const TaskController = require('./task.controller');
+const upload = require('../file/file.storage');
 
 const router = express.Router();
 
@@ -20,6 +21,6 @@ router.post('/add-subtask/:parentTaskId', TaskController.addSubTask.bind(TaskCon
 router.get('/get-subtasks/:parentTaskId', TaskController.getSubTasks.bind(TaskController)); 
 router.delete('/delete-subtask/:subTaskId', TaskController.deleteSubtask.bind(TaskController)); 
 router.get('/site/:siteId', TaskController.getTasksBySite.bind(TaskController)); 
-router.put('/update-status/:taskId', TaskController.updateTask.bind(TaskController)); 
+router.put('/update-status/:taskId', upload.array('files'), TaskController.updateTask.bind(TaskController)); 
 
 module.exports = router;
