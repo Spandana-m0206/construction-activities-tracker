@@ -3,6 +3,7 @@ const OrderController = require('./order.controller');
 
 const router = express.Router();
 
+router.get('/material-requests/:siteId', OrderController.getRequestsForSite);
 router.post('/request', OrderController.createMaterialRequest);
 router.put('/review/:id', OrderController.reviewMaterialRequest);
 // router.post('/material-transfers', OrderController.transferMaterials);

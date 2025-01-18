@@ -1,5 +1,7 @@
+const { default: mongoose } = require('mongoose');
 const { TransferTypes, OrderStatuses } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
+const OrderModel = require('./order.model');
 const Order = require('./order.model');
 const fulfillmentService = require('../requestFulfillment/requestFulfillment.service');
 
@@ -244,7 +246,75 @@ class OrderService extends BaseService {
             : OrderStatuses.PARTIALLY_FULFILLED;
         await order.save();
     } 
-    
+    async getRequestsForSite(siteId) {
+        try {
+
+          const objectIdSite = new mongoose.Types.ObjectId(siteId);
+      
+          // Let's assume "not received" means status != "RECEIVED"
+          // or maybe you want "status: IN_PROGRESS"
+          // or (receivedOn === null). 
+          // Adjust to your actual logic.
+          const orders = await OrderModel.aggregate([
+            {
+              $match: {
+                // Filter for orders belonging to this site
+                site: objectIdSite,
+              },
+            },
+            {
+              // Sort by creation date descending
+              $sort: { createdAt: -1 },
+            },
+            {
+              // 3) Project only the fields you need
+              $project: {
+                // Exclude internal _id from final result
+                _id: 0,
+      
+                // Convert the MongoDB ObjectId to a string
+                orderId: { $toString: '$_id' },
+      
+                // totalItems => length of the "materials" array
+                totalItems: {
+                  $size: { $ifNull: ['$materials', []] },
+                },
+      
+                // requestedDate => from createdAt
+                requestedDate: {
+                  $dateToString: {
+                    format: '%d %b %Y',
+                    date: '$createdAt',
+                  },
+                },
+      
+                // status => Map your internal statuses to "waiting" / "dispatched" etc.
+                status: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: { $eq: ['$status', OrderStatuses.IN_PROGRESS] },
+                        then: 'waiting',
+                      },
+                      {
+                        case: { $eq: ['$status', OrderStatuses.IN_TRANSIT] },
+                        then: 'dispatched',
+                      },
+                      // Add more branches if you have more statuses
+                    ],
+                    default: 'waiting', // fallback if no branch matches
+                  },
+                },
+              },
+            },
+          ]);
+      
+        return orders;
+        } catch (error) {
+          throw new Error("Error Fetching Material Requests", error)
+      }
+      }
+      
 }
 
 module.exports = new OrderService();
