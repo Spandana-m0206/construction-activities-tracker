@@ -179,6 +179,15 @@ class TaskController extends BaseController {
             next(error);
         }
     }
+
+    async findFilteredTasks(req, res, next) {
+        try {
+            const tasks = await this.service.findFilteredTasks(req.query);
+            return res.status(200).json({ success: true, data: tasks });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new TaskController();

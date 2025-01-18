@@ -14,9 +14,10 @@ class TaskService extends BaseService {
   }
 
   async find(filters) {
-    return await this.model.find(filters)
+    const tasks = await this.model.find(filters)
       .populate('site', 'name')
       .populate('createdBy', '_id name');
+    return tasks
   }
   async findOne(filters) {
     return await this.model.findOne(filters)
@@ -582,9 +583,7 @@ class TaskService extends BaseService {
       if (!parentTask) {
         throw new ApiError(404, "Parent Task does not exist");
       }
-  
-      console.log("Parent Task Site:", parentTask.site);
-  
+    
       // 3. Assign necessary properties to subTaskData
       subTaskData.site = parentTask.site;
       subTaskData.org = parentTask.org;
@@ -668,6 +667,13 @@ class TaskService extends BaseService {
       console.error("Error fetching subtasks:", error);
       throw new ApiError(500, "An unexpected error occurred while fetching subtasks");
     }
+  }
+
+  async findFilteredTasks(filters) {
+    const tasks = await this.model.find(filters)
+      .populate('site', 'name')
+      .populate('createdBy', '_id name');
+    return tasks
   }
 }
 

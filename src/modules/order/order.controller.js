@@ -161,6 +161,17 @@ class OrderController extends BaseController {
             next(error);
         }
     }
+    async getRequestsForSite (req, res, next) {
+        try {
+            const  siteId  = req.params.siteId;
+            const requests = await OrderService.getRequestsForSite(siteId);
+    
+            res.status(200).json({ success: true, data: requests });
+        } catch (error) {
+            next(error);
+
+        }
+    };
 
 }
 

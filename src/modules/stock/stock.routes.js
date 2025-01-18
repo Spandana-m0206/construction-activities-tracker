@@ -3,6 +3,9 @@ const StockController = require('./stock.controller');
 
 const router = express.Router();
 
+router.get('/available-material/:siteId', StockController.getAvailableMaterials.bind(StockController));
+router.get('/stock-items/:siteId', StockController.getStockItemsQuantities.bind(StockController));
+
 // Base routes from BaseController
 router.post('/', StockController.create.bind(StockController)); // Create stock
 router.get('/', StockController.find.bind(StockController)); // Get all stock

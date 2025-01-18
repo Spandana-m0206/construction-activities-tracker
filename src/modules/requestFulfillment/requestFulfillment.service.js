@@ -7,12 +7,12 @@ const {
 } = require('../../utils/enums');
 const BaseService = require('../base/BaseService');
 const stockService = require('../stock/stock.service');
-const orderService = require('../order/order.service');
 const RequestFulfillment = require('./requestFulfillment.model');
 const materialListItemService = require('../materialListItem/materialListItem.service');
 const usageService = require('../usage/usage.service');
 const StockItemModel = require('../stock/stock.model');
 const RequestFulfillmentModel = require('./requestFulfillment.model');
+const OrderModel = require('../order/order.model');
 
 class RequestFulfillmentService extends BaseService {
     constructor() {
@@ -21,25 +21,33 @@ class RequestFulfillmentService extends BaseService {
 
     // Example custom service method: Get fulfillments by order ID
     async findFulfillmentsByOrder(orderId) {
+
         return await this.model
             .find({ orderId })
-            .populate('materialList', 'name category')
             .populate('fulfilledBy', 'name email')
             .populate('receivedBy', 'name email')
             .populate('transferredFrom', 'name location address')
-            .populate('transferredTo', 'name location address');
+            .populate('transferredTo', 'name location address')
+            .populate({
+                path: 'materialList', // Populate material inside materials
+                populate:{
+                    path: 'materialMetadata',
+                    select: 'name category',
+                },
+            })
+            .lean();
     }
 
     async createFulfillment(data) {
         const { orderId, materialList, fulfilledBy } = data;
-    
+
         // Validate required fields
         if (!orderId || !materialList || materialList.length === 0) {
             throw new Error('Order ID and Material List are required');
         }
     
         // Fetch the order and extract transfer details
-        const order = await orderService.findById(orderId);
+        const order = await OrderModel.findById(orderId);
         if (!order) throw new Error('Order not found');
         if (!(order.status === OrderStatuses.APPROVED)) throw new Error('Order is not approved');
     
@@ -85,7 +93,6 @@ class RequestFulfillmentService extends BaseService {
                 site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
                 inventory: transferFromType === TransferFromType.INVENTORY ? transferredFrom : null,
             };
-    
             const stock = await StockItemModel.findOne(stockQuery).populate({
                 path: 'material',
                 options: { sort: { createdAt: -1 } },
@@ -165,9 +172,10 @@ class RequestFulfillmentService extends BaseService {
             await RequestFulfillmentModel.findById(fulfillmentId).populate(
                 'materialList',
             );
+
         if (!fulfillment) throw new Error('Fulfillment not found');
 
-        const order = await orderService.findById(fulfillment.orderId);
+        const order = await OrderModel.findById(fulfillment.orderId);
         if (!order) throw new Error('Order not found');
 
         // Update Fulfillment Status
@@ -220,7 +228,33 @@ class RequestFulfillmentService extends BaseService {
         await order.save();
 
         // Update Order Status
-        await orderService.updateOrderStatus(order, fulfillment.materialList);
+        // await orderService.updateOrderStatus(order, fulfillment.materialList);
+        fulfillment.materialList.forEach((item) => {
+            const fulfilledMaterial = order.fulfilledMaterials.find(
+                (fm) =>
+                    fm.material.toString() === item.materialMetadata.toString(),
+            );
+            if (fulfilledMaterial) {
+                fulfilledMaterial.quantity += item.qty;
+            } else {
+                order.fulfilledMaterials.push({
+                    material: item.materialMetadata,
+                    quantity: item.qty,
+                });
+            }
+        });
+
+        const isFullyFulfilled = order.materials.every((reqMaterial) => {
+            const fulfilled = order.fulfilledMaterials.find(
+                (fm) =>
+                    fm.material.toString() === reqMaterial.material.toString(),
+            );
+            return fulfilled && fulfilled.quantity >= reqMaterial.quantity;
+        });
+        order.status = isFullyFulfilled
+            ? OrderStatuses.COMPLETED
+            : OrderStatuses.PARTIALLY_FULFILLED;
+        await order.save();
 
         return fulfillment;
     }

@@ -38,7 +38,18 @@ const SiteStatuses = {
     COMPLETED: 'completed',
 };
 
-const MaterialCategories = ['furniture interior', 'electrical', 'plumbing', 'cement']; // Add more as needed
+const MaterialCategories = [
+    'structural',
+    'electrical',
+    'plumbing',
+    'finishing',
+    'interior',
+    'exterior',
+    'mechanical',
+    'landscaping',
+    'safety',
+    'decorative',
+  ];
 const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
 const TaskStatuses = {
     PENDING: 'PENDING',
@@ -70,7 +81,7 @@ const OrderStatuses = {
     CANCELLED: 'cancelled',
     PARTIALLY_FULFILLED: 'partially fulfilled'
 }
-const OrderPriorities = ['High', 'Medium', 'Low'];
+const OrderPriorities = ['high', 'medium', 'low'];
 const ApprovalStatuses = {
     IN_REVIEW: 'in review',
     APPROVED: 'approved',
@@ -84,7 +95,8 @@ const ApprovalTypes = {
 const UsageTypes = {
     USED: 'used',
     WASTED: 'wasted',
-    TRANSFER: 'transfer'
+    TRANSFER: 'transfer',
+    THEFT: 'theft'
 };
 const PenaltySources = ['treat', 'salary', 'payables'];
 const PurchaseRequestPriorities = ['high', 'medium', 'low'];
@@ -130,12 +142,12 @@ const TriggerTask = {
 }
 
 const TransferTypes = {
-    SITE_TO_SITE: 'site-site',
-    SITE_TO_INVENTORY: 'site-inventory',
-    INVENTORY_TO_SITE: 'inventory-site',
-    INVENTORY_TO_INVENTORY: 'inventory-inventory',
-    FINANCE_TO_SITE: 'finance-site',
-    FINANCE_TO_INVENTORY: 'finance-inventory'
+    SITE_TO_SITE: 'Site-Site',
+    SITE_TO_INVENTORY: 'Site-Inventory',
+    INVENTORY_TO_SITE: 'Inventory-Site',
+    INVENTORY_TO_INVENTORY: 'Inventory-Inventory',
+    FINANCE_TO_SITE: 'Finance-Site',
+    FINANCE_TO_INVENTORY: 'Finance-Inventory'
 }
 
 const StockSources = {
@@ -144,12 +156,12 @@ const StockSources = {
 }
 
 const TransferFromType = {
-    SITE: 'site',
-    INVENTORY: 'inventory'
+    SITE: 'Site',
+    INVENTORY: 'Inventory'
 }
 const TransferToType = {
-    SITE: 'site',
-    INVENTORY: 'inventory'
+    SITE: 'Site',
+    INVENTORY: 'Inventory'
 }
 module.exports = {
     UsageTypes,

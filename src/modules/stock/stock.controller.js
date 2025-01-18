@@ -1,4 +1,5 @@
 const BaseController = require('../base/BaseController');
+const stockService = require('./stock.service');
 const StockService = require('./stock.service');
 
 class StockController extends BaseController {
@@ -25,6 +26,25 @@ class StockController extends BaseController {
             next(error);
         }
     }
+
+    async getAvailableMaterials(req, res, next) {
+        try {
+            const stock = await stockService.getAvailableMaterials(req.params.siteId);
+            res.status(200).json({ success: true, data: stock });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getStockItemsQuantities(req, res, next) {
+        try {
+            const stock = await stockService.getStockItemsQuantities(req.params.siteId);
+            res.status(200).json({ success: true, data: stock });
+        } catch (error) {
+            next(error);
+        }
+    }
+    
 }
 
 module.exports = new StockController();

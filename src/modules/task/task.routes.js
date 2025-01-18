@@ -5,6 +5,8 @@ const TaskController = require('./task.controller');
 
 const router = express.Router();
 
+router.get('/filter', TaskController.findFilteredTasks.bind(TaskController));
+
 // Inherited CRUD endpoints from BaseController
 router.post('/', TaskController.create.bind(TaskController));    // Create Task
 router.get('/', TaskController.find.bind(TaskController));       // Get all Tasks
