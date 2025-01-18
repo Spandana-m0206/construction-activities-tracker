@@ -35,6 +35,16 @@ class StockController extends BaseController {
             next(error);
         }
     }
+
+    async getStockItemsQuantities(req, res, next) {
+        try {
+            const stock = await stockService.getStockItemsQuantities(req.params.siteId);
+            res.status(200).json({ success: true, data: stock });
+        } catch (error) {
+            next(error);
+        }
+    }
+    
 }
 
 module.exports = new StockController();

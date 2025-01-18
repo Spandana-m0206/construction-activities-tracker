@@ -16,7 +16,7 @@ const stockItemFields = {
 };
 
 // Create the extended schema
-const stockItemSchema = extendSchema(stockItemFields);
+const stockItemSchema = extendSchema(stockItemFields, { timestamps: true });
 
 // Create and export the Mongoose model
 const StockItemModel = mongoose.model('Stock', stockItemSchema);

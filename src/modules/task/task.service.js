@@ -583,9 +583,7 @@ class TaskService extends BaseService {
       if (!parentTask) {
         throw new ApiError(404, "Parent Task does not exist");
       }
-  
-      console.log("Parent Task Site:", parentTask.site);
-  
+    
       // 3. Assign necessary properties to subTaskData
       subTaskData.site = parentTask.site;
       subTaskData.org = parentTask.org;

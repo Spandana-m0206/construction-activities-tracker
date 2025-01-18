@@ -49,6 +49,15 @@ class UsageController extends BaseController {
         }
     }
 
+    async getTheftForSite(req, res, next) {
+        try {
+            const siteId = req.params.siteId;
+            const usage = await UsageService.getTheftForSite(siteId);
+            res.status(200).json({ success: true, data: usage });
+        } catch (error) {
+            next(error);
+        }
+    }
     async createUsage(req, res, next) {
         try {
             const createdBy = req.user.userId;

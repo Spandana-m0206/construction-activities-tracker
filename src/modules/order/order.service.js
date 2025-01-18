@@ -32,7 +32,6 @@ class OrderService extends BaseService {
     async getTransferRequests(fromSite, fromInventory, orgId) {
         let orders;
         if(fromSite){
-            console.log('fromSite', fromSite)
             orders = await this.model.find({ fromSite: fromSite, org: orgId })
             .populate('site', 'name location')
             .populate('inventory', 'name address')
@@ -41,7 +40,6 @@ class OrderService extends BaseService {
             .lean();
         }
         if(fromInventory){
-            console.log('fromInventory', fromInventory)
             orders = await this.model.find({ fromInventory: fromInventory, org: orgId })
             .populate('site', 'name location')
             .populate('inventory', 'name address')
@@ -79,7 +77,6 @@ class OrderService extends BaseService {
                     } : null,
                 };
             }));
-        
             return formattedOrders;
     }
 
@@ -87,7 +84,6 @@ class OrderService extends BaseService {
     async getMyOrders(siteId, inventoryId, orgId) {
         let orders;
         if(siteId){
-            console.log('siteId', siteId)
             orders = await this.model.find({ site: siteId, org: orgId })
             .populate('site', 'name location')
             .populate('inventory', 'name address')
@@ -96,7 +92,6 @@ class OrderService extends BaseService {
             .lean();
         }
         if(inventoryId){
-            console.log('inventoryId', inventoryId)
             orders = await this.model.find({ site: siteId, org: orgId })
             .populate('site', 'name location')
             .populate('inventory', 'name address')
@@ -139,23 +134,30 @@ class OrderService extends BaseService {
             return formattedOrders;
     }
     async getDetailedOrder(query) {
+        // Fetch the order with all necessary fields populated
         const order = await this.model.findOne(query)
-            .populate('site', 'name location')
-            .populate('inventory', 'name address')
-            .populate('fromInventory', 'name address')
-            .populate('fromSite', 'name location')
-            .populate('materials.material', 'name category')
-            .populate('fulfilledMaterials.material', 'name category')
-            .populate('fulfillment')
-            .lean(); // Use lean for better performance since you're transforming the data
+            .populate('site', 'name location') // Populate site with name and location
+            .populate('inventory', 'name address') // Populate inventory with name and address
+            .populate('fromInventory', 'name address') // Populate fromInventory with name and address
+            .populate('fromSite', 'name location') // Populate fromSite with name and location
+            .populate({
+                path: 'materials.material', // Populate material inside materials
+                select: 'name category', // Select only name and category
+            })
+            .populate({
+                path: 'fulfilledMaterials.material', // Populate material inside fulfilledMaterials
+                select: 'name category', // Select only name and category
+            })
+            .lean(); // Use lean for better performance when transforming data
     
         if (!order) {
-            return null; // Return null or handle the case where no order is found
+            return null; // Return null if no order is found
         }
     
+        // Fetch fulfillments separately to ensure nested materialList is populated
         const fulfillments = await fulfillmentService.findFulfillmentsByOrder(order._id);
-    
-        return {
+        // Transform the order data
+        const a = {
             _id: order._id,
             createdAt: order.createdAt,
             dispatchedAt: order.dispatchedOn || null,
@@ -185,6 +187,7 @@ class OrderService extends BaseService {
             materials: order.materials.map((material) => ({
                 _id: material.material._id,
                 name: material.material.name,
+                category: material.material.category,
                 quantity: material.quantity,
             })),
             fulfillments: fulfillments.map((fulfillment) => ({
@@ -193,16 +196,18 @@ class OrderService extends BaseService {
                 transferFromType: fulfillment.transferFromType,
                 transferredFromName: fulfillment.transferredFrom?.name || null,
                 materialList: fulfillment.materialList.map((item) => ({
-                    _id: item.material,
-                    name: item.material.name,
-                    quantity: item.quantity,
+                    _id: item.materialMetadata._id,
+                    name: item.materialMetadata.name,
+                    category: item.materialMetadata.category,
+                    quantity: item.qty, // Assuming `qty` is the field for quantity
                 })),
                 fulfilledOn: fulfillment.fulfilledOn,
                 receivedOn: fulfillment.receivedOn || null,
             })),
         };
-    }
-      
+
+        return a;
+    }     
 
     async createOrder (orderData) {
         return await this.model.create(orderData);
