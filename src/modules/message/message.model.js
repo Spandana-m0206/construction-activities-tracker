@@ -9,7 +9,8 @@ const messageFields = {
     attachment: { type: mongoose.Schema.Types.ObjectId, ref: 'File', default: null }, // Optional file attachment
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // Reference to User
     task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', default: null }, // Nullable reference to Task y
-    site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required: true }, // Reference to Site
+    site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null  }, // Reference to Site
+    inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null  }, // Reference to Site
     approvalRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Approval', default: null }, // Nullable reference to Approval
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order material req
     paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null }, // Nullable reference to Payment Request

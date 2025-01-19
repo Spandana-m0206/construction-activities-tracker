@@ -82,57 +82,67 @@ class OrderService extends BaseService {
 
 
     async getMyOrders(siteId, inventoryId, orgId) {
-        let orders;
-        if(siteId){
-            orders = await this.model.find({ site: siteId, org: orgId })
-            .populate('site', 'name location')
-            .populate('inventory', 'name address')
-            .populate('fromInventory', 'name address')
-            .populate('fromSite', 'name location')
-            .lean();
-        }
-        if(inventoryId){
-            orders = await this.model.find({ site: siteId, org: orgId })
-            .populate('site', 'name location')
-            .populate('inventory', 'name address')
-            .populate('fromInventory', 'name address')
-            .populate('fromSite', 'name location')
-            .lean();
-        }
-
-            const formattedOrders = await Promise.all(orders.map(async (order) => {
-                return {
-                    _id: order._id,
-                    createdAt: order.createdAt,
-                    dispatchedAt: order.dispatchedOn || null,
-                    completedAt: order.completedOn || null,
-                    status: order.status,
-                    totalItems: order.materials ? order.materials.length : 0,
-                    fromSite: order.fromSite ? {
-                        _id: order.fromSite._id,
-                        name: order.fromSite.name,
-                        location: order.fromSite.location,
-                    } : null,
-                    fromInventory: order.fromInventory ? {
-                        _id: order.fromInventory._id,
-                        name: order.fromInventory.name,
-                        location: order.fromInventory.address,
-                    } : null,
-                    site: order.site ? {
-                        _id: order.site._id,
-                        name: order.site.name,
-                        location: order.site.location,
-                    } : null,
-                    inventory: order.inventory ? {
-                        _id: order.inventory._id,
-                        name: order.inventory.name,
-                        location: order.inventory.address,
-                    } : null,
-                };
+        try {
+            // Build the query object based on provided filters
+            const query = { org: orgId };
+            
+            if (siteId) {
+                query.site = siteId;
+            }
+            
+            if (inventoryId) {
+                query.inventory = inventoryId;
+            }
+    
+            // Fetch orders based on the constructed query
+            const orders = await this.model.find(query)
+                .populate('site', 'name location')
+                .populate('inventory', 'name address')
+                .populate('fromInventory', 'name address')
+                .populate('fromSite', 'name location')
+                .lean();
+    
+            if (!orders) {
+                return [];
+            }
+    
+            // Format orders as needed
+            const formattedOrders = orders.map(order => ({
+                _id: order._id,
+                createdAt: order.createdAt,
+                dispatchedAt: order.dispatchedOn || null,
+                completedAt: order.completedOn || null,
+                status: order.status,
+                totalItems: Array.isArray(order.materials) ? order.materials.length : 0,
+                fromSite: order.fromSite ? {
+                    _id: order.fromSite._id,
+                    name: order.fromSite.name,
+                    location: order.fromSite.location,
+                } : null,
+                fromInventory: order.fromInventory ? {
+                    _id: order.fromInventory._id,
+                    name: order.fromInventory.name,
+                    location: order.fromInventory.address,
+                } : null,
+                site: order.site ? {
+                    _id: order.site._id,
+                    name: order.site.name,
+                    location: order.site.location,
+                } : null,
+                inventory: order.inventory ? {
+                    _id: order.inventory._id,
+                    name: order.inventory.name,
+                    location: order.inventory.address,
+                } : null,
             }));
-        
+    
             return formattedOrders;
+        } catch (error) {
+            console.error('Error in getMyOrders:', error);
+            throw error; // Or handle the error as per your application's error handling strategy
+        }
     }
+    
     async getDetailedOrder(query) {
         // Fetch the order with all necessary fields populated
         const order = await this.model.findOne(query)

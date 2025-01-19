@@ -3,10 +3,10 @@ const UsageController = require('./usage.controller');
 
 const router = express.Router();
 
-router.post('/create-usage', UsageController.createUsage.bind(UsageController)); // Find usage by organization
-router.get('/get-usage/:siteId', UsageController.getUsageForSite.bind(UsageController)); // Find usage by organization
-router.get('/get-wasted-record/:siteId', UsageController.getWastageForSite.bind(UsageController)); // Find usage by organization
-router.get('/get-theft-record/:siteId', UsageController.getTheftForSite.bind(UsageController)); // Find usage by organization
+router.post('/create-usage', UsageController.createUsage.bind(UsageController)); 
+router.get('/get-usage/:id', UsageController.getUsage.bind(UsageController)); 
+router.get('/get-wastage/:id', UsageController.getWastage.bind(UsageController)); 
+router.get('/get-theft/:id', UsageController.getTheft.bind(UsageController));
 
 // Base routes from BaseController
 router.post('/', UsageController.create.bind(UsageController)); // Create usage
