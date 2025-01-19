@@ -28,25 +28,21 @@ class StockService extends BaseService {
             .populate('inventory', 'name address');
     }
 
-    async getAvailableMaterials(siteId) {
+    async getAvailableMaterials(identifier, type) {
         try {
-            // Validate the siteId
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error('Invalid Site ID');
+            // Validate the identifier
+            if (!mongoose.Types.ObjectId.isValid(identifier)) {
+                throw new Error('Invalid Identifier');
             }
-            const objectIdSite = new mongoose.Types.ObjectId(siteId);
+            const objectId = new mongoose.Types.ObjectId(identifier);
+    
+            // Match condition based on type
+            const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
     
             // Aggregation for Recently Used Materials
             const recentlyUsed = await StockItemModel.aggregate([
-                // 1. Match documents based on the specified site
-                { 
-                    $match: { 
-                        site: objectIdSite 
-                    } 
-                },
-                
-                // 2. Lookup related MaterialMetadata documents
-                { 
+                { $match: matchCondition },
+                {
                     $lookup: {
                         from: 'materialmetadatas',
                         localField: 'materialMetaData',
@@ -54,14 +50,8 @@ class StockService extends BaseService {
                         as: 'materialInfo',
                     },
                 },
-                
-                // 3. Unwind the materialInfo array
-                { 
-                    $unwind: '$materialInfo' 
-                },
-                
-                // 4. Lookup related MaterialListItem documents
-                { 
+                { $unwind: '$materialInfo' },
+                {
                     $lookup: {
                         from: 'materiallistitems',
                         localField: 'material',
@@ -69,46 +59,30 @@ class StockService extends BaseService {
                         as: 'materialListItems',
                     },
                 },
-                
-                // 5. Unwind the materialListItems array
                 { 
-                    $unwind: {
-                        path: '$materialListItems',
-                        preserveNullAndEmptyArrays: true, 
-                    },
+                    $unwind: { 
+                        path: '$materialListItems', 
+                        preserveNullAndEmptyArrays: true,
+                    }, 
                 },
-                
-                // 6. Group by MaterialMetadata _id and aggregate data
-                { 
+                {
                     $group: {
-                        _id: '$materialInfo._id', 
+                        _id: '$materialInfo._id',
                         name: { $first: '$materialInfo.name' },
-                        units: { $first: '$materialInfo.units' }, // Include units
+                        units: { $first: '$materialInfo.units' },
                         totalQty: {
                             $sum: { $ifNull: ['$materialListItems.qty', 0] },
                         },
-                        lastUsed: { $max: '$updatedAt' }, 
+                        lastUsed: { $max: '$updatedAt' },
                     },
                 },
-                
-                // 7. Sort the aggregated results by lastUsed in descending order
-                { 
-                    $sort: { 
-                        lastUsed: -1 
-                    } 
-                },
-                
-                // 8. Limit the results to the top 5
-                { 
-                    $limit: 5 
-                },
-                
-                // 9. Project the desired fields and format lastUsed
-                { 
+                { $sort: { lastUsed: -1 } },
+                { $limit: 5 },
+                {
                     $project: {
-                        _id: 1, 
+                        _id: 1,
                         name: 1,
-                        units: 1, // Project units
+                        units: 1,
                         inStock: '$totalQty',
                         lastUsed: {
                             $dateToString: {
@@ -119,10 +93,10 @@ class StockService extends BaseService {
                     },
                 },
             ]);
-            
+    
             // Aggregation for Categories
             const categories = await StockItemModel.aggregate([
-                { $match: { site: objectIdSite } },
+                { $match: matchCondition },
                 {
                     $lookup: {
                         from: 'materialmetadatas',
@@ -153,11 +127,11 @@ class StockService extends BaseService {
                             materialId: '$materialInfo._id',
                         },
                         name: { $first: '$materialInfo.name' },
-                        units: { $first: '$materialInfo.units' }, // Include units
+                        units: { $first: '$materialInfo.units' },
                         totalQty: {
                             $sum: { $ifNull: ['$materialListItems.qty', 0] },
                         },
-                        lastUsed: { $max: '$updatedAt' }, 
+                        lastUsed: { $max: '$updatedAt' },
                     },
                 },
                 {
@@ -165,9 +139,9 @@ class StockService extends BaseService {
                         _id: '$_id.category',
                         materials: {
                             $push: {
-                                materialMetaDataId: '$_id.materialId', 
+                                materialMetaDataId: '$_id.materialId',
                                 name: '$name',
-                                units: '$units', // Include units
+                                units: '$units',
                                 inStock: '$totalQty',
                                 lastUsed: '$lastUsed',
                             },
@@ -183,9 +157,9 @@ class StockService extends BaseService {
                                 input: '$materials',
                                 as: 'm',
                                 in: {
-                                    _id: '$$m.materialMetaDataId', 
+                                    _id: '$$m.materialMetaDataId',
                                     name: '$$m.name',
-                                    units: '$$m.units', // Project units
+                                    units: '$$m.units',
                                     inStock: '$$m.inStock',
                                     lastUsed: {
                                         $dateToString: {
@@ -199,55 +173,53 @@ class StockService extends BaseService {
                     },
                 },
             ]);
-
-            console.log(recentlyUsed)
+    
             return {
-                recentlyUsed, 
-                categories,   
+                recentlyUsed,
+                categories,
             };
         } catch (error) {
             console.error('Error in getAvailableMaterials:', error);
             throw new Error('Error Fetching Available Stock items');
         }
     }
+    
 
-    async getStockItemsQuantities(siteId) {
-            // Validate the siteId
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error('Invalid Site ID');
+    async getStockItemsQuantities(id, type) {
+        try {
+            // Validate the ID
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`Invalid ${type === 'site' ? 'Site ID' : 'Inventory ID'}`);
             }
-            const objectIdSite = new mongoose.Types.ObjectId(siteId);
-
+            const objectId = new mongoose.Types.ObjectId(id);
+    
+            // Match condition based on type
+            const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
+    
             // Aggregation pipeline to retrieve materialId and total quantity
             const materialQuantities = await StockItemModel.aggregate([
-                // Match documents belonging to the specified site
-                { $match: { site: objectIdSite } },
-
-                // Unwind the 'material' array to deconstruct each MaterialListItem
-                { $unwind: '$material' },
-
-                // Lookup to join with MaterialListItemModel based on 'material' field
+                { $match: matchCondition }, // Match based on site or inventory
+    
+                { $unwind: '$material' }, // Unwind the material array
+    
                 {
                     $lookup: {
-                        from: 'materiallistitems', // Collection name for MaterialListItemModel
-                        localField: 'material',    // Field in StockItemModel referencing MaterialListItemModel
-                        foreignField: '_id',       // Field in MaterialListItemModel to match
+                        from: 'materiallistitems',
+                        localField: 'material',
+                        foreignField: '_id',
                         as: 'materialDetails',
                     },
                 },
-
-                // Unwind the 'materialDetails' array
+    
                 { $unwind: '$materialDetails' },
-
-                // Group by materialMetadata (materialId) and sum the quantities
+    
                 {
                     $group: {
-                        _id: '$materialDetails.materialMetadata', // Group by materialId
-                        quantity: { $sum: { $ifNull: ['$materialDetails.qty', 0] } }, // Sum qty, default to 0
+                        _id: '$materialDetails.materialMetadata',
+                        quantity: { $sum: { $ifNull: ['$materialDetails.qty', 0] } },
                     },
                 },
-
-                // Project the desired fields
+    
                 {
                     $project: {
                         _id: 0,
@@ -256,14 +228,16 @@ class StockService extends BaseService {
                     },
                 },
             ]);
+    
             return {
-                materials: materialQuantities, // Array of objects with materialId and quantity
+                materials: materialQuantities,
             };
         } catch (error) {
-            console.error('Error in getMaterialQuantities:', error);
+            console.error('Error in getStockItemsQuantities:', error);
             throw new Error('Error Fetching Material Quantities');
-        
+        }
     }
+    
 
 }
 

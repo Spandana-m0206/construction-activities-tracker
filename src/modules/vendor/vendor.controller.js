@@ -1,9 +1,9 @@
 const BaseController = require('../base/BaseController');
 const VendorService = require('./vendor.service');
-const ApiError = require('../../utils/ApiError');
+const ApiError = require('../../utils/apiError');
 const { StatusCodes } = require('http-status-codes');
 const { CountryCodes } = require('../../utils/enums');
-const ApiResponse = require('../../utils/ApiResponse');
+const ApiResponse = require('../../utils/apiResponse');
 const enumToArray = require('../../utils/EnumToArray');
 
 class VendorController extends BaseController {

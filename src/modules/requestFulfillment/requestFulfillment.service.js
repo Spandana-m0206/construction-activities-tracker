@@ -49,7 +49,6 @@ class RequestFulfillmentService extends BaseService {
         // Fetch the order and extract transfer details
         const order = await OrderModel.findById(orderId);
         if (!order) throw new Error('Order not found');
-        if (!(order.status === OrderStatuses.APPROVED)) throw new Error('Order is not approved');
     
         // Determine transferFrom and transferTo dynamically
         let transferredFrom, transferFromType, transferredTo, transferToType;

@@ -75,50 +75,111 @@ class OrderController extends BaseController {
     }
     async createMaterialRequest(req, res, next) {
         try {
-            const { site, materials, priority, task, fromInventory, fromSite } = req.body;
-
+            const { 
+                site, 
+                inventory, 
+                materials, 
+                priority, 
+                task, 
+                fromInventory, 
+                fromSite 
+            } = req.body;
+        
+            // Validate Target: Exactly one of 'site' or 'inventory' must be specified
+            if ((site && inventory) || (!site && !inventory)) {
+                throw new Error('Exactly one of "site" or "inventory" must be specified as the target.');
+            }
+    
+            // Validate Source: Exactly one of 'fromSite' or 'fromInventory' must be specified
+            if ((fromSite && fromInventory) || (!fromSite && !fromInventory)) {
+                throw new Error('Exactly one of "fromSite" or "fromInventory" must be specified as the source.');
+            }
+    
             let assignedTo;
-
+            let orderContent;
+    
+            // Determine Target Details
+            let targetName = '';
             if (site) {
                 const siteDetails = await siteService.findById(site);
                 if (!siteDetails || !siteDetails.supervisor) {
-                    throw new Error('Site or Site Manager not found');
+                    throw new Error('Target Site or Site Supervisor not found.');
                 }
                 assignedTo = siteDetails.supervisor;
-            } else if (fromInventory) {
-                const inventoryDetails = await inventoryService.findById(fromInventory);
+                targetName = siteDetails.name;
+            } else if (inventory) {
+                const inventoryDetails = await inventoryService.findById(inventory);
                 if (!inventoryDetails || !inventoryDetails.manager) {
-                    throw new Error('Inventory or Inventory Manager not found');
+                    throw new Error('Target Inventory or Inventory Manager not found.');
                 }
                 assignedTo = inventoryDetails.manager;
-            } else {
-                throw new Error('Either site or fromInventory must be specified');
+                targetName = inventoryDetails.name;
             }
-
-            const order = await OrderService.createOrder({
+    
+            // Determine Source Details
+            let sourceName = '';
+            if (fromSite) {
+                const sourceSiteDetails = await siteService.findById(fromSite);
+                if (!sourceSiteDetails) {
+                    throw new Error('Source Site not found.');
+                }
+                sourceName = sourceSiteDetails.name;
+            } else if (fromInventory) {
+                const sourceInventoryDetails = await inventoryService.findById(fromInventory);
+                if (!sourceInventoryDetails) {
+                    throw new Error('Source Inventory not found.');
+                }
+                sourceName = sourceInventoryDetails.name;
+            }
+    
+            // Set Order Content Based on Target and Source
+            if (site && fromSite) {
+                orderContent = `Added Material Request For Site: ${targetName} from Site: ${sourceName}`;
+            } else if (site && fromInventory) {
+                orderContent = `Added Material Request For Site: ${targetName} from Inventory: ${sourceName}`;
+            } else if (inventory && fromSite) {
+                orderContent = `Added Material Request For Inventory: ${targetName} from Site: ${sourceName}`;
+            } else if (inventory && fromInventory) {
+                orderContent = `Added Material Request For Inventory: ${targetName} from Inventory: ${sourceName}`;
+            }
+    
+            // Construct Order Payload
+            const orderPayload = {
                 createdBy: req.user._id,
-                site,
-                materials,
-                priority,
-                status: OrderStatuses.IN_PROGRESS,
-                assignedTo: assignedTo,
-                task: task,
-                org: req.user.org,
-                fromInventory,
-                fromSite
-            });
-            const siteData = await siteService.findById(site)
-            order.content = `Added Material Request For ${siteData.name}`;
-            const orderCreatedMessage = await messageService.materialOrderStatusMessage(order)
-            const { messages } = await messageService.getFormattedMessage(orderCreatedMessage._id)
-            emitMessage(messages[0], req.user.org.toString())
-
-
+                site: site || null,                 // Target Site
+                inventory: inventory || null,       // Target Inventory
+                fromSite: fromSite || null,         // Source Site
+                fromInventory: fromInventory || null, // Source Inventory
+                materials: materials.map(material => ({
+                    material: material.material,
+                    quantity: parseInt(material.quantity, 10),
+                })),
+                priority: priority || 'high',       // Default Priority
+                task: task || null,                 // Associated Task
+                status: OrderStatuses.IN_PROGRESS,  // Order Status
+                assignedTo: assignedTo,             // Assigned To Manager/Supervisor
+                org: req.user.org,                  // Organization
+            };
+    
+            // Create the Order
+            const order = await OrderService.createOrder(orderPayload);
+            order.content = orderContent;
+    
+            // Create and Emit Message
+            const orderCreatedMessage = await messageService.materialOrderStatusMessage(order);
+            const { messages } = await messageService.getFormattedMessage(orderCreatedMessage._id);
+            emitMessage(messages[0], req.user.org.toString());
+    
+            // Respond to Client
             res.status(200).json({ success: true, data: order });
         } catch (error) {
-            next(error);
+            console.error('Error in createMaterialRequest:', error);
+            // Customize error response if needed
+            res.status(400).json({ success: false, message: error.message });
+            // Alternatively, pass the error to the next middleware
+            // next(error);
         }
-    };
+    };    
 
     async reviewMaterialRequest(req, res, next) {
         try {

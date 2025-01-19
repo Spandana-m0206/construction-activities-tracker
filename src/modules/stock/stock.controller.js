@@ -29,21 +29,34 @@ class StockController extends BaseController {
 
     async getAvailableMaterials(req, res, next) {
         try {
-            const stock = await stockService.getAvailableMaterials(req.params.siteId);
+            const { identifier } = req.params;
+            const { type } = req.query; // Expect type to be 'site' or 'inventory'
+            if (!['site', 'inventory'].includes(type)) {
+                throw new Error('Invalid type. Expected "site" or "inventory".');
+            }
+    
+            const stock = await stockService.getAvailableMaterials(identifier, type);
             res.status(200).json({ success: true, data: stock });
         } catch (error) {
             next(error);
         }
-    }
+    }    
 
     async getStockItemsQuantities(req, res, next) {
         try {
-            const stock = await stockService.getStockItemsQuantities(req.params.siteId);
+            const { id } = req.params;
+            const { type } = req.query;
+
+            if (!type || !['site', 'inventory'].includes(type)) {
+                throw new Error('Invalid type. Expected "site" or "inventory".');
+            }
+    
+            const stock = await stockService.getStockItemsQuantities(id, type);
             res.status(200).json({ success: true, data: stock });
         } catch (error) {
             next(error);
         }
-    }
+    }    
     
 }
 

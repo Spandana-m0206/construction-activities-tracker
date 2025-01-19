@@ -26,22 +26,21 @@ class UsageService extends BaseService {
             .populate('orderId', 'status priority');
     }
 
-    async getUsageForSite(siteId) {
+    async getUsage(type, id) {
         try {
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error(`Invalid siteId: ${siteId}`);
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${id}`);
             }
-            const objectIdSite = new mongoose.Types.ObjectId(siteId);
-
+            const objectId = new mongoose.Types.ObjectId(id);
+    
             const usageRecords = await UsageModel.aggregate([
                 {
                     $match: {
-                        site: objectIdSite,
-                        type: { $nin: [UsageTypes.WASTED] },
+                        [type]: objectId,
+                        type: UsageTypes.USED,
                     },
                 },
                 { $sort: { updatedAt: -1 } },
-                // 1) Lookup material info
                 {
                     $lookup: {
                         from: 'materialmetadatas',
@@ -70,8 +69,8 @@ class UsageService extends BaseService {
                         _id: 0,
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
-                        quantity: '$quantity', // usage quantity
-                        taskTitle: '$taskInfo.title', // or null if no task
+                        quantity: '$quantity',
+                        taskTitle: '$taskInfo.title',
                         updatedAt: '$updatedAt',
                     },
                 },
@@ -81,19 +80,19 @@ class UsageService extends BaseService {
             throw new Error('Error Fetching Usages: ' + error.message);
         }
     }
-
-    async getWastageForSite(siteId) {
+    
+    async getWastage(type, id) {
         try {
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error(`Invalid siteId: ${siteId}`);
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${id}`);
             }
-            const objectIdSite = new mongoose.Types.ObjectId(siteId);
-
+            const objectId = new mongoose.Types.ObjectId(id);
+    
             const wastageRecords = await UsageModel.aggregate([
                 {
                     $match: {
-                        site: objectIdSite,
-                        type: UsageTypes.WASTED, // or however you track wasted usage
+                        [type]: objectId,
+                        type: UsageTypes.WASTED,
                     },
                 },
                 { $sort: { updatedAt: -1 } },
@@ -125,22 +124,24 @@ class UsageService extends BaseService {
                         _id: 0,
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
-                        quantity: '$quantity', // usage quantity for wasted
-                        taskTitle: '$taskInfo.title', // or null if no task
+                        quantity: '$quantity',
+                        taskTitle: '$taskInfo.title',
                         updatedAt: '$updatedAt',
                     },
                 },
             ]);
             return wastageRecords;
         } catch (error) {
-            throw new Error('Error Fetching wasted Records: ' + error.message);
+            throw new Error('Error Fetching Wastage Records: ' + error.message);
         }
     }
+    
     async createUsage(data) {
         try {
             const {
                 materialId,
-                siteId,
+                id,
+                type, // 'site' or 'inventory'
                 taskId,
                 usedQuantity,
                 wasteQuantity,
@@ -152,11 +153,11 @@ class UsageService extends BaseService {
             if (!materialId) {
                 throw new Error('materialId is required');
             }
-            if (!siteId) {
-                throw new Error('siteId is required');
+            if (!id) {
+                throw new Error(`${type === 'site' ? 'siteId' : 'inventoryId'} is required`);
             }
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error(`Invalid siteId: ${siteId}`);
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${id}`);
             }
             if (!mongoose.Types.ObjectId.isValid(materialId)) {
                 throw new Error(`Invalid materialId: ${materialId}`);
@@ -172,7 +173,7 @@ class UsageService extends BaseService {
             if (usedQuantity && usedQuantity > 0) {
                 usageDocs.push({
                     quantity: usedQuantity,
-                    site: siteId,
+                    [type]: id,
                     material: materialId,
                     task: taskId || null,
                     type: UsageTypes.USED,
@@ -183,18 +184,18 @@ class UsageService extends BaseService {
             if (wasteQuantity && wasteQuantity > 0) {
                 usageDocs.push({
                     quantity: wasteQuantity,
-                    site: siteId,
+                    [type]: id,
                     material: materialId,
                     task: taskId || null,
                     type: UsageTypes.WASTED,
                     org: org,
                     createdBy: createdBy,
                 });
-            } 
+            }
             if (stolenQuantity && stolenQuantity > 0) {
                 usageDocs.push({
                     quantity: stolenQuantity,
-                    site: siteId,
+                    [type]: id,
                     material: materialId,
                     task: taskId || null,
                     type: UsageTypes.THEFT,
@@ -203,9 +204,7 @@ class UsageService extends BaseService {
                 });
             }
             if (usageDocs.length === 0) {
-                throw new Error(
-                    'At least one of usedQuantity or wasteQuantity must be greater than zero'
-                );
+                throw new Error('At least one of usedQuantity, wasteQuantity, or stolenQuantity must be greater than zero');
             }
     
             await UsageModel.insertMany(usageDocs);
@@ -213,14 +212,12 @@ class UsageService extends BaseService {
             const totalToDeduct = (usedQuantity || 0) + (wasteQuantity || 0) + (stolenQuantity || 0);
             if (totalToDeduct > 0) {
                 const stockItem = await StockItemModel.findOne({
-                    site: siteId,
+                    [type]: id,
                     materialMetaData: materialId,
                 }).populate('material');
     
                 if (!stockItem) {
-                    throw new Error(
-                        'No StockItem found for this site + materialMetaData'
-                    );
+                    throw new Error(`No StockItem found for this ${type} + materialMetaData`);
                 }
     
                 const foundListItem = stockItem.material.find(
@@ -250,18 +247,19 @@ class UsageService extends BaseService {
             throw new Error('Internal Server Error: ' + error.message);
         }
     }
-    async getTheftForSite(siteId) {
+    
+    async getTheft(type, id) {
         try {
-            if (!mongoose.Types.ObjectId.isValid(siteId)) {
-                throw new Error(`Invalid siteId: ${siteId}`);
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${id}`);
             }
-            const objectIdSite = new mongoose.Types.ObjectId(siteId);
-
-            const wastageRecords = await UsageModel.aggregate([
+            const objectId = new mongoose.Types.ObjectId(id);
+    
+            const theftRecords = await UsageModel.aggregate([
                 {
                     $match: {
-                        site: objectIdSite,
-                        type: UsageTypes.THEFT, // or however you track wasted usage
+                        [type]: objectId,
+                        type: UsageTypes.THEFT,
                     },
                 },
                 { $sort: { updatedAt: -1 } },
@@ -293,17 +291,18 @@ class UsageService extends BaseService {
                         _id: 0,
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
-                        quantity: '$quantity', // usage quantity for wasted
-                        taskTitle: '$taskInfo.title', // or null if no task
+                        quantity: '$quantity',
+                        taskTitle: '$taskInfo.title',
                         updatedAt: '$updatedAt',
                     },
                 },
             ]);
-            return wastageRecords;
+            return theftRecords;
         } catch (error) {
-            throw new Error('Error Fetching wasted Records: ' + error.message);
+            throw new Error('Error Fetching Theft Records: ' + error.message);
         }
     }
+    
 }
 
 module.exports = new UsageService();
