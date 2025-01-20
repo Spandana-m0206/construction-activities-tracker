@@ -89,7 +89,7 @@ class UserController extends BaseController {
 
     async create (req, res) {
         try {
-            const {name, countryCode, phone, email, language, role } = req.body;
+            const {name, countryCode, phone, email, language, role,address } = req.body;
     
             if(!role || !role.trim() || !enumToArray(Roles).includes(role) ){
                 console.log(enumToArray(Roles))
@@ -112,7 +112,7 @@ class UserController extends BaseController {
                 return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
             }
             const password = generateRandomPassword()
-            const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password,org:req.user.org})
+            const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password,org:req.user.org,address})
             
             if(role ===Roles.SITE_SUPERVISOR) {
                 const {sites} = req.body
