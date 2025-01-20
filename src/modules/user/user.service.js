@@ -7,7 +7,11 @@ class UserService extends BaseService {
     constructor() {
         super(UserModel); // Pass the User model to the BaseService
     }
-
+    async find(filter={}) {
+       const data = this.model.find(filter)
+       .populate('profilePhoto','_id url') // Populate organization details
+       return data;
+    }
     async findUserById(id) {
         return await this.model.findById(id).populate('profilePhoto', '_id url'); // Populate organization details
     }
