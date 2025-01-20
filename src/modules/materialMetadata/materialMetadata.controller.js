@@ -37,8 +37,24 @@ class MaterialMetadataController extends BaseController {
     }
     async find(req, res, next) {
         try {
-            const user = req.user;
-            const data = await this.service.find({ org: user.org });
+            const { category, query } = req.query;
+
+            // Construct filter
+            const filter = { org: req.user.org };
+
+            // Add role to filter if provided
+            if (category && category !== '') {
+                filter.category = category;
+            }
+
+            // Add search query filter for name, email, or phone
+            if (query) {
+                const searchRegex = new RegExp(query, 'i'); // Case-insensitive regex
+                filter.$or = [
+                    { name: { $regex: searchRegex } },
+                ];
+            }
+            const data = await this.service.find(filter);
             res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, data, 'Materials retrieved successfully'));
         } catch (error) {
             next(error);
