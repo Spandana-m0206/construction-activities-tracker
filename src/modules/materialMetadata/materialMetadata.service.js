@@ -5,7 +5,9 @@ class MaterialMetadataService extends BaseService {
     constructor() {
         super(MaterialMetadata); // Pass the MaterialMetadata model to the BaseService
     }
-
+    async find(filter={}) {
+        return await this.model.find(filter).populate('createdBy', 'name email').populate('org', 'name');
+    }
     // Example custom service method: Get materials by category
     async findMaterialsByCategory(filter={}) {
         return await this.model.find(filter).populate('createdBy', 'name email').populate('org', 'name');
