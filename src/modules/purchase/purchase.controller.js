@@ -24,9 +24,9 @@ class PurchaseController extends BaseController {
     async createPurchase(req, res, next) {
         try {
             const {
+                purchaseRequests,
                 purchaseRequestIds,
                 vendor,
-                purchasedBy,
                 amount,
                 attachment,
             } = req.body;
@@ -40,6 +40,7 @@ class PurchaseController extends BaseController {
 
             const newPurchase = await this.service.createPurchase({
                 purchaseRequestIds,
+                materialsList:purchaseRequests,
                 vendor,
                 purchasedBy:req.user.userId,
                 amount,

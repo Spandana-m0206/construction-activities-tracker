@@ -8,6 +8,7 @@ const { FulfillmentStatuses, StockSources } = require('../../utils/enums');
 const stockService = require('../stock/stock.service');
 const materialListItemService = require('../materialListItem/materialListItem.service');
 const purchaseRequestService = require('../purchaseRequest/purchaseRequest.service');
+const { default: mongoose } = require('mongoose');
 
 // Optional priority mapping if you're using textual priorities
 const PRIORITY_MAP = {
@@ -28,6 +29,7 @@ class PurchaseService extends BaseService {
   //    c) Allocate items to each request, creating PurchaseRequestFulfillments
   // --------------------------------------------------------------------------
   async createPurchase({
+    materialsList,
     purchaseRequestIds,
     vendor,
     purchasedBy,
@@ -37,7 +39,7 @@ class PurchaseService extends BaseService {
   }) {
     // --- A) Get the purchase requests (sort by priority -> createdAt in memory)
     let purchaseRequests = await PurchaseRequestModel.find({
-      _id: { $in: purchaseRequestIds },
+      _id: { $in: purchaseRequestIds},
     })
       .populate('materialList.material')
       .sort({ createdAt: 1 }) // partial sort
@@ -55,21 +57,20 @@ class PurchaseService extends BaseService {
       throw new Error('No Purchase Requests found for provided IDs');
     }
 
-    // --- B) Consolidate materials needed
-    const consolidatedMaterials = await purchaseRequestService.getConsolidatedMaterials(
-      purchaseRequestIds,
-    );
-    if (!consolidatedMaterials.length) {
-      throw new Error(
-        'All selected Purchase Requests appear fully fulfilled already.',
-      );
-    }
+    // --- B) Consolidate materials needed // Not needed now
+    // const consolidatedMaterials = await purchaseRequestService.getConsolidatedMaterials(
+    //   purchaseRequestIds,
+    // );
+    // if (!consolidatedMaterials.length) {
+    //   throw new Error(
+    //     'All selected Purchase Requests appear fully fulfilled already.',
+    //   );
+    // }
 
     // --- C) Create MaterialListItems for the consolidated materials
-    const materialListItemsData = consolidatedMaterials.map((mat) => ({
-      materialMetadata: mat.material,
-      qty: mat.qty,
-      price: 0, // placeholder
+    
+    const materialListItemsData = materialsList.map((mat) => ({
+      ...mat,
       purchaseDetails: null,
       org,
     }));
@@ -161,7 +162,6 @@ class PurchaseService extends BaseService {
         }
       }
     }
-
     if (fulfillmentsToInsert.length) {
       await PurchaseRequestFulfillmentModel.insertMany(fulfillmentsToInsert);
     }

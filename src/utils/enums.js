@@ -82,11 +82,16 @@ const UsageTypes = {
     TRANSFER: 'transfer'
 };
 const PenaltySources = ['treat', 'salary', 'payables'];
-const PurchaseRequestPriorities = ['high', 'medium', 'low'];
+const PurchaseRequestPriorities = {
+    HIGH: 'high',
+    MEDIUM: 'medium',
+    LOW: 'low'
+  };
 const PurchaseRequestStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',
     CANCELLED: 'cancelled',
+    PENDING: 'pending',
 }
 const MessageTypes = {
     STATUS: "status",

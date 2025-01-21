@@ -13,4 +13,6 @@ router.delete('/:id', PurchaseRequestController.delete.bind(PurchaseRequestContr
 // Custom route: Get purchase requests by inventory
 router.get('/inventory/:inventoryId', PurchaseRequestController.getRequestsByInventory.bind(PurchaseRequestController)); // Find purchase requests by inventory
 
+router.post('/consolidated-materials', PurchaseRequestController.getConsolidatedMaterials.bind(PurchaseRequestController));
+
 module.exports = router;
