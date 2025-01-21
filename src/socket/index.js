@@ -3,7 +3,7 @@ const app=express()
 const http= require('http')
 const {Server}=require('socket.io')
 const AuthService=require('../modules/auth/auth.service')
- 
+const lastSeenService=require('../modules/lastSeenMessages/lastSeen.service')
 const jwt=require('jsonwebtoken')
 const SiteServive=require('../modules/site/site.service')
 const { setSocket } = require('../utils/socketMessageEmitter');
@@ -33,9 +33,13 @@ io.on('connection',(socket)=>{
             return
         }
 
-        socket.join(`org:${payLoad.orgId}`)
-               
+        socket.join(`org:${payLoad.orgId}`)               
 })
+    socket.on('seenMessage',async (messageData)=>{
+        
+        const seenMessage=await lastSeenService.create(messageData)
+        
+    })
     } catch (error) {
         console.error(error.message);
     }
