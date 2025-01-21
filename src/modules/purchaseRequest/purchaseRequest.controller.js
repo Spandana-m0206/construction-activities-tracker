@@ -16,6 +16,36 @@ class PurchaseRequestController extends BaseController {
             next(error);
         }
     }
+
+    async getConsolidatedOrderDetails(req, res, next){
+        try {
+            const orders = await PurchaseRequestService.getConsolidatedOrderDetails(req.params.inventoryId);
+            res.status(200).json({ success: true, data: orders });
+        } catch (error) {
+            next(next);
+        }
+    }
+
+    async getDetailedPurchaseRequest(req, res, next){
+        try {
+            const orders = await PurchaseRequestService.getDetailedPurchaseRequest(req.params.purchaseRequestId);
+            res.status(200).json({ success: true, data: orders });
+        } catch (error) {
+            next(next);
+        }
+    }
+
+    async createOrder(req, res, next){
+        try {
+            const raisedBy = req.user.userId;
+            req.body.raisedBy = raisedBy
+            console.log(req.body)
+            const orders = await this.service.create(req.body);
+            res.status(200).json({ success: true, data: orders });
+        } catch (error) {
+            next(next);
+        }
+    }
 }
 
 module.exports = new PurchaseRequestController();

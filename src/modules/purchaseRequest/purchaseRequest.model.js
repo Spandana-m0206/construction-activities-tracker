@@ -16,7 +16,7 @@ const purchaseRequestFields = {
         },
     ], // Array of material items
     priority: { type: String, enum: enumToArray(PurchaseRequestPriorities), required: true }, // Priority of the request
-    status: { type: String, enum: enumToArray(PurchaseRequestStatuses), required: true }, // Status of the request
+    status: { type: String, enum: enumToArray(PurchaseRequestStatuses), required: true, default:PurchaseRequestStatuses.IN_PROGRESS  }, // Status of the request
 };
 
 // Create the extended schema

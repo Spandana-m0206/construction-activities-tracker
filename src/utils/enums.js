@@ -103,7 +103,9 @@ const PurchaseRequestPriorities = ['high', 'medium', 'low'];
 const PurchaseRequestStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',
+    COMPLETED: 'completed',
     CANCELLED: 'cancelled',
+    PARTIALLY_FULFILLED: 'partially fulfilled'
 }
 const MessageTypes = {
     STATUS: "status",
@@ -114,7 +116,9 @@ const MessageTypes = {
     IN_PROGRESS: 'in progress',
     IN_TRANSIT: 'in transit',
     RECEIVED: 'received',
+    COMPLETED: 'completed',
     CANCELLED: 'cancelled',
+    PARTIALLY_FULFILLED: 'partially fulfilled',
     RETURNED: 'returned'
 }
 const CarpetAreaUnitType = {
