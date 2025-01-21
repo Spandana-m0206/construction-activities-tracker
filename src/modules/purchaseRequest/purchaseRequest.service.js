@@ -36,12 +36,16 @@ class PurchaseRequestService extends BaseService {
     // Sum up already fulfilled quantities by material
     const fulfilledQuantities = {};
     fulfillments.forEach((f) => {
+      const purchaseRequest = f.purchaseRequest.toString();
       f.materialFulfilled.forEach((mf) => {
         const materialId = mf.material.toString();
-        if (!fulfilledQuantities[materialId]) {
-          fulfilledQuantities[materialId] = 0;
+        if(!fulfilledQuantities[purchaseRequest]){
+          fulfilledQuantities[purchaseRequest] = {};
         }
-        fulfilledQuantities[materialId] += mf.quantity;
+        if (!fulfilledQuantities[purchaseRequest][materialId]) {
+          fulfilledQuantities[purchaseRequest][materialId] = 0;
+        }
+        fulfilledQuantities[purchaseRequest][materialId] += mf.quantity;
       });
     });
 
@@ -50,13 +54,13 @@ class PurchaseRequestService extends BaseService {
     purchaseRequests.forEach((pr) => {
       pr.materialList.forEach((item) => {
         const materialId = item.material._id.toString();
-        const alreadyFulfilled = fulfilledQuantities[materialId] || 0;
+        const alreadyFulfilled = fulfilledQuantities[pr._id.toString()]?(fulfilledQuantities[pr._id.toString()][materialId] || 0):0;
         const needed = Math.max(0, item.qty - alreadyFulfilled);
 
         if (needed > 0) {
           if (!consolidated[materialId]) {
             consolidated[materialId] = {
-              material: item.material._id,
+              material: item.material,
               totalQty: 0,
             };
           }
@@ -69,6 +73,10 @@ class PurchaseRequestService extends BaseService {
       material: c.material,
       qty: c.totalQty,
     }));
+  }
+
+  async getMaterialRequest(params){
+    return await this.model.find(params).populate('raisedBy', 'name email').populate('approvedBy', 'name email').populate('materialList.material', 'name category').populate('inventory', "name");
   }
 }
 
