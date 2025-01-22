@@ -10,7 +10,10 @@ const purchaseFields = {
     attachment: { type: mongoose.Schema.Types.ObjectId, ref: 'File', required: false, default: null },
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false, default: null },
     materialListItems: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MaterialListItem', required: false }],
-    payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: false, default: null }],
+    payments: [{
+        paymentId:{type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: false, default: null} , 
+        amount : {type: Number, required: true}
+    }],
     purchaseRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PurchaseRequest', required: true }], // Added field
 };
 

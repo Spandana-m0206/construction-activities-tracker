@@ -71,7 +71,7 @@ const StatusOrder = {
 const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
-const PaymentStatuses = ['approved', 'rejected', 'in review'];
+const PaymentStatuses = {APPROVED:'approved',REJECTED: 'rejected',IN_REVIEW :'in review', PENDING:'pending'}
 const OrderStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',

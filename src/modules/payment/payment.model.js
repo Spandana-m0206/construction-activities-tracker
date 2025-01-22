@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const extendSchema = require('../base/BaseModel');
 const { PaymentStatuses, PaymentMethods, PaymentTypes } = require('../../utils/enums'); // Enums for statuses, methods, and types
+const enumToArray = require('../../utils/EnumToArray');
 
 // Define Payment-specific fields
 const paymentFields = {
-    status: { type: String, enum: PaymentStatuses, required: true }, // Payment status
+    status: { type: String, enum: enumToArray(PaymentStatuses), required: true, default: PaymentStatuses.PENDING}, // Payment status
     amount: { type: Number, required: true }, // Payment amount
     attachment: { type: mongoose.Schema.Types.ObjectId, ref: 'File', default: null }, // Optional file attachment
     method: { type: String, enum: PaymentMethods, required: true }, // Payment method
@@ -13,8 +14,10 @@ const paymentFields = {
     paidToModel: { type: String, enum: ['User', 'Vendor'], required: true }, // Dynamic reference type for `paidTo`
     comments: { type: String, default: null }, // Payment comments
     type: { type: String, enum: PaymentTypes, required: true }, // Payment type (credit/debit)
-    purchaseOrder: { type: mongoose.Schema.Types.ObjectId, ref: 'PurchaseOrder', default: null }, // Optional reference to Purchase Order
-    paymentRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentRequest', default: null }, // Optional reference to Payment Request
+    paymentAllocation:[{
+            purchaseId:{type: mongoose.Schema.Types.ObjectId, ref: 'Purchase', required: false, default: null} , 
+            amount : {type: Number, required: true}
+    }],
 };
 
 // Create the extended schema
