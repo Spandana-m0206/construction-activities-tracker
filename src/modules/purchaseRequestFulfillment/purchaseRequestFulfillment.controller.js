@@ -22,13 +22,13 @@ class PurchaseRequestFulfillmentController extends BaseController {
      */
         async markPurchaseAsReceived(req, res, next) {
             try {
-                const { id } = req.params;          // purchaseId from URL
-                const { receivedBy } = req.body;    // user ID who receives
+                const { purchaseFulfillmentId } = req.params;          // purchaseId from URL
+                const  receivedBy  = req.user.userId;    // user ID who receives
     
-                if (!id) {
+                if (!purchaseFulfillmentId) {
                     return res.status(400).json({
                         success: false,
-                        message: 'purchaseId is required',
+                        message: 'purchaseFulfillmentId is required',
                     });
                 }
                 if (!receivedBy) {
@@ -37,8 +37,8 @@ class PurchaseRequestFulfillmentController extends BaseController {
                         message: 'receivedBy is required',
                     });
                 }
-    
-                const updatedPurchase = await PurchaseRequestFulfillmentService.markPurchaseAsReceived(id, receivedBy);
+
+                const updatedPurchase = await PurchaseRequestFulfillmentService.markPurchaseAsReceived(purchaseFulfillmentId, receivedBy);
     
                 return res.status(200).json({
                     success: true,
