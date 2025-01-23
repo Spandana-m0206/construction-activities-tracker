@@ -9,7 +9,8 @@ const router = express.Router();
 router.get('/filter', TaskController.findFilteredTasks.bind(TaskController));
 
 // Inherited CRUD endpoints from BaseController
-router.post('/', TaskController.create.bind(TaskController));    // Create Task
+// router.post('/', TaskController.create.bind(TaskController)); 
+router.post('/',upload.array('files'),TaskController.createCustomTask.bind(TaskController)) ;  // Create Task
 router.get('/', TaskController.find.bind(TaskController));       // Get all Tasks
 router.get('/:id', TaskController.findOne.bind(TaskController)); // Get one Task
 router.put('/:id', TaskController.update.bind(TaskController));  // Update Task

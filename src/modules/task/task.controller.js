@@ -1,13 +1,47 @@
 // task.controller.js
+const { StatusCodes } = require('http-status-codes');
 const ApprovalModel = require('../approval/approval.model');
 const BaseController = require('../base/BaseController');
 const fileService = require('../file/file.service');
 const TaskModel = require('./task.model');
 const TaskService = require('./task.service');
+const ApiError = require('../../utils/apiError');
+const ApiResponse = require('../../utils/apiResponse');
 
 class TaskController extends BaseController {
     constructor() {
         super(TaskService); // Pass TaskService to the BaseController
+    }
+    async createCustomTask(req,res){
+        try {
+            const taskData=req.body
+            if([taskData.title,taskData.startTime,taskData.endTime,taskData.status
+                ,taskData.org,taskData.site,taskData.raisedByDept,taskData.raisedToDept].some(field=>!field)){
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Enter The Required field","Enter The Required field"))
+            }
+            taskData.isSystemGenerated=false
+            if(req.files?.length){
+                taskData.attachments=[]
+                for(const file of req.files){
+             const attachment = await fileService.create({
+                 filename: file.originalname,
+                 type: file.mimetype,
+                 size: file.size,
+                 org: taskData.org,
+                 uploadedBy: req.user.userId, 
+                 url: `${process.env.BASE_URL}/api/v1/files/link/${file.id}`, 
+                });
+                taskData.attachments.push(attachment._id)
+                }
+            }
+            const customTask=await TaskService.create(taskData)
+            res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED,customTask, 'Task created successfully'));
+
+            
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
+        }
     }
     async findOne(req, res, next) {
         try {
