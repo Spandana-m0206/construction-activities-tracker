@@ -22,58 +22,61 @@ class PurchaseRequestService extends BaseService {
     //    Sums up the needed quantities across multiple PRs, subtracting out fulfilled amounts.
     // --------------------------------------------------------------------------
     async getConsolidatedMaterials(purchaseRequestIds) {
-        const purchaseRequests = await this.model
-            .find({
-                _id: { $in: purchaseRequestIds },
-            })
-            .populate('materialList.material')
-            .lean();
-
+        const purchaseRequests = await this.model.find({
+          _id: { $in: purchaseRequestIds },
+        })
+          .populate('materialList.material')
+          .lean();
+    
         if (!purchaseRequests.length) return [];
-
+    
         // Find all Fulfillments linked to these requests
         const fulfillments = await PurchaseRequestFulfillmentModel.find({
-            purchaseRequest: { $in: purchaseRequestIds },
+          purchaseRequest: { $in: purchaseRequestIds },
         }).lean();
-
+    
         // Sum up already fulfilled quantities by material
         const fulfilledQuantities = {};
         fulfillments.forEach((f) => {
-            f.materialFulfilled.forEach((mf) => {
-                const materialId = mf.material.toString();
-                if (!fulfilledQuantities[materialId]) {
-                    fulfilledQuantities[materialId] = 0;
-                }
-                fulfilledQuantities[materialId] += mf.quantity;
-            });
+          const purchaseRequest = f.purchaseRequest.toString();
+          f.materialFulfilled.forEach((mf) => {
+            const materialId = mf.material.toString();
+            if(!fulfilledQuantities[purchaseRequest]){
+              fulfilledQuantities[purchaseRequest] = {};
+            }
+            if (!fulfilledQuantities[purchaseRequest][materialId]) {
+              fulfilledQuantities[purchaseRequest][materialId] = 0;
+            }
+            fulfilledQuantities[purchaseRequest][materialId] += mf.quantity;
+          });
         });
-
+    
         // Build consolidated requirements
         const consolidated = {};
         purchaseRequests.forEach((pr) => {
-            pr.materialList.forEach((item) => {
-                const materialId = item.material._id.toString();
-                const alreadyFulfilled = fulfilledQuantities[materialId] || 0;
-                const needed = Math.max(0, item.qty - alreadyFulfilled);
-
-                if (needed > 0) {
-                    if (!consolidated[materialId]) {
-                        consolidated[materialId] = {
-                            material: item.material._id,
-                            totalQty: 0,
-                        };
-                    }
-                    consolidated[materialId].totalQty += needed;
-                }
-            });
+          pr.materialList.forEach((item) => {
+            const materialId = item.material._id.toString();
+            const alreadyFulfilled = fulfilledQuantities[pr._id.toString()]?(fulfilledQuantities[pr._id.toString()][materialId] || 0):0;
+            const needed = Math.max(0, item.qty - alreadyFulfilled);
+    
+            if (needed > 0) {
+              if (!consolidated[materialId]) {
+                consolidated[materialId] = {
+                  material: item.material,
+                  totalQty: 0,
+                };
+              }
+              consolidated[materialId].totalQty += needed;
+            }
+          });
         });
-
+    
         return Object.values(consolidated).map((c) => ({
-            material: c.material,
-            qty: c.totalQty,
+          material: c.material,
+          qty: c.totalQty,
         }));
-    }
-
+      }
+    
     async getConsolidatedOrderDetails(inventoryId) {
         try {
             const requests = await this.model.aggregate([
