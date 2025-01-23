@@ -34,7 +34,7 @@ class TaskController extends BaseController {
                 taskData.attachments.push(attachment._id)
                 }
             }
-            const customTask=await TaskService.create(taskData)
+            const customTask=await this.service.create(taskData)
             res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED,customTask, 'Task created successfully'));
 
             
