@@ -38,19 +38,24 @@ const SiteStatuses = {
     COMPLETED: 'completed',
 };
 
-const MaterialCategories = [
-    'structural',
-    'electrical',
-    'plumbing',
-    'finishing',
-    'interior',
-    'exterior',
-    'mechanical',
-    'landscaping',
-    'safety',
-    'decorative',
-  ];
-const Units = ['kg', 'nos', 'liters', 'meters']; // Add units as needed
+const MaterialCategories = {
+    STRUCTURAL: 'Structural',
+    ELECTRICAL: 'Electrical',
+    PLUMBING : 'Plumbing',
+    FINISHING : 'Finishing',
+    INTERIOR : 'Interior',
+    EXTERIOR : 'Exterior',
+    MECHANICAL : 'Mechanical',
+    LANDSCAPING : 'Landscaping',
+    SAFETY : 'Safety',
+    DECORATIVE : 'Decorative',
+};
+const Units = {
+    KG: 'kg',
+    NOS: 'nos',
+    LITERS: 'liters',
+    METERS: 'meters'
+}; // Add units as needed
 const TaskStatuses = {
     PENDING: 'PENDING',
     IN_PROGRESS: 'IN_PROGRESS',
@@ -99,13 +104,18 @@ const UsageTypes = {
     THEFT: 'theft'
 };
 const PenaltySources = ['treat', 'salary', 'payables'];
-const PurchaseRequestPriorities = ['high', 'medium', 'low'];
+const PurchaseRequestPriorities = {
+    HIGH: 'high',
+    MEDIUM: 'medium',
+    LOW: 'low'
+  };
 const PurchaseRequestStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',
     COMPLETED: 'completed',
     CANCELLED: 'cancelled',
-    PARTIALLY_FULFILLED: 'partially fulfilled'
+    PARTIALLY_FULFILLED: 'partially fulfilled',
+    PENDING: 'pending',
 }
 const MessageTypes = {
     STATUS: "status",

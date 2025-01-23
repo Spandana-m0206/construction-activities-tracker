@@ -1,6 +1,8 @@
+const { StatusCodes } = require('http-status-codes');
 const { PurchaseRequestStatuses } = require('../../utils/enums');
 const BaseController = require('../base/BaseController');
 const PurchaseRequestService = require('./purchaseRequest.service');
+const ApiResponse = require('../../utils/apiResponse');
 
 class PurchaseRequestController extends BaseController {
     constructor() {
@@ -44,6 +46,39 @@ class PurchaseRequestController extends BaseController {
         } catch (error) {
             next(next);
         }
+    }
+
+    async getConsolidatedMaterials(req, res, next) {
+        try {
+            // You can pass IDs as req.body or req.query
+            // Assuming it's in req.body for a POST request (or use req.query for GET)
+            const { purchaseRequestIds } = req.body;
+            if (!purchaseRequestIds || !purchaseRequestIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'purchaseRequestIds are required',
+                });
+            }
+
+            const data = await PurchaseRequestService.getConsolidatedMaterials(purchaseRequestIds);
+            return res.status(200).json(new ApiResponse(StatusCodes.OK, data, "Consolidated Material List Fetched"));
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async find (req, res) {
+        try {
+            const purchasesRequests = await PurchaseRequestService.getMaterialRequest({...req.query, org: req.user.org})
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, purchasesRequests, "Successfully get the requests"))
+        } catch (error) {
+         next(error)   
+        }
+    }
+
+    async create(req, res) {
+        const newRequest = await this.service.create({...req.body, org: req.user.org, raisedBy: req.user.userId});
+        return res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED, newRequest, "Purchase request created successfully"));
     }
 }
 

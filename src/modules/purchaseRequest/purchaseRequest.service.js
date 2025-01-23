@@ -198,6 +198,11 @@ class PurchaseRequestService extends BaseService {
         
         return transformedData;
     }
+
+  async getMaterialRequest(params){
+    return await this.model.find(params).populate('raisedBy', 'name email').populate('approvedBy', 'name email').populate('materialList.material', 'name category').populate('inventory', "name");
+  }
+}
 }
 
 module.exports = new PurchaseRequestService();

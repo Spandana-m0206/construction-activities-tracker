@@ -15,8 +15,10 @@ const purchaseRequestFields = {
             qty: { type: Number, required: true }, // Quantity of material
         },
     ], // Array of material items
-    priority: { type: String, enum: enumToArray(PurchaseRequestPriorities), required: true }, // Priority of the request
-    status: { type: String, enum: enumToArray(PurchaseRequestStatuses), required: true, default:PurchaseRequestStatuses.IN_PROGRESS  }, // Status of the request
+    priority: { type: String, enum: enumToArray(PurchaseRequestPriorities), required: true, default:PurchaseRequestPriorities.MEDIUM }, // Priority of the request
+    status: { type: String, enum: enumToArray(PurchaseRequestStatuses), required: true, default:PurchaseRequestStatuses.PENDING }, // Status of the request
+    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
+    
 };
 
 // Create the extended schema
