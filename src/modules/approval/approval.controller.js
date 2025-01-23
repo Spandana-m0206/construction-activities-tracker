@@ -53,6 +53,9 @@ class ApprovalController extends BaseController {
 
             const data = await this.service.create(approvalData);
             const task=await taskService.findById(approvalData.task)
+            task.status = TaskStatuses.REVIEW;
+            if(approvalData.progressPercentage)task.progressPercentage =approvalData.progressPercentage;
+            await task.save();
             //TODO: what should be the content ? 
                   data.content=`${approvalData.progressPercentage}% Completed ${task.title}`;
                        const approvalRequestMessage=await messageService.approvalRequestSuccessMessage(data)
@@ -117,6 +120,11 @@ class ApprovalController extends BaseController {
             const approval = await this.service.findById(req.params.id)
             if(approvalData.status == ApprovalStatuses.APPROVED && approval.type == ApprovalTypes.TASK_COMPLETED){
                 const task=await taskService.updateTaskStatus(approval.task, TaskStatuses.COMPLETED, 100, req.files)
+                
+            }
+            if(approvalData.status == ApprovalStatuses.DISAPPROVED){
+                // REVIEW: if admin disapprove some task, then what should be the status of the task
+                const task=await taskService.updateTaskStatus(approval.task, TaskStatuses.IN_PROGRESS, 100, req.files)
                 
             }
             if(approvalData.status && messageId){

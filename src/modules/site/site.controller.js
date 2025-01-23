@@ -8,6 +8,7 @@ const enumToArray = require('../../utils/EnumToArray');
 const { ProjectCurrencies, SiteTypes, SiteStatuses } = require('../../utils/enums');
 const UserService = require('../user/user.service');
 const taskService = require('../task/task.service');
+const FloorDetailsService = require('../floorDetails/floorDetails.service')
 
 class SiteController extends BaseController {
     constructor() {
@@ -25,7 +26,7 @@ class SiteController extends BaseController {
     }
     async create (req, res) {
         try {
-            const {siteData} = req.body;
+            const {siteData, floorPlans} = req.body;
             if(siteData.startDate>siteData.endDate) {
                 return res.status(400)
                     .json(new ApiError(StatusCodes.BAD_REQUEST, "Invalid Date Duration"));
@@ -47,6 +48,7 @@ class SiteController extends BaseController {
             }
             if(!siteData?.status)siteData.status = SiteStatuses.WAITING;
             const newSite = await SiteService.create(siteData);
+            const newFloors = await FloorDetailsService.createBulk(floorPlans)
             await taskService.createTasksForFloors(newSite._id);
  
             res.status(StatusCodes.CREATED)
