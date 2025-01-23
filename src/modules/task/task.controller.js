@@ -16,10 +16,11 @@ class TaskController extends BaseController {
         try {
             const taskData=req.body
             if([taskData.title,taskData.startTime,taskData.endTime,taskData.status
-                ,taskData.org,taskData.site,taskData.raisedByDept,taskData.raisedToDept].some(field=>!field)){
+                ,taskData.site,taskData.raisedByDept,taskData.raisedToDept].some(field=>!field)){
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Enter The Required field","Enter The Required field"))
             }
             taskData.isSystemGenerated=false
+            taskData.org=req.user.org
             if(req.files?.length){
                 taskData.attachments=[]
                 for(const file of req.files){
