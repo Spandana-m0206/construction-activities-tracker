@@ -106,6 +106,39 @@ class PaymentService extends BaseService {
 
         return payment;
     }
+
+    async getRemainingAmount(paymentList,purchaseData){  
+        let totalPaidAmount=0
+        paymentList.forEach((payment)=>{
+          totalPaidAmount+=payment.amount
+        })
+         const remainingAmount=purchaseData.amount-totalPaidAmount
+         return {remainingAmount:remainingAmount}
+      }
+    
+      async getPurchasesWithBalanceAmount(vendorId) {
+        const purchases = await PurchaseModel.find({ vendor: vendorId })  
+        .lean()
+    
+      if(purchases.length===0){
+        return []
+      }
+        const purchasesWithBalance = purchases.map((purchaseData) => {
+          let totalPayments=0
+          purchaseData.payments.forEach((payment)=>{
+            totalPayments+=payment.amount ||0
+          })
+           const remainingAmount = purchaseData.amount - totalPayments;
+          if (remainingAmount > 0) {
+            return {
+              purchase: purchaseData,
+              remainingAmount: remainingAmount
+            };
+          }
+        }).filter(Boolean); 
+    
+        return purchasesWithBalance;
+      }    
 }
 
 module.exports = new PaymentService();

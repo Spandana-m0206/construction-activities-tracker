@@ -4,6 +4,8 @@ const PurchaseController = require('./purchase.controller');
 const router = express.Router();
 
 router.post('/create-purchases', PurchaseController.createPurchase.bind(PurchaseController));
+router.get('/balance-amount/:purchaseId',PurchaseController.getRemainingAmount.bind(PurchaseController));//to get the balance amount
+router.get('/purchase-with-balanceAmount/:vendorId',PurchaseController.getAllPurchasesWithBalance.bind(PurchaseController))
 
 // Base routes from BaseController
 router.post('/', PurchaseController.create.bind(PurchaseController)); // Create purchase

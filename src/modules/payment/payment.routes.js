@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.post('/create-payment', PaymentController.createPayment.bind(PaymentController)); // Create payment
 router.post('/approve/:paymentId', PaymentController.approvePayment.bind(PaymentController)); // Create payment
+router.get('/:purchaseId', PaymentController.getPaymentsByPurchase.bind(PaymentController)); // Get payment by ID
 
 // Base routes from BaseController
 router.post('/', PaymentController.create.bind(PaymentController)); // Create payment

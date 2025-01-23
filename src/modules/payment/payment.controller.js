@@ -53,6 +53,18 @@ class PaymentController extends BaseController {
             return res.status(400).json({ success: false, message: error.message });
         }
     }
+    
+    async getPaymentsByPurchase(req,res){
+        try {
+            const {purchaseId}=req.params
+            const paymentList=await PaymentService.getpaymentsByPurchase(purchaseId)
+
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,paymentList,"payments Raised for Particular Purchase"))
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
+        }
+    }
 }
 
 module.exports = new PaymentController();

@@ -52,6 +52,42 @@ class PurchaseController extends BaseController {
             next(error);
         }
     }
+    async getRemainingAmount(req,res){
+
+        try {
+            const {purchaseId}=req.params
+            const purchaseData=await PurchaseService.findById(purchaseId)
+            if(!purchaseData){
+                return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Purchase Details Not Found","Purchase Details Not Found"))
+            }
+            const approvedPaymentList=await PaymentService.find({'paymentAllocation.purchaseId':purchaseId,status:PaymentStatuses.APPROVED})
+
+            if(approvedPaymentList.length===0){
+               return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{remainingAmount:purchaseData.amount},"No Payment Records Found For This Purchase"))
+            }
+            const remainingAmount=await PurchaseService.getRemainingAmount(approvedPaymentList,purchaseData)
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,remainingAmount,"Remaining Amount To Be Paid On This Purchase"))
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+        }
+
+    }
+    async getAllPurchasesWithBalance(req,res){
+       try {
+         const {vendorId}=req.params
+
+         const purchaseList=await PurchaseService.getPurchasesWithBalanceAmount(vendorId)
+         if(purchaseList.length===0){
+            return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Purchase Details Not Found","Purchase Details Not Found"))
+         }
+         return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,purchaseList,"Purchases With Remaining Amount"))
+
+       } catch (error) {
+
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+       }
+
+    }
 }
 
 module.exports = new PurchaseController();
