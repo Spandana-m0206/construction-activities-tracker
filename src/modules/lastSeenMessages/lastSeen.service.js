@@ -8,16 +8,19 @@ class LastSeenService extends BaseService{
         super(lastSeen)
     }
  async getUnseenMessageCountBySite(userId,siteId){
-    const lastSeenMessage=await this.model.find({user:userId,site:siteId}).sort({createdAt:-1}).limit(1).populate('user','name')
+    const lastSeenMessage=await this.model.find({user:userId,site:siteId}).sort({createdAt:-1}).limit(1).populate('user','name').populate('site','name').populate('message').populate({
+      path: 'message',
+      populate: { path: 'createdBy', select:'name' } 
+    });
     if(lastSeenMessage.length==0){
-    const newMessages=await messageModel.find({user:userId,site:siteId}).sort({createdAt:-1})
+    const newMessages=await messageModel.find({site:siteId}).sort({createdAt:-1}).populate('createdBy','name').populate('site','name')
     const newMessageCount=newMessages.length
         return {
             unseenMessageCount:newMessageCount,
             lastMessage:newMessages[0]?newMessages[0]:{}
         }
     }
-    const unseenMessages=await messageModel.find({createdAt:{$gt:lastSeenMessage[0].createdAt},site:siteId}).sort({createdAt:-1}).populate('createdBy','name')
+    const unseenMessages=await messageModel.find({createdAt:{$gt:lastSeenMessage[0].createdAt},site:siteId}).sort({createdAt:-1}).populate('createdBy','name').populate('site', 'name')
     const unseenMessagesCount=unseenMessages.length
     
     return {
