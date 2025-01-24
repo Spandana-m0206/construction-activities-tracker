@@ -48,6 +48,7 @@ class TaskService extends BaseService {
       t.site = siteId;
     }
   }
+  
 
   expandTaskMap(taskMap, numLevels, landType, site) {
     const expandedMap = {};
@@ -709,6 +710,63 @@ class TaskService extends BaseService {
       .populate('site', 'name')
       .populate('createdBy', '_id name');
     return tasks
+  }
+  async getUncompletedTaskTillDate(orgId){
+    const statuses=[TaskStatuses.PENDING,TaskStatuses.IN_PROGRESS,TaskStatuses.OPEN,TaskStatuses.UPCOMING]
+    const filter={
+     status:{$in:statuses},
+     createdAt:{$lte:new Date()},
+     org:orgId
+
+    }
+   const taskList=await this.model.find(filter)
+   return taskList
+  }
+  async getCompletedTaskTillDate(orgId){
+    const filter={
+      status:{$eq: TaskStatuses.COMPLETED},
+      createdAt:{$lte:new Date()},
+      org:orgId
+    }
+      const taskList=await this.model.find(filter)
+      return taskList
+    
+  }
+  async completedTaskCountTillDate(orgId){
+    const now = new Date(); 
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); 
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);  
+
+    const filter = {
+        status: { $eq: TaskStatuses.COMPLETED },  
+        createdAt: {
+            $gte: startOfMonth,  
+            $lt: startOfNextMonth  
+        },
+        org:orgId
+    }
+    const taskCount = await this.model.countDocuments(filter)
+    return taskCount
+    
+
+  }
+  async inProgressTaskCountTillDate(orgId){
+    const now = new Date(); 
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); 
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);  
+
+    const filter = {
+        status: { $eq: TaskStatuses.IN_PROGRESS },  
+        createdAt: {
+            $gte: startOfMonth,  
+            $lt: startOfNextMonth  
+        },
+        org:orgId
+    }
+    const taskCount = await this.model.countDocuments(filter)
+     
+    return taskCount
+    
   }
 }
 
