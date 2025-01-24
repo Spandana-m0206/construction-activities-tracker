@@ -154,7 +154,6 @@ class UserController extends BaseController {
             const {name, countryCode, phone, email, language, role,address } = req.body;
     
             if(!role || !role.trim() || !enumToArray(Roles).includes(role) ){
-                console.log(enumToArray(Roles))
                 return res.status(StatusCodes.BAD_REQUEST)
                     .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid role" ))
             }

@@ -55,63 +55,66 @@ class SiteService extends BaseService {
       };
   }
 
-    async getProgressForAllSites(orgId, filters) {
-      try {
-        // Fetch all sites associated with the organization
-        const sites = await this.model.find({ org: orgId }).select('_id name location endDate startDate status projectValue');
-        const siteIds = sites.map((s) => s._id);
-    
-        if (siteIds.length === 0) {
-          return {
-            success: true,
-            data: [],
-          };
-        }
-    
-        // Fetch tasks associated with the site IDs and apply filters
-        const tasks = await TaskModel.find({ site: { $in: siteIds }, ...filters });
-    
-        // Calculate progress for each site
-        const progressData = sites.map((site) => {
-          const siteTasks = tasks.filter((task) => task.site.equals(site._id));
-          if (siteTasks.length === 0) {
-            return {
-              siteId: site._id,
-              siteName: site.name,
-              siteLocation: site.location,
-              siteEndDate: site.endDate,
-              siteStartDate: site.startDate,
-              siteStatus: site.status,
-              siteProjectValue: site.projectValue,
-              progress: 0, // No tasks, progress is 0%
-            };
-          }
-    
-          // Calculate average progress for the site
-          const totalProgress = siteTasks.reduce((sum, task) => sum + (task.progressPercentage || 0), 0);
-          const averageProgress = totalProgress / siteTasks.length;
-    
-          return {
-            siteId: site._id,
-            siteName: site.name,
-            siteLocation: site.location,
-            siteEndDate: site.endDate,
-            siteStartDate: site.startDate,
-            siteStatus: site.status,
-            siteProjectValue: site.projectValue,
-            progress: averageProgress,
-          };
-        });
-    
-        return {
-          success: true,
-          data: progressData,
-        };
-      } catch (error) {
-        console.error(`[SiteService Error - getProgressForAllSites]: ${error.message}`);
-        throw new Error('Failed to fetch progress for all sites');
-      }
+  async getProgressForAllSites(orgId, filters = {}) {
+    try {
+      const search = filters.search || '';
+  
+      // Use aggregation to calculate progress for each site
+      const sitesWithProgress = await this.model.aggregate([
+        {
+          $match: {
+            org: orgId,
+            name: { $regex: search, $options: 'i' }, // Case-insensitive search by name
+          },
+        },
+        {
+          $lookup: {
+            from: 'tasks', // Name of the TaskModel collection
+            localField: '_id',
+            foreignField: 'site',
+            as: 'tasks',
+          },
+        },
+        {
+          $addFields: {
+            progress: {
+              $cond: [
+                { $eq: [{ $size: '$tasks' }, 0] },
+                0, // If no tasks, progress is 0%
+                {
+                  $divide: [
+                    { $sum: '$tasks.progressPercentage' }, // Sum of task progress
+                    { $size: '$tasks' }, // Total number of tasks
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            location: 1,
+            startDate: 1,
+            endDate: 1,
+            status: 1,
+            projectValue: 1,
+            progress: { $round: ['$progress', 2] }, // Round progress to 2 decimal places
+          },
+        },
+      ]);
+  
+      return {
+        success: true,
+        data: sitesWithProgress,
+      };
+    } catch (error) {
+      console.error(`[SiteService Error - getProgressForAllSites]: ${error.message}`);
+      throw new Error('Failed to fetch progress for all sites');
     }
+  }
+  
     
         
 
