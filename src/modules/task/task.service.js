@@ -521,12 +521,31 @@ class TaskService extends BaseService {
     };
   }
   async findTasksBySite(siteId, filters) {
-    return await this.model.find({ site: siteId, ...filters })
-        .populate('subtasks', 'title status')
-        .populate('assignedTo', 'name email')
-        .populate('createdBy', '_id name')
-        .populate('org', 'name')
-        .populate('site', 'name');
+    const { search, status, ...otherFilters } = filters || {}; // Destructure search and status from filters
+
+    // Build the query object
+    const query = {
+        site: siteId,
+        ...otherFilters,
+    };
+
+    // Add search filter for title substring matching if provided
+    if (search) {
+        query.title = { $regex: search, $options: 'i' }; // Case-insensitive substring matching
+    }
+
+    // Add status filter if provided
+    if (status) {
+        query.status = status; // Match the exact status
+    }
+
+    // Execute the query with population
+    return await this.model.find(query)
+        .populate('subtasks', 'title status') // Populate subtasks with title and status fields
+        .populate('assignedTo', 'name email') // Populate assignedTo with name and email fields
+        .populate('createdBy', '_id name')    // Populate createdBy with _id and name fields
+        .populate('org', 'name')             // Populate org with name field
+        .populate('site', 'name');           // Populate site with name field
 }
   
   async updateParentProgressRecursively(parentTaskId) {
