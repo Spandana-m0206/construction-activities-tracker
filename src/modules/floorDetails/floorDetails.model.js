@@ -6,7 +6,7 @@ const enumToArray = require('../../utils/EnumToArray');
 // Define Floor Details-specific fields
 const floorDetailsFields = {
     site: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', required: true }, // Reference to Site
-    floorNumber: { type: Number, required: true }, // Floor Number
+    floorNumber: { type: String, required: true }, // Floor Number
     balconies: { type: Number, required: true }, // Number of Balconies
     size: { type: String, enum: enumToArray(SiteTypes), required: true }, // Floor Size
     level: { type: Number, required: true }, // Level of the floor
