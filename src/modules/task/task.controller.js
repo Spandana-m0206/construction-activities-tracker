@@ -20,6 +20,7 @@ class TaskController extends BaseController {
                 return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Enter The Required field","Enter The Required field"))
             }
             taskData.isSystemGenerated=false
+            taskData.createdBy=req.user.userId
             taskData.org=req.user.org
             if(req.files?.length){
                 taskData.attachments=[]
