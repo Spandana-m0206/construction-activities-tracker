@@ -720,6 +720,9 @@ class TaskService extends BaseService {
 
     }
    const taskList=await this.model.find(filter)
+    .populate('site', 'name') // Populate `site` with only the `name` field
+    .populate('createdBy', 'name') // Populate `createdBy` with only the `name` field
+    .select('_id title priority site isSystemGenerated createdBy startTime endTime'); // Select required fields
    return taskList
   }
   async getCompletedTaskTillDate(orgId){
