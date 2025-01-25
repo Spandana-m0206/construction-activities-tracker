@@ -329,8 +329,6 @@ class OrderService extends BaseService {
           throw new Error("Error Fetching Material Requests", error)
       }
       }
-
-
       
 }
 

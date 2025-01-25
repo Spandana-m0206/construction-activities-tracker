@@ -232,8 +232,7 @@ class OrderController extends BaseController {
             next(error);
 
         }
-    };
- 
+    }; 
 
 }
 
