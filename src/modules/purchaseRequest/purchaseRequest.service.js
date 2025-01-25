@@ -202,6 +202,118 @@ class PurchaseRequestService extends BaseService {
   async getMaterialRequest(params){
     return await this.model.find(params).populate('raisedBy', 'name email').populate('approvedBy', 'name email').populate('materialList.material', 'name category').populate('inventory', "name");
   }
+  async getInventoryBysearch(regex, orgId) {
+    try {
+      // Create a regex for the search term
+      const searchRegex = new RegExp(regex, "i"); // 'i' for case-insensitive matching
+    
+      const pipeline = [
+        // Match based on orgId
+        {
+          $match: {
+            org: orgId, // Match the org field with the given org ID
+          },
+        },
+        // Lookup for inventory details
+        {
+          $lookup: {
+            from: "inventories", // The name of the referenced collection
+            localField: "inventory", // Field in PurchaseRequest
+            foreignField: "_id", // Field in Inventory collection
+            as: "inventoryDetails", // Field name where joined results will be stored
+          },
+        },
+        // Unwind inventory details (in case of arrays)
+        {
+          $unwind: "$inventoryDetails",
+        },
+        // Match based on inventory name using regex
+        {
+          $match: {
+            "inventoryDetails.name": { $regex: searchRegex }, // Match the regex for inventory name
+          },
+        },
+        // Lookup manager details (User) for the inventory manager
+        {
+          $lookup: {
+            from: "users", // Name of the referenced collection for manager
+            localField: "raisedBy", // Field in Inventory (manager reference)
+            foreignField: "_id", // Field in User collection
+            as: "raisedByDetail",
+          },
+        },
+        {
+          $unwind: {
+            path: "$raisedByDetail",
+            preserveNullAndEmptyArrays: true, // Keep null values if no manager
+          },
+        },
+        // Lookup org details (Org) for the inventory organization
+        {
+          $lookup: {
+            from: "orgs", // Name of the referenced collection for org
+            localField: "inventoryDetails.org", // Field in Inventory (org reference)
+            foreignField: "_id", // Field in Org collection
+            as: "orgDetails",
+          },
+        },
+        {
+          $unwind: {
+            path: "$orgDetails",
+            preserveNullAndEmptyArrays: true, // Keep null values if no org details
+          },
+        },
+        // Project the necessary fields
+        {
+          $project: {
+            _id: 1,
+            raisedBy: {
+              _id: "$raisedByDetail._id",
+              name: "$raisedByDetail.name",
+              
+            },
+            inventory: {
+              _id: "$inventoryDetails._id",
+              name: "$inventoryDetails.name",
+            },
+            materialList: 1, // Keep the material list as-is
+            priority: 1,
+            status: 1,
+            org: "$orgDetails._id",
+            orgDetails: {
+              name: "$orgDetails.name",
+              address: "$orgDetails.address",
+            },
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        },
+      ];
+    
+      // Execute the aggregation pipeline
+      const results = await PurchaseRequest.aggregate(pipeline);
+    
+      // Format results to match the desired output structure
+      const formattedResults = results.map((item) => ({
+        _id: item._id,
+        raisedBy: item.raisedBy,
+        inventory: item.inventory,
+        materialList: item.materialList,
+        priority: item.priority,
+        status: item.status,
+        org: item.org,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        __v: 0, // Optional: Add this if required for versioning consistency
+      }));
+    
+      return formattedResults;
+    } catch (error) {
+      throw new Error(`Error in getInventoryBysearch: ${error.message}`);
+    }
+    
+  }
+  
 }
 
 
