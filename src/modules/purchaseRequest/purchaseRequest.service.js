@@ -202,6 +202,9 @@ class PurchaseRequestService extends BaseService {
   async getMaterialRequest(params){
     return await this.model.find(params).populate('raisedBy', 'name email').populate('approvedBy', 'name email').populate('materialList.material', 'name category').populate('inventory', "name");
   }
+  async findTodaysRequest(filter={}){
+    return await this.model.find(filter).populate('raisedBy', 'name email').populate('approvedBy', 'name email').populate('materialList.material', 'name category').populate('inventory', "name");
+  }
 }
 
 
