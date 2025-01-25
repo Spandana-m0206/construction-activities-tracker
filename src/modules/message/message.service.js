@@ -220,6 +220,7 @@ class MessageService extends BaseService {
               approvalRequest: {
                 _id: "$approvalRequestDetails._id",
                 status: "$approvalRequestDetails.status",
+                task: "$approvalRequestDetails.task",
                 images: { $map: { input: "$approvalRequestImages", as: "img", in: "$$img.url" } },
                 raisedBy: {
                   _id: "$approvalRequestRaisedByDetails._id",
@@ -566,6 +567,7 @@ class MessageService extends BaseService {
               approvalRequest: {
                 _id: "$approvalRequestDetails._id",
                 status: "$approvalRequestDetails.status",
+                task: "$approvalRequestDetails.task",
                 images: { $map: { input: "$approvalRequestImages", as: "img", in: "$$img.url" } },
                 raisedBy: {
                   _id: "$approvalRequestRaisedByDetails._id",

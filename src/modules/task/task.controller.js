@@ -212,6 +212,7 @@ class TaskController extends BaseController {
             const data = await TaskService.updateTaskStatus(taskId, req.body.status, req.body.progressPercentage, req.files);
             return res.status(201).json({ success: true, data: data });
         } catch (error) {
+            res.status(error.statusCode || 500).json(new ApiError(error.statusCode || 500, error.message, error))
             next(error);
         }
     }
