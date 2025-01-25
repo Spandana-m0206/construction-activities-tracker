@@ -224,6 +224,37 @@ class TaskController extends BaseController {
             next(error);
         }
     }
+    async getUnCompletedTaskTillDay(req,res){
+        try {
+            
+            const taskList=await TaskService.getUncompletedTaskTillDate(req.user.org)
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{taskList:taskList},"The Uncompleted Task List Till Today"))
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
+        }
+    }
+    async getCompletedTaskTillDay(req,res){
+        try {
+            const taskList=await TaskService.getCompletedTaskTillDate(req.user.org)
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{taskList:taskList},"The Completed Task List Till Today"))
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
+        }
+    }
+    async taskSummaryTillDate(req,res){
+        try {
+            const completedTask=await TaskService.completedTaskCountTillDate(req.user.org)
+            const inProgressTask=await TaskService.inProgressTaskCountTillDate(req.user.org)
+
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{completedTask,inProgressTask}," Task Summary Count Till Today"))
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
+        }
+    }
+ 
 }
 
 module.exports = new TaskController();

@@ -5,7 +5,9 @@ const TaskController = require('./task.controller');
 const upload = require('../file/file.storage');
 
 const router = express.Router();
-
+router.get('/get-uncompleted-task-till-day', TaskController.getUnCompletedTaskTillDay.bind(TaskController))
+router.get('/get-completed-task-till-day', TaskController.getCompletedTaskTillDay.bind(TaskController))
+router.get('/task-summary',TaskController.taskSummaryTillDate.bind(TaskController))
 router.get('/filter', TaskController.findFilteredTasks.bind(TaskController));
 
 // Inherited CRUD endpoints from BaseController
