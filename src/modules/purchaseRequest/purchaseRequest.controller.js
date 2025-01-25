@@ -74,7 +74,7 @@ class PurchaseRequestController extends BaseController {
                 search=""
             }
             const searchResult=await this.service.getInventoryBysearch(search,req.user.org)
-            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{searchResult}, "Inventory Search Result"))
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,searchResult, "Inventory Search Result"))
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))   
         
