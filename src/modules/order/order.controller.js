@@ -27,7 +27,10 @@ class OrderController extends BaseController {
           const orgId = req.user.org;
           const summary = await OrderModel.aggregate([
             {
-              $match: { org: orgId }, // Match orders for the organization
+              $match: { 
+                org: orgId,
+                fromSite: null
+                }, // Match orders for the organization
             },
             {
               $group: {
@@ -38,7 +41,7 @@ class OrderController extends BaseController {
           ]);
       
           // Extract counts for COMPLETED and calculate pending requests
-          const completedCount = summary.find(item => item._id === 'COMPLETED')?.count || 0;
+          const completedCount = summary.find(item => item._id === OrderStatuses.COMPLETED)?.count || 0;
           const totalCount = summary.reduce((sum, item) => sum + item.count, 0);
           const pendingCount = totalCount - completedCount;
       
@@ -64,6 +67,7 @@ class OrderController extends BaseController {
         
             // Query today's orders for the organization
             const todaysOrders = await this.service.findTodayOrder({
+                fromSite:null,
               org: orgId,
               createdAt: { $gte: startOfDay, $lt: endOfDay },
             });

@@ -129,7 +129,8 @@ const MessageTypes = {
     COMPLETED: 'completed',
     CANCELLED: 'cancelled',
     PARTIALLY_FULFILLED: 'partially fulfilled',
-    RETURNED: 'returned'
+    RETURNED: 'returned',
+    PENDING: 'pending'
 }
 const CarpetAreaUnitType = {
     SQUARE_FEET: 'sq. ft.',

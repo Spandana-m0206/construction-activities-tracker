@@ -41,6 +41,7 @@ class PurchaseRequestController extends BaseController {
         try {
             const raisedBy = req.user.userId;
             req.body.raisedBy = raisedBy
+            req.body.org = req.user.org
             const orders = await this.service.create(req.body);
             res.status(200).json({ success: true, data: orders });
         } catch (error) {

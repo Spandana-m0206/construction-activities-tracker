@@ -85,6 +85,7 @@ class PurchaseService extends BaseService {
       payments: [],
       materialListItems: createdItems.map((i) => i._id),
       purchaseRequests: purchaseRequestIds, // new field in your schema
+      org:org
     });
 
     // Link back each MaterialListItem to this Purchase
@@ -156,7 +157,7 @@ class PurchaseService extends BaseService {
             ],
             fulfilledBy: purchasedBy,
             fulfilledOn: new Date(),
-            status: FulfillmentStatuses.IN_PROGRESS,
+            status: FulfillmentStatuses.PENDING,
           });
           qtyLeft -= allocatedQty;
         }
