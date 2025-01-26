@@ -90,17 +90,22 @@ class PurchaseRequestController extends BaseController {
 
     async find (req, res) {
         try {
-            const purchasesRequests = await PurchaseRequestService.getMaterialRequest({...req.query, org: req.user.org})
-            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, purchasesRequests, "Successfully get the requests"))
-        } catch (error) {
-         next(error)   
-        }
+            const {search}=req.query
+            if(!search){
+                search=""
+            }
+            const searchResult=await this.service.getInventoryBysearch(search,req.user.org)
+            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,searchResult, "Inventory Search Result"))
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))   
+        
+    }
     }
 
     async create(req, res) {
         const newRequest = await this.service.create({...req.body, org: req.user.org, raisedBy: req.user.userId});
         return res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED, newRequest, "Purchase request created successfully"));
     }
-}
+   }
 
 module.exports = new PurchaseRequestController();
