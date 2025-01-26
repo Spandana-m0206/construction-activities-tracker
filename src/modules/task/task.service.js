@@ -711,6 +711,7 @@ class TaskService extends BaseService {
       .populate('createdBy', '_id name');
     return tasks
   }
+  // TODO : This is a lot of data it will break frontend need this to be paginated but with populated response
   async getUncompletedTaskTillDate(orgId){
     const statuses=[TaskStatuses.PENDING,TaskStatuses.IN_PROGRESS,TaskStatuses.OPEN,TaskStatuses.UPCOMING]
     const filter={
@@ -720,6 +721,9 @@ class TaskService extends BaseService {
 
     }
    const taskList=await this.model.find(filter)
+    .populate('site', 'name') // Populate `site` with only the `name` field
+    .populate('createdBy', 'name') // Populate `createdBy` with only the `name` field
+    .select('_id title priority site isSystemGenerated createdBy startTime endTime'); // Select required fields
    return taskList
   }
   async getCompletedTaskTillDate(orgId){
