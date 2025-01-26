@@ -3,6 +3,7 @@ const UsageController = require('./usage.controller');
 
 const router = express.Router();
 
+router.get('/get-material-usage/:id', UsageController.getMaterialUsage.bind(UsageController)); // param -> material id | query -> site id
 router.post('/create-usage', UsageController.createUsage.bind(UsageController)); 
 router.get('/get-usage/:id', UsageController.getUsage.bind(UsageController)); 
 router.get('/get-wastage/:id', UsageController.getWastage.bind(UsageController)); 
