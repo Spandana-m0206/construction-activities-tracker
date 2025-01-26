@@ -4,6 +4,8 @@ const StockItemModel = require('../stock/stock.model');
 const UsageModel = require('./usage.model');
 const usageService = require('./usage.service');
 const UsageService = require('./usage.service');
+const materialMetaDataService = require('../materialMetadata/materialMetadata.service');
+const siteService = require('../site/site.service');
 
 class UsageController extends BaseController {
     constructor() {
@@ -11,6 +13,28 @@ class UsageController extends BaseController {
     }
 
     // Example custom controller method: Get usage by organization
+    async getMaterialUsage(req, res, next) {
+        try {
+            const materialId = req.params.id;
+            const material = await materialMetaDataService.findOne({ _id: materialId });
+            if(!material) {
+                throw new Error('Material not found');
+            }
+            const siteId = req.query.siteId;
+            if(!siteId) {
+                throw new Error('Site ID is required');
+            }
+            const site = await siteService.findOne({ _id: siteId });
+            if(!site) {
+                throw new Error('Site not found');
+            }
+            const orgId=req.user.org;
+            const usage = await usageService.getMaterialUsage(materialId, siteId, orgId,req.query.page,req.query.limit);
+            res.status(200).json({ success: true, data: usage });
+        } catch (error) {
+            next(error);
+        }
+    }
     async getUsageByOrg(req, res, next) {
         try {
             const usage = await this.service.findUsageByOrg(req.params.orgId);
