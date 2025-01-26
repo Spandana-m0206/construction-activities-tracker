@@ -5,6 +5,7 @@ const UserService = require("../user/user.service");
 const ApiResponse  = require("../../utils/apiResponse");
 
 
+
 exports.login = async (req, res, next) => {
   try {
         const {email, password } = req.body;
@@ -111,3 +112,22 @@ exports.verifyOTP=async (req,res)=>{
     
   }
 }
+  exports.changePassword=async (req,res)=>{
+try {
+      const {currentPassword,newPassword}=req.body;
+      if(!currentPassword || !newPassword){
+        return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Enter Required Field","Enter Required Field"))
+      }
+    
+      const user=await UserService.findById(req.user._id)
+      if(!await user.isPasswordCorrect(currentPassword)){
+        return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Password","Invalid Password"))
+      }
+    const userData=await AuthService.changePassword(req.user.userId,newPassword)
+    res.status(StatusCodes.ACCEPTED).json(new ApiResponse(StatusCodes.ACCEPTED,userData,"Changed Password"))
+
+} catch (error) {
+  return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+}
+}
+

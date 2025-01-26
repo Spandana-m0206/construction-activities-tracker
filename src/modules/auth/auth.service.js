@@ -119,4 +119,12 @@ exports.getPayLoadFromToken=async (token,secretCode)=>{
 
 }
 
+exports.changePassword=async (userId,newPassword)=>{
+    const user=await UserService.findById(userId)
+    user.password=newPassword
+    await user.save();
+    return user
+
+}
+
 
