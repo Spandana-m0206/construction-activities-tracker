@@ -228,7 +228,7 @@ class TaskController extends BaseController {
     async getUnCompletedTaskTillDay(req,res){
         try {
             
-            const taskList=await TaskService.getUncompletedTaskTillDate(req.user.org)
+            const taskList=await TaskService.getUncompletedTaskTillDate(req.user.org, req.user.userId, req.user.role)
             return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{taskList:taskList},"The Uncompleted Task List Till Today"))
         } catch (error) {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
