@@ -12,7 +12,7 @@ const stockItemFields = {
     inventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to Inventory
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Organization
     source: { type: String, enum: enumToArray(StockSources), required: true }, // Enum for source (inventory/site)
-    materialMetaData: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata', required: true }
+    materialMetadata: { type: mongoose.Schema.Types.ObjectId, ref: 'MaterialMetadata', required: true }
 };
 
 // Create the extended schema

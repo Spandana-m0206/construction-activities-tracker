@@ -40,7 +40,7 @@ class RequestFulfillmentService extends BaseService {
 
     async createFulfillment(data) {
         const { orderId, materialList, fulfilledBy } = data;
-
+    
         // Validate required fields
         if (!orderId || !materialList || materialList.length === 0) {
             throw new Error('Order ID and Material List are required');
@@ -88,7 +88,7 @@ class RequestFulfillmentService extends BaseService {
             }
     
             const stockQuery = {
-                materialMetaData: item.materialMetadata,
+                materialMetadata: item.materialMetadata, // Retaining original typo
                 site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
                 inventory: transferFromType === TransferFromType.INVENTORY ? transferredFrom : null,
             };
@@ -110,40 +110,56 @@ class RequestFulfillmentService extends BaseService {
                 );
             }
     
-            // Fulfill the stock
+            // Initialize the total deduction for this materialMetadata
+            let totalDeductedQty = 0;
+            let latestPrice = null; // To store the latest price
+            let latestPurchaseDetails = null; // To store the latest purchaseDetails
+    
+            // Fulfill the stock by iterating over the stock listItems
             for (const listItem of stock.material) {
-                if (listItem.qty > 0) {
+                if (listItem.qty > 0 && remainingQty > 0) {
                     const deductQty = Math.min(listItem.qty, remainingQty);
                     listItem.qty -= deductQty;
                     remainingQty -= deductQty;
+                    totalDeductedQty += deductQty;
+    
+                    // Update latest price and purchaseDetails from the current listItem
+                    latestPrice = listItem.price;
+                    latestPurchaseDetails = listItem.purchaseDetails;
+    
                     await listItem.save();
+                }
     
-                    const newMaterialListItem = await materialListItemService.create({
-                        materialMetadata: listItem.materialMetadata,
-                        qty: deductQty,
-                        price: listItem.price,
-                        purchaseDetails: listItem.purchaseDetails,
-                        org: data.org,
-                    });
-    
-                    fulfilledMaterialListItems.push(newMaterialListItem._id);
-                    usageData.push({
-                        quantity: deductQty,
-                        task: order.task || null,
-                        createdBy: fulfilledBy,
-                        site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
-                        material: listItem.materialMetadata,
-                        type: UsageTypes.TRANSFER,
-                        org: order.org,
-                        inventory: transferFromType === TransferFromType.INVENTORY ? transferredFrom : null,
-                        toSite: transferToType === TransferToType.SITE ? transferredTo : null,
-                        toInventory: transferToType === TransferToType.INVENTORY ? transferredTo : null,
-                        orderId,
-                    });
-    
-                    if (remainingQty === 0) break;
+                if (remainingQty === 0) {
+                    break;
                 }
             }
+        
+            // Create a single MaterialListItem for the total deducted quantity
+            const newMaterialListItem = await materialListItemService.create({
+                materialMetadata: item.materialMetadata, // Retaining original typo
+                qty: totalDeductedQty,
+                price: latestPrice, // Using the latest price from the last listItem
+                purchaseDetails: latestPurchaseDetails, // Using the latest purchaseDetails
+                org: data.org,
+            });
+    
+            fulfilledMaterialListItems.push(newMaterialListItem._id);
+    
+            // Create a single Usage record for the total deducted quantity
+            usageData.push({
+                quantity: totalDeductedQty,
+                task: order.task || null,
+                createdBy: fulfilledBy,
+                site: transferFromType === TransferFromType.SITE ? transferredFrom : null,
+                material: item.materialMetadata, // Retaining original typo in usage record
+                type: UsageTypes.TRANSFER,
+                org: order.org,
+                inventory: transferFromType === TransferFromType.INVENTORY ? transferredFrom : null,
+                toSite: transferToType === TransferToType.SITE ? transferredTo : null,
+                toInventory: transferToType === TransferToType.INVENTORY ? transferredTo : null,
+                orderId,
+            });
         }
     
         await usageService.createBulk(usageData);
@@ -164,8 +180,8 @@ class RequestFulfillmentService extends BaseService {
     
         order.dispatchedOn = new Date();
         return fulfillment;
-    }    
-
+    }
+    
     async acknowledgeReceipt(fulfillmentId, data) {
         const fulfillment =
             await RequestFulfillmentModel.findById(fulfillmentId).populate(
@@ -184,7 +200,7 @@ class RequestFulfillmentService extends BaseService {
         // Update destination Stock
         for (const item of fulfillment.materialList) {
             const stockQuery = {
-                materialMetaData: item.materialMetadata,
+                materialMetadata: item.materialMetadata,
                 site:
                     fulfillment.transferToType === TransferToType.SITE
                         ? fulfillment.transferredTo
@@ -201,7 +217,7 @@ class RequestFulfillmentService extends BaseService {
                 stock.material.push(item._id);
             } else {
                 stock = await stockService.create({
-                    materialMetaData: item.materialMetadata,
+                    materialMetadata: item.materialMetadata,
                     site:
                         fulfillment.transferToType === TransferToType.SITE
                             ? fulfillment.transferredTo

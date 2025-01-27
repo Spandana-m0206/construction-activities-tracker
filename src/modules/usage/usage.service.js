@@ -213,11 +213,11 @@ class UsageService extends BaseService {
             if (totalToDeduct > 0) {
                 const stockItem = await StockItemModel.findOne({
                     [type]: id,
-                    materialMetaData: materialId,
+                    materialMetadata: materialId,
                 }).populate('material');
     
                 if (!stockItem) {
-                    throw new Error(`No StockItem found for this ${type} + materialMetaData`);
+                    throw new Error(`No StockItem found for this ${type} + materialMetadata`);
                 }
     
                 const foundListItem = stockItem.material.find(
