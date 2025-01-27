@@ -58,14 +58,23 @@ class SiteService extends BaseService {
   async getProgressForAllSites(orgId, filters = {}) {
     try {
       const search = filters.search || '';
+      const supervisor = filters.supervisor || null; // Extract supervisor from filters
+  
+      // Build the match condition dynamically
+      const matchCondition={
+        org: orgId,
+        name: { $regex: search, $options: 'i' }, // Case-insensitive search by name
+      };
+  
+      // Add supervisor condition if present
+      if (supervisor) {
+        matchCondition.supervisor = supervisor; // Assuming `supervisor` is a field in the Site model
+      }
   
       // Use aggregation to calculate progress for each site
       const sitesWithProgress = await this.model.aggregate([
         {
-          $match: {
-            org: orgId,
-            name: { $regex: search, $options: 'i' }, // Case-insensitive search by name
-          },
+          $match: matchCondition, // Dynamically built match condition
         },
         {
           $lookup: {
@@ -118,10 +127,15 @@ class SiteService extends BaseService {
     
         
 
-    async countTasksForOrg(orgId, filters) {
+    async countTasksForOrg(orgId, filters={}) {
       try {
         // Fetch all sites associated with the org
-        const sites = await this.model.find({ org: orgId }).select('_id name location');
+        const allFilters = { ...filters, org: orgId };
+        const sites = await this.model.find(allFilters).select('_id name location');
+        if(filters.supervisor) 
+        {
+            delete filters.supervisor;
+        }
         const siteIds = sites.map((s) => s._id);
     
         if (siteIds.length === 0) {
