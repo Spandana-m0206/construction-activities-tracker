@@ -10,7 +10,11 @@ const Roles = {
     SITE_SUPERVISOR : 'Site Supervisor',
     FINANCE_EXECUTIVE : 'Finance Executive',
   }
-const Languages = ['EN', 'ES', 'FR']; // Add more languages if required
+const Languages = {
+    EN: 'EN',
+    ES: 'ES',
+    FR: 'FR'
+  }; // Add more languages if required
 const ProjectCurrencies = {
     USD: 'USD',
     EUR: 'EUR',

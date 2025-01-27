@@ -12,7 +12,7 @@ const userFields = {
     password: { type: String, required: true },
     role: { type: String, enum: enumToArray(Roles), required: true },
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: false }, // Reference to Org
-    language: { type: String, enum: Languages, required: true },
+    language: { type: String, enum: enumToArray(Languages), required: true },
     resetToken: { type: String, default: null },
     resetTokenExpiry: { type: Date, default: null },
     resetOTP: { type: String, default: null },
