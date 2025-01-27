@@ -21,12 +21,18 @@ class MessageService extends BaseService {
    
 
     
-    async findMessagesBySite(siteId,page=1,limit=50){
+    async findMessages(id,page=1,limit=50){
 
         const pipeline = [
-          // Match messages for the specific site
-          { $match: { site: siteId } },
-        
+          // Match messages for the specific site or inventrory
+          {
+            $match: {
+              $or: [
+                { site: id },
+                { inventory: id } // Replace 'inventoryId' with your specific inventory ID variable
+              ]
+            }
+          },        
           // Lookup for attachment details
           {
             $lookup: {
@@ -541,6 +547,7 @@ class MessageService extends BaseService {
               _id: 1,
               content: 1,
               site: 1,
+              inventory:1,
               type: 1,
               isDeleted: 1,
               createdAt: 1,

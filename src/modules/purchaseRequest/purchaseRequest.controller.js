@@ -3,6 +3,7 @@ const { PurchaseRequestStatuses } = require('../../utils/enums');
 const BaseController = require('../base/BaseController');
 const PurchaseRequestService = require('./purchaseRequest.service');
 const ApiResponse = require('../../utils/apiResponse');
+const ApiError = require('../../utils/apiError');
 
 class PurchaseRequestController extends BaseController {
     constructor() {
@@ -90,7 +91,7 @@ class PurchaseRequestController extends BaseController {
 
     async find (req, res) {
         try {
-            const {search}=req.query
+            let {search}=req.query
             if(!search){
                 search=""
             }
