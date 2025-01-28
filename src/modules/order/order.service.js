@@ -77,6 +77,8 @@ class OrderService extends BaseService {
                     } : null,
                 };
             }));
+            formattedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
             return formattedOrders;
     }
 
@@ -135,7 +137,8 @@ class OrderService extends BaseService {
                     location: order.inventory.address,
                 } : null,
             }));
-    
+            formattedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
             return formattedOrders;
         } catch (error) {
             console.error('Error in getMyOrders:', error);

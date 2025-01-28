@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const BaseController = require('../base/BaseController');
 const PurchaseService = require('./purchase.service');
 
@@ -9,7 +10,8 @@ class PurchaseController extends BaseController {
     // Example custom controller method: Get purchases by vendor
     async getPurchasesByVendor(req, res, next) {
         try {
-            const purchases = await this.service.findPurchasesByVendor({vendor:req.params.vendorId, org:req.user.org});
+            const vendorId = new mongoose.Types.ObjectId(req.params.vendorId)
+            const purchases = await this.service.findPurchasesByVendor({vendor:vendorId, org:req.user.org});
             res.status(200).json({ success: true, data: purchases });
         } catch (error) {
             next(error);

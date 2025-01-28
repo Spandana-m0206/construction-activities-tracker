@@ -14,7 +14,8 @@ const purchaseFields = {
         paymentId:{type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: false, default: null} , 
         amount : {type: Number, required: true}
     }],
-    purchaseRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PurchaseRequest', required: true }], // Added field
+    purchaseRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PurchaseRequest', required: true }],
+    org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // Reference to Org
 };
 
 // Create the extended schema

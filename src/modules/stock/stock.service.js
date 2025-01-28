@@ -45,7 +45,7 @@ class StockService extends BaseService {
                 {
                     $lookup: {
                         from: 'materialmetadatas',
-                        localField: 'materialMetaData',
+                        localField: 'materialMetadata',
                         foreignField: '_id',
                         as: 'materialInfo',
                     },
@@ -100,7 +100,7 @@ class StockService extends BaseService {
                 {
                     $lookup: {
                         from: 'materialmetadatas',
-                        localField: 'materialMetaData',
+                        localField: 'materialMetadata',
                         foreignField: '_id',
                         as: 'materialInfo',
                     },
@@ -139,7 +139,7 @@ class StockService extends BaseService {
                         _id: '$_id.category',
                         materials: {
                             $push: {
-                                materialMetaDataId: '$_id.materialId',
+                                materialMetadataId: '$_id.materialId',
                                 name: '$name',
                                 units: '$units',
                                 inStock: '$totalQty',
@@ -157,7 +157,7 @@ class StockService extends BaseService {
                                 input: '$materials',
                                 as: 'm',
                                 in: {
-                                    _id: '$$m.materialMetaDataId',
+                                    _id: '$$m.materialMetadataId',
                                     name: '$$m.name',
                                     units: '$$m.units',
                                     inStock: '$$m.inStock',
