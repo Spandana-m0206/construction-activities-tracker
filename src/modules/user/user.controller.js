@@ -10,6 +10,7 @@ const {generateRandomPassword} = require('../../utils/password');
 const fileService = require('../file/file.service');
 const SiteService = require('../site/site.service');
 const InventoryService = require('../inventory/inventory.service');
+const { CountryCodes, Languages } = require('../../utils/enums'); // Enums for validation
 class UserController extends BaseController {
     constructor() {
         super(UserService); // Pass the UserService to the BaseController
@@ -151,14 +152,39 @@ class UserController extends BaseController {
 }   
     async update(req, res, next) {
         try {
-            const {name, countryCode, phone, email, language, role,address } = req.body;
+            const { countryCode, email, language, role } = req.body;
     
-            if(!role || !role.trim() || !enumToArray(Roles).includes(role) ){
-                return res.status(StatusCodes.BAD_REQUEST)
-                    .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid role" ))
+            if(role) {
+                if(!role.trim() || !enumToArray(Roles).includes(role) ){
+                    return res.status(StatusCodes.BAD_REQUEST)
+                        .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid role" ))
+                }
             }
-            if(!name ||!countryCode ||!phone ||!email ||!language){
-                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Please fill required fields"));
+            if(language){
+                if(!language.trim() || !enumToArray(Languages).includes(language) ){
+                    return res.status(StatusCodes.BAD_REQUEST)
+                        .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid language" ))
+                }
+            }
+            if(countryCode){
+                if(!countryCode.trim() || !enumToArray(CountryCodes).includes(countryCode) ){
+                    return res.status(StatusCodes.BAD_REQUEST)
+                        .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid country code" ))
+                }
+            }
+            if(email){
+                if(!email.trim()){
+                    return res.status(StatusCodes.BAD_REQUEST)
+                        .json( new ApiError(StatusCodes.BAD_REQUEST, "Please provide a valid email" ))
+                }
+                else {
+                    const isUserExisted = await UserService.findOne({
+                        email:email.trim().toLowerCase()
+                    })
+                    if(isUserExisted && isUserExisted.email !== req.user.email){
+                        return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "User with same Email already exists"));
+                    }
+                }
             }
             if(!req.user.org){
                 return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to create a user in this organization" ))
@@ -168,15 +194,8 @@ class UserController extends BaseController {
                 return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.BAD_REQUEST, "User does not exist"));
             }                  
              // Update user details
-        const updatedUserMsg = await UserService.update({_id:req.params.id}, {
-            name,
-            countryCode,
-            phone,
-            email,
-            language,
-            role,
-            address,
-        });
+        const updatedUserMsg = await UserService.update({_id:req.params.id},
+            req.body);
         const updatedUser = await UserService.findOne({_id:req.params.id});
     
         if (role === Roles.SITE_SUPERVISOR) {

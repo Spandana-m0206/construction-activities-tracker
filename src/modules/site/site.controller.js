@@ -5,7 +5,7 @@ const SiteService = require('./site.service');
 const ApiResponse = require('../../utils/apiResponse');
 const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
 const enumToArray = require('../../utils/EnumToArray');
-const { ProjectCurrencies, SiteTypes, SiteStatuses } = require('../../utils/enums');
+const { ProjectCurrencies, SiteTypes, SiteStatuses, Roles } = require('../../utils/enums');
 const UserService = require('../user/user.service');
 const taskService = require('../task/task.service');
 const FloorDetailsService = require('../floorDetails/floorDetails.service')
@@ -183,6 +183,9 @@ class SiteController extends BaseController {
         try {
           const orgId = req.user.org; // Extract organization ID from the authenticated user
           const filters = req.query; // Optional query parameters for task filtering
+          if(req.user.role==Roles.SITE_SUPERVISOR){
+              filters.supervisor = req.user._id;
+          }
           const progressData = await this.service.getProgressForAllSites(orgId, filters);
           return res.status(200).json({ success: true, data: progressData });
         } catch (error) {
@@ -203,6 +206,9 @@ class SiteController extends BaseController {
         try {
             const filters  = req.query;
             const orgId = req.user.org;
+            if(req.user.role==Roles.SITE_SUPERVISOR){
+                filters.supervisor = req.user._id;
+            }
             const count = await this.service.countTasksForOrg(orgId, filters);
             return res.status(201).json({ success: true, data: count });
         } catch (error) {

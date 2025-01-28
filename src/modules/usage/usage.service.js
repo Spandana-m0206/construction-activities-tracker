@@ -13,6 +13,42 @@ class UsageService extends BaseService {
         super(Usage);
     }
 
+    async getMaterialUsage(materialId, siteId, orgId, page = 1, limit = 10) {
+        try {
+            // Calculate the number of documents to skip
+            const skip = (page - 1) * limit;
+    
+            // Fetch paginated data with populates
+            const data = await this.model
+                .find({ material: materialId, site: siteId, org: orgId })
+                .populate('task', 'title status')
+                .populate('createdBy', '_name email')
+                .populate('site', 'name location')
+                .populate('material', 'name category')
+                .populate('inventory', 'name address')
+                .populate('toSite', 'name location')
+                .populate('toInventory', 'name address')
+                .populate('orderId', 'status priority')
+                .skip(skip) // Skip the first (page - 1) * limit documents
+                .limit(limit) // Limit the number of documents returned
+                .exec();
+    
+            // Total count of matching documents (useful for calculating total pages)
+            const totalCount = await this.model
+                .countDocuments({ material: materialId, site: siteId, org: orgId });
+    
+            // Return paginated data
+            return {
+                data,
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            };
+        } catch (error) {
+            throw new Error('Error Fetching Material Usage: ' + error.message);
+        }
+    }
+    
     async findUsageByOrg(orgId) {
         return await this.model.model
             .find({ org: orgId })
