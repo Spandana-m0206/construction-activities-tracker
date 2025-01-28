@@ -170,6 +170,10 @@ class SiteService extends BaseService {
         throw new Error('Failed to fetch task counts');
       }
     }    
+
+    async getSitesBySupervisor(supervisorId){
+      return await this.model.find({ supervisor: supervisorId })
+    }
 }
 
 module.exports = new SiteService();

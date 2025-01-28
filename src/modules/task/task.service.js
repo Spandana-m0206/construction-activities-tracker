@@ -713,7 +713,7 @@ class TaskService extends BaseService {
     return tasks
   }
   // TODO : This is a lot of data it will break frontend need this to be paginated but with populated response
-  async getUncompletedTaskTillDate(orgId, userId, role){
+  async getUncompletedTaskTillDate(orgId, userId, role, sites, page = 1, limit = 10){
     const statuses=[TaskStatuses.PENDING,TaskStatuses.IN_PROGRESS,TaskStatuses.OPEN,TaskStatuses.UPCOMING]
     const filter={
      status:{$in:statuses},
@@ -721,14 +721,17 @@ class TaskService extends BaseService {
      org:orgId
     }
     if(role == Roles.SITE_SUPERVISOR){
-      const sites = await SiteService.find({supervisor:userId})
-      filter.site={$in:sites.map(site=>site?._id)}
+      filter.site={$in:sites}
     }
+    const totalDocs = await this.model.countDocuments(filter)
    const taskList=await this.model.find(filter)
     .populate('site', 'name') // Populate `site` with only the `name` field
     .populate('createdBy', 'name') // Populate `createdBy` with only the `name` field
+    .sort({endTime:1})
+    .skip((page-1)*limit)
+    .limit(limit)
     .select('_id title priority site isSystemGenerated createdBy startTime endTime'); // Select required fields
-   return taskList
+   return {taskList, totalDocs}
   }
   async getCompletedTaskTillDate(orgId){
     const filter={

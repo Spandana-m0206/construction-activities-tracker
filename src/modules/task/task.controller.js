@@ -7,6 +7,9 @@ const TaskModel = require('./task.model');
 const TaskService = require('./task.service');
 const ApiError = require('../../utils/apiError');
 const ApiResponse = require('../../utils/apiResponse');
+const siteService = require('../site/site.service');
+const { Roles } = require('../../utils/enums');
+const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
 
 class TaskController extends BaseController {
     constructor() {
@@ -227,9 +230,13 @@ class TaskController extends BaseController {
     }
     async getUnCompletedTaskTillDay(req,res){
         try {
-            
-            const taskList=await TaskService.getUncompletedTaskTillDate(req.user.org, req.user.userId, req.user.role)
-            return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,{taskList:taskList},"The Uncompleted Task List Till Today"))
+            let {page, limit} = req.query || {}
+            if(!page)page='1';
+            if(!limit)limit='10';
+            let sites = [];
+            if(req.user.role == Roles.SITE_SUPERVISOR) sites = await siteService.getSitesBySupervisor(req.user.userId)
+            const {taskList, totalDocs}=await TaskService.getUncompletedTaskTillDate(req.user.org, req.user.userId, req.user.role, sites.map(site=>site._id), parseInt(page), parseInt(limit))
+            return res.status(StatusCodes.OK).json(new PaginatedApiResponse(StatusCodes.OK,{taskList:taskList},"The Uncompleted Task List Till Today", page, limit, totalDocs))
         } catch (error) {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
 
