@@ -102,7 +102,7 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -157,7 +157,7 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -283,6 +283,47 @@ class UsageService extends BaseService {
             throw new Error('Internal Server Error: ' + error.message);
         }
     }
+    async update(id, data) {
+        try {
+            const { quantity:newQuantity } = data;
+            const usage = await this.model.findOne({ _id: id });
+            if (!usage) {
+                throw new Error('Usage not found');
+            }
+            const { material: materialId, quantity } = usage;
+            const stockItem = await StockItemModel.findOne({
+                materialMetadata: materialId,
+            }).populate('material');
+
+            if (!stockItem) {
+                throw new Error(`No StockItem found for this ${type} + materialMetadata`);
+            }
+
+            const foundListItem = stockItem.material.find(
+                (item) =>
+                    item.materialMetadata.toString() === materialId.toString()
+            );
+
+            if (!foundListItem) {
+                throw new Error('No matching MaterialListItem found in stock');
+            }
+
+            if ((foundListItem.qty || 0) < newQuantity) {
+                throw new Error(
+                    `Insufficient stock. Available: ${foundListItem.qty}, Required: ${newQuantity}`
+                );
+            }
+            foundListItem.qty -= newQuantity-quantity;
+            stockItem.updatedAt = new Date();
+            await stockItem.save();
+            await foundListItem.save();
+            const updatedUsage = await this.model.updateOne({ _id: id }, {quantity:newQuantity}, { new: true });
+            return updatedUsage;
+        } catch (error) {
+            throw new Error('Error Updating Usage: ' + error.message);
+        }
+    }
+
     
     async getTheft(type, id) {
         try {
@@ -324,7 +365,7 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
