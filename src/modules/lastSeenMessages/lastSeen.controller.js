@@ -47,7 +47,7 @@ class LastSeenController extends BaseController{
     }
     async getUnseenMessageCountByUser(req,res){
     try {
-            const unseenMessageCountAndLastMessage=await this.service.getUnseenMessageCountByUser(req.user.org,req.user.userId)
+            const unseenMessageCountAndLastMessage=await this.service.getUnseenMessageCountByUser(req.user.org,req.user.userId, req.user.role)
             return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,unseenMessageCountAndLastMessage,"The Message count with last message"))
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))

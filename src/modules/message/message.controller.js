@@ -10,7 +10,7 @@ const PaginatedApiResponse = require('../../utils/paginatedApiResponse');
 const fileService = require('../file/file.service');
 const lastSeenController = require('../lastSeenMessages/lastSeen.controller');
 const lastSeenService = require('../lastSeenMessages/lastSeen.service');
- 
+const InventoryService = require('../inventory/inventory.service');
 
 class MessageController extends BaseController {
     constructor() {
@@ -29,20 +29,26 @@ class MessageController extends BaseController {
     async create(req,res){
         try {
             let message=req.body
-        const site= await SiteService.findById(req.params.siteId)
+        let site = await SiteService.findById(req.params.id)
+        let inventory = undefined;
         if(!site){
-            return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Site Not Found","Site Not Found"))
+            inventory = await InventoryService.findById(req.params.id);
+            if(!inventory){
+                return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Site Not Found","Site Not Found"))
+            }
         }
-        if(site.org.toString()!=req.user.org.toString()){
-            return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED,"You Are Not Authorised To Message In This Site","You Are Not Authorised To Message In This Site"))
-        }
+        // TODO: check for inventory also
+        // if(site.org.toString()!=req.user.org.toString() ){
+        //     return res.status(StatusCodes.UNAUTHORIZED).json(new ApiError(StatusCodes.UNAUTHORIZED,"You Are Not Authorised To Message In This Site","You Are Not Authorised To Message In This Site"))
+        // }
         if(!message.content && !req.file && !message.task && !message.approvalRequest && !message.paymentRequest && !message.taggedMessage && !message.order){
             return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"Nothing In The Message To Save","Nothing In The Message To Save"))
             
         } 
         message.createdBy=req.user.userId
         message.org=req.user.org
-        message.site=site._id
+        message.site=site?._id
+        message.inventory = inventory?._id
 
         if(req.file){
             const attachment = await fileService.create({
@@ -99,11 +105,15 @@ class MessageController extends BaseController {
         }
 
     }
-    async getMessageBySiteId(req,res){
+    async getMessages(req,res){
         try {
-            const site=await SiteService.findById(req.params.siteId)
-            if(!site){
-                return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"The Site Not Found","The Site Not Found"))
+            let validSiteId =await SiteService.findById(req.params.id) 
+            let validInventoryId = null;
+            if(!validSiteId){
+                validInventoryId = await InventoryService.findById(req.params.id)
+            } 
+            if(!validSiteId && !validInventoryId){
+                return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"The Site or Inventory Not Found","The Site or Inventory Not Found"))
             }
             let {page,limit}=req.query
             if(!page){
@@ -112,12 +122,13 @@ class MessageController extends BaseController {
             if(!limit){
                 limit="50"
             }
-            const {messages,pagination}=await this.service.findMessagesBySite(site._id,parseInt(page),parseInt(limit))
+            const {messages,pagination}=await this.service.findMessages(validSiteId?._id || validInventoryId?._id,parseInt(page),parseInt(limit))
             if(page==="1" && messages.length!=0){
                 const lastMessageData={
                     message:messages[0]._id,
                     user:req.user.userId,
-                    site:site._id
+                    site:validSiteId?._id,
+                    inventory:validInventoryId?._id,
                 }
             await lastSeenService.create(lastMessageData)
             }

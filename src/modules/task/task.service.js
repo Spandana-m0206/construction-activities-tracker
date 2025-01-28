@@ -1,5 +1,5 @@
 const ApiError = require('../../utils/apiError');
-const { TaskStatuses, StatusOrder } = require('../../utils/enums');
+const { TaskStatuses, StatusOrder, Roles } = require('../../utils/enums');
 const {taskMap, TaskIDs, Triggers} = require('../../utils/taskMap');
 const BaseService = require('../base/BaseService');
 const siteService = require('../site/site.service');
@@ -8,6 +8,7 @@ const Task = require('./task.model');
 const messageService = require('../message/message.service');
 const { emitMessage } = require('../../utils/socketMessageEmitter');
 const fileService = require('../file/file.service');
+const SiteService = require('../site/site.service');
 
 class TaskService extends BaseService {
   constructor() {
@@ -712,19 +713,25 @@ class TaskService extends BaseService {
     return tasks
   }
   // TODO : This is a lot of data it will break frontend need this to be paginated but with populated response
-  async getUncompletedTaskTillDate(orgId){
+  async getUncompletedTaskTillDate(orgId, userId, role, sites, page = 1, limit = 10){
     const statuses=[TaskStatuses.PENDING,TaskStatuses.IN_PROGRESS,TaskStatuses.OPEN,TaskStatuses.UPCOMING]
     const filter={
      status:{$in:statuses},
      createdAt:{$lte:new Date()},
      org:orgId
-
     }
+    if(role == Roles.SITE_SUPERVISOR){
+      filter.site={$in:sites}
+    }
+    const totalDocs = await this.model.countDocuments(filter)
    const taskList=await this.model.find(filter)
     .populate('site', 'name') // Populate `site` with only the `name` field
     .populate('createdBy', 'name') // Populate `createdBy` with only the `name` field
+    .sort({endTime:1})
+    .skip((page-1)*limit)
+    .limit(limit)
     .select('_id title priority site isSystemGenerated createdBy startTime endTime'); // Select required fields
-   return taskList
+   return {taskList, totalDocs}
   }
   async getCompletedTaskTillDate(orgId){
     const filter={

@@ -5,9 +5,9 @@ const upload = require('../file/file.storage');
 const router = express.Router();
 
 // Base routes from BaseController
-router.post('/:siteId', upload.single('file'), MessageController.create.bind(MessageController)); // Create message
+router.post('/:id', upload.single('file'), MessageController.create.bind(MessageController)); // Create message
 router.get('/', MessageController.find.bind(MessageController)); // Get all messages
-router.get('/:siteId', MessageController.getMessageBySiteId.bind(MessageController)); // Get message by site ID
+router.get('/:id', MessageController.getMessages.bind(MessageController)); // Get message by site ID or inventory Id
 router.put('/:id', MessageController.update.bind(MessageController)); // Update message
 router.delete('/:messageId', MessageController.delete.bind(MessageController)); // Delete message
 

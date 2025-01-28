@@ -69,7 +69,6 @@ class FileService extends BaseService {
         if (!file || file.length === 0) {
             return res.status(404).send('File not found');
         }
-        console.log(mime.lookup(file[0].filename) , file[0].contentType , file[0].type)
         // Set headers for the file
         res.setHeader('Content-Type',mime.lookup(file[0].filename) || 'application/octet-stream');
         res.setHeader('Content-Disposition', `inline; filename="${file[0].filename}"`);
