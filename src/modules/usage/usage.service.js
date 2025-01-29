@@ -8,20 +8,32 @@ const UsageModel = require('./usage.model');
 const Usage = require('./usage.model');
 const StockItemModel = require('../stock/stock.model');
 const MaterialListItemModel = require('../materialListItem/materialListItem.model');
+const materialMetadataService = require('../materialMetadata/materialMetadata.service');
 
 class UsageService extends BaseService {
     constructor() {
         super(Usage);
     }
 
-    async getMaterialUsage(materialId, siteId, orgId, page = 1, limit = 10) {
+    async getMaterialUsage(materialId,  orgId, query) {
         try {
+            const { page = 1, limit = 10, type,identifier } = query;
+            const material = await materialMetadataService.findOne({ _id: materialId });
+            if(!material) {
+                throw new Error('Material not found');
+            }
+            if (!mongoose.Types.ObjectId.isValid(identifier)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${identifier}`);
+            }
+            // Match condition based on type
+            const objectId = new mongoose.Types.ObjectId(identifier);
+            const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
             // Calculate the number of documents to skip
             const skip = (page - 1) * limit;
     
             // Fetch paginated data with populates
             const data = await this.model
-                .find({ material: materialId, site: siteId, org: orgId })
+                .find({ material: materialId, org: orgId, ...matchCondition })
                 .populate('task', 'title status')
                 .populate('createdBy', '_name email')
                 .populate('site', 'name location')
@@ -36,7 +48,7 @@ class UsageService extends BaseService {
     
             // Total count of matching documents (useful for calculating total pages)
             const totalCount = await this.model
-                .countDocuments({ material: materialId, site: siteId, org: orgId });
+                .countDocuments({ material: materialId, org: orgId, ...matchCondition });
     
             // Return paginated data
             return {

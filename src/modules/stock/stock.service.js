@@ -30,7 +30,7 @@ class StockService extends BaseService {
             const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
             const stock = await StockItemModel.find({ materialMetadata: materialId, ...matchCondition })
             .populate('material'); // Populating material to get qty values    
-            if (!stock.length) {
+            if (stock.length === 0) {
                 throw new Error('Stock not found');
             }
             // Flatten the materials from all stock items and sum up their quantities
