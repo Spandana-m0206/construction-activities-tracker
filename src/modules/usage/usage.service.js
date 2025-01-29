@@ -293,10 +293,17 @@ class UsageService extends BaseService {
             if (!usage) {
                 throw new Error('Usage record not found');
             }
-            const { material: materialId, quantity } = usage;
-            const stockItem = await StockItemModel.findOne({
-                materialMetadata: materialId,
-            }).populate('material');
+            const { material: materialId, quantity,site,inventory } = usage;
+            let stockItem = null;
+            if(site){
+                stockItem = await StockItemModel.findOne({
+                    materialMetadata: materialId, site: site,
+                }).populate('material');
+            }else if(inventory){
+                stockItem = await StockItemModel.findOne({
+                    materialMetadata: materialId, inventory: inventory,
+                }).populate('material');
+            }
     
             if (!stockItem) {
                 throw new Error('No stock item found for the specified material.');
