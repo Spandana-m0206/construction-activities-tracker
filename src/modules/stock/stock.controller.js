@@ -20,6 +20,14 @@ class StockController extends BaseController {
         }
     }
 
+    async getStockQuantityByMaterial(req, res, next) {
+        try {
+            const stock = await this.service.getStockQuantityByMaterial(req.params.materialId);
+            res.status(200).json({ success: true, data: stock });
+        } catch (error) {
+            next(error);
+        }
+    }
     // Example custom controller method: Get stock by organization
     async getStockByOrg(req, res, next) {
         try {

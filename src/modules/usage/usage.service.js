@@ -7,6 +7,7 @@ const stockService = require('../stock/stock.service');
 const UsageModel = require('./usage.model');
 const Usage = require('./usage.model');
 const StockItemModel = require('../stock/stock.model');
+const MaterialListItemModel = require('../materialListItem/materialListItem.model');
 
 class UsageService extends BaseService {
     constructor() {
@@ -103,6 +104,7 @@ class UsageService extends BaseService {
                 {
                     $project: {
                         _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -158,6 +160,7 @@ class UsageService extends BaseService {
                 {
                     $project: {
                         _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -285,44 +288,64 @@ class UsageService extends BaseService {
     }
     async update(id, data) {
         try {
-            const { quantity:newQuantity } = data;
-            const usage = await this.model.findOne({ _id: id });
+            const { quantity: newQuantity } = data;
+            const usage = await UsageModel.findById(id);
             if (!usage) {
-                throw new Error('Usage not found');
+                throw new Error('Usage record not found');
             }
             const { material: materialId, quantity } = usage;
             const stockItem = await StockItemModel.findOne({
                 materialMetadata: materialId,
             }).populate('material');
-
+    
             if (!stockItem) {
-                throw new Error(`No StockItem found for this ${type} + materialMetadata`);
+                throw new Error('No stock item found for the specified material.');
             }
-
-            const foundListItem = stockItem.material.find(
-                (item) =>
-                    item.materialMetadata.toString() === materialId.toString()
-            );
-
-            if (!foundListItem) {
-                throw new Error('No matching MaterialListItem found in stock');
-            }
-
-            if ((foundListItem.qty || 0) < newQuantity) {
+    
+            let totalStockAvailable = 0;
+            stockItem.material.forEach(item => {
+                if (item.materialMetadata.toString() === materialId.toString()) {
+                    totalStockAvailable += item.qty;
+                }
+            });
+    
+            const stockDifference = newQuantity - quantity;
+            if (totalStockAvailable < stockDifference) {
                 throw new Error(
-                    `Insufficient stock. Available: ${foundListItem.qty}, Required: ${newQuantity}`
+                    `Insufficient stock. Available: ${totalStockAvailable}, Required: ${newQuantity}`
                 );
             }
-            foundListItem.qty -= newQuantity-quantity;
+    
+            // Deduct stock from the list of materials proportionally
+            let remainingToDeduct = stockDifference;
+            for (let i = 0; i < stockItem.material.length; i++) {
+                let item = stockItem.material[i];
+                if (item.materialMetadata.toString() === materialId.toString()) {
+                    let deduction = Math.min(remainingToDeduct, item.qty);
+                    item.qty -= deduction;
+                    remainingToDeduct -= deduction;
+                    await MaterialListItemModel.findByIdAndUpdate(item._id, { qty: item.qty });
+                    if (remainingToDeduct === 0) break;
+                }
+            }
+    
             stockItem.updatedAt = new Date();
             await stockItem.save();
-            await foundListItem.save();
-            const updatedUsage = await this.model.updateOne({ _id: id }, {quantity:newQuantity}, { new: true });
+    
+            // Update usage record
+            const updatedUsage = await UsageModel.findByIdAndUpdate(
+                id,
+                { quantity: newQuantity },
+                { new: true }
+            );
+    
             return updatedUsage;
         } catch (error) {
+            console.error('Error Updating Usage:', error);
             throw new Error('Error Updating Usage: ' + error.message);
         }
     }
+      
 
     
     async getTheft(type, id) {
@@ -366,6 +389,7 @@ class UsageService extends BaseService {
                 {
                     $project: {
                         _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',

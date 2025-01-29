@@ -18,7 +18,24 @@ class StockService extends BaseService {
             .populate('inventory', 'name address')
             .populate('org', 'name');
     }
-
+    async getStockQuantityByMaterial(materialId) {
+        const stock = await StockItemModel.find({ materialMetadata: materialId })
+            .populate('material'); // Populating material to get qty values
+    
+        if (!stock.length) {
+            throw new Error('Stock not found');
+        }
+        // Flatten the materials from all stock items and sum up their quantities
+        const totalQuantity = stock.reduce((acc, stockItem) => {
+            return acc + stockItem.material.reduce((sum, material) => sum + (material.qty || 0), 0);
+        }, 0);
+    
+        return {
+            materialId,
+            totalQuantity,
+        };
+    }
+    
     // Example custom service method: Get stock by organization
     async findStockByOrg(orgId) {
         return await this.model.model
