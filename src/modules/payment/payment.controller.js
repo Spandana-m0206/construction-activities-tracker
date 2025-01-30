@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const BaseController = require('../base/BaseController');
 const PaymentService = require('./payment.service');
-const { PaymentStatuses } = require('../../utils/enums');
+const { PaymentStatuses, Roles } = require('../../utils/enums');
 const { StatusCodes } = require('http-status-codes');
 const ApiError = require('../../utils/apiError');
 const ApiResponse = require('../../utils/apiResponse');
@@ -55,6 +55,14 @@ class PaymentController extends BaseController {
     async approvePayment(req, res) {
         try {
             const { paymentId } = req.params;
+            const {status} = req.body;
+            if(status === PaymentStatuses.REJECTED) {
+              if(req.user.role !== Roles.ADMIN){
+                return res.status(StatusCodes.FORBIDDEN).json(new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to reject payments.'));
+              }
+              await PaymentService.rejectPayment(paymentId, req.user.userId);
+              return res.status(200).json({ success: true, message: 'Payment rejected successfully.' });
+            }
 
             // Validate paymentId format
             if (!mongoose.Types.ObjectId.isValid(paymentId)) {

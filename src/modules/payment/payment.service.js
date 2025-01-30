@@ -150,6 +150,24 @@ class PaymentService extends BaseService {
         return payment;
     }
 
+    async rejectPayment(paymentId, rejectedBy) {
+        const payment = await PaymentModel.findById(paymentId);
+        if (!payment) {
+            throw new Error(`Payment with ID ${paymentId} not found.`);
+        }
+
+        if (payment.status!== PaymentStatuses.PENDING) {
+            throw new Error(`Only 'pending' payments can be rejected. Current status: ${payment.status}`);
+        }
+
+        payment.status = PaymentStatuses.REJECTED;
+        payment.rejectedOn = new Date();
+        payment.rejectedBy = rejectedBy;
+        await payment.save();
+
+        return payment;
+    }
+
     async getRemainingAmount(paymentList,purchaseData){  
         let totalPaidAmount=0
         paymentList.forEach((payment)=>{
