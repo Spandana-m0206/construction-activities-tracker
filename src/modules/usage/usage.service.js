@@ -7,20 +7,33 @@ const stockService = require('../stock/stock.service');
 const UsageModel = require('./usage.model');
 const Usage = require('./usage.model');
 const StockItemModel = require('../stock/stock.model');
+const MaterialListItemModel = require('../materialListItem/materialListItem.model');
+const materialMetadataService = require('../materialMetadata/materialMetadata.service');
 
 class UsageService extends BaseService {
     constructor() {
         super(Usage);
     }
 
-    async getMaterialUsage(materialId, siteId, orgId, page = 1, limit = 10) {
+    async getMaterialUsage(materialId,  orgId, query) {
         try {
+            const { page = 1, limit = 10, type,identifier } = query;
+            const material = await materialMetadataService.findOne({ _id: materialId });
+            if(!material) {
+                throw new Error('Material not found');
+            }
+            if (!mongoose.Types.ObjectId.isValid(identifier)) {
+                throw new Error(`Invalid ${type === 'site' ? 'siteId' : 'inventoryId'}: ${identifier}`);
+            }
+            // Match condition based on type
+            const objectId = new mongoose.Types.ObjectId(identifier);
+            const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
             // Calculate the number of documents to skip
             const skip = (page - 1) * limit;
     
             // Fetch paginated data with populates
             const data = await this.model
-                .find({ material: materialId, site: siteId, org: orgId })
+                .find({ material: materialId, org: orgId, ...matchCondition })
                 .populate('task', 'title status')
                 .populate('createdBy', '_name email')
                 .populate('site', 'name location')
@@ -35,7 +48,7 @@ class UsageService extends BaseService {
     
             // Total count of matching documents (useful for calculating total pages)
             const totalCount = await this.model
-                .countDocuments({ material: materialId, site: siteId, org: orgId });
+                .countDocuments({ material: materialId, org: orgId, ...matchCondition });
     
             // Return paginated data
             return {
@@ -102,7 +115,8 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -157,7 +171,8 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',
@@ -283,6 +298,74 @@ class UsageService extends BaseService {
             throw new Error('Internal Server Error: ' + error.message);
         }
     }
+    async update(id, data) {
+        try {
+            const { quantity: newQuantity } = data;
+            const usage = await UsageModel.findById(id);
+            if (!usage) {
+                throw new Error('Usage record not found');
+            }
+            const { material: materialId, quantity,site,inventory } = usage;
+            let stockItem = null;
+            if(site){
+                stockItem = await StockItemModel.findOne({
+                    materialMetadata: materialId, site: site,
+                }).populate('material');
+            }else if(inventory){
+                stockItem = await StockItemModel.findOne({
+                    materialMetadata: materialId, inventory: inventory,
+                }).populate('material');
+            }
+    
+            if (!stockItem) {
+                throw new Error('No stock item found for the specified material.');
+            }
+    
+            let totalStockAvailable = 0;
+            stockItem.material.forEach(item => {
+                if (item.materialMetadata.toString() === materialId.toString()) {
+                    totalStockAvailable += item.qty;
+                }
+            });
+    
+            const stockDifference = newQuantity - quantity;
+            if (totalStockAvailable < stockDifference) {
+                throw new Error(
+                    `Insufficient stock. Available: ${totalStockAvailable}, Required: ${newQuantity}`
+                );
+            }
+    
+            // Deduct stock from the list of materials proportionally
+            let remainingToDeduct = stockDifference;
+            for (let i = 0; i < stockItem.material.length; i++) {
+                let item = stockItem.material[i];
+                if (item.materialMetadata.toString() === materialId.toString()) {
+                    let deduction = Math.min(remainingToDeduct, item.qty);
+                    item.qty -= deduction;
+                    remainingToDeduct -= deduction;
+                    await MaterialListItemModel.findByIdAndUpdate(item._id, { qty: item.qty });
+                    if (remainingToDeduct === 0) break;
+                }
+            }
+    
+            stockItem.updatedAt = new Date();
+            await stockItem.save();
+    
+            // Update usage record
+            const updatedUsage = await UsageModel.findByIdAndUpdate(
+                id,
+                { quantity: newQuantity },
+                { new: true }
+            );
+    
+            return updatedUsage;
+        } catch (error) {
+            console.error('Error Updating Usage:', error);
+            throw new Error('Error Updating Usage: ' + error.message);
+        }
+    }
+      
+
     
     async getTheft(type, id) {
         try {
@@ -324,7 +407,8 @@ class UsageService extends BaseService {
                 },
                 {
                     $project: {
-                        _id: 0,
+                        _id: '$_id',
+                        materialId: '$materialInfo._id',
                         name: '$materialInfo.name',
                         units: '$materialInfo.units',
                         quantity: '$quantity',

@@ -6,6 +6,7 @@ const router = express.Router();
 router.get('/available-material/:identifier', StockController.getAvailableMaterials.bind(StockController));
 router.get('/stock-items/:id', StockController.getStockItemsQuantities.bind(StockController));
 router.get('/total-fund/', StockController.getTotalFundUtilization.bind(StockController));
+router.get('/get-quantity/:materialId', StockController.getStockQuantityByMaterial.bind(StockController));
 
 // Base routes from BaseController
 router.post('/', StockController.create.bind(StockController)); // Create stock

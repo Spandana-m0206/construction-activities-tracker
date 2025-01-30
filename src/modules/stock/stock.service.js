@@ -18,7 +18,36 @@ class StockService extends BaseService {
             .populate('inventory', 'name address')
             .populate('org', 'name');
     }
+    async getStockQuantityByMaterial(materialId,type,identifier) {
+        try {
+            // Validate the material ID
+            if (!mongoose.Types.ObjectId.isValid(identifier)) {
+                throw new Error('Invalid Identifier');
+            }
+            const objectId = new mongoose.Types.ObjectId(identifier);
+    
+            // Match condition based on type
+            const matchCondition = type === 'site' ? { site: objectId } : { inventory: objectId };
+            const stock = await StockItemModel.find({ materialMetadata: materialId, ...matchCondition })
+            .populate('material'); // Populating material to get qty values    
+            if (stock.length === 0) {
+                throw new Error('Stock not found');
+            }
+            // Flatten the materials from all stock items and sum up their quantities
+            const totalQuantity = stock.reduce((acc, stockItem) => {
+                return acc + stockItem.material.reduce((sum, material) => sum + (material.qty || 0), 0);
+            }, 0);
+            return {
+                materialId,
+                totalQuantity,
+            };
+        } catch (error) {
+            console.error('Error in getStockQuantityByMaterial:', error);
+            throw new Error('Error Fetching Material Quantities');
+        }
 
+    }
+    
     // Example custom service method: Get stock by organization
     async findStockByOrg(orgId) {
         return await this.model.model
