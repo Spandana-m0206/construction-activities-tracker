@@ -1,6 +1,9 @@
 const { default: mongoose } = require('mongoose');
 const BaseController = require('../base/BaseController');
 const PurchaseService = require('./purchase.service');
+const { StatusCodes } = require('http-status-codes');
+const ApiError = require('../../utils/apiError');
+const ApiResponse = require('../../utils/apiResponse');
 
 class PurchaseController extends BaseController {
     constructor() {
@@ -78,11 +81,7 @@ class PurchaseController extends BaseController {
     async getAllPurchasesWithBalance(req,res){
        try {
          const {vendorId}=req.params
-
          const purchaseList=await PurchaseService.getPurchasesWithBalanceAmount(vendorId)
-         if(purchaseList.length===0){
-            return res.status(StatusCodes.NOT_FOUND).json(new ApiError(StatusCodes.NOT_FOUND,"Purchase Details Not Found","Purchase Details Not Found"))
-         }
          return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,purchaseList,"Purchases With Remaining Amount"))
 
        } catch (error) {
