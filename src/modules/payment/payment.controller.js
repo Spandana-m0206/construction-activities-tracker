@@ -82,6 +82,17 @@ class PaymentController extends BaseController {
         }
     }
 
+    async markAsPaid(req,res){
+      try {
+          const {paymentId}=req.params
+          const payment=await PaymentService.markAsPaid(paymentId)
+
+          return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK,payment,"Payments marked as Paid"))
+      } catch (error) {
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+      }
+    }
+
     async getAllPayments(req, res) {
         try {
           const orgId = new mongoose.Types.ObjectId(req.user.org);
@@ -192,6 +203,7 @@ class PaymentController extends BaseController {
                 status: 1,
                 createdAt: 1,
                 approvedOn: 1,
+                paymentAllocation: 1
               },
             },
           ]);

@@ -9,10 +9,6 @@ class PaymentService extends BaseService {
         super(PaymentModel);
     }
 
-    /**
-     * Example custom: findPaymentsByOrg
-     * (Adjust as you need; not the main focus.)
-     */
     async findPaymentsByOrg(orgId) {
         return await this.model.find({ org: orgId })
             .populate('createdBy', 'name email')
@@ -59,7 +55,7 @@ class PaymentService extends BaseService {
         return uniquePaidTos;
     };
     
-     async createPayment(purchaseAllocations, paymentData, org, paidBy, paidTo, paidToModel) {
+    async createPayment(purchaseAllocations, paymentData, org, paidBy, paidTo, paidToModel) {
         const totalAllocated = purchaseAllocations.reduce((sum, alloc) => sum + alloc.amount, 0);
         if (totalAllocated !== paymentData.amount) {
             throw new Error('Total allocated amount does not match the payment amount.');
@@ -98,6 +94,7 @@ class PaymentService extends BaseService {
     
         return payment;
     };
+
     async approvePayment(paymentId, approvedBy) {
         const payment = await PaymentModel.findById(paymentId);
         if (!payment) {
@@ -157,7 +154,29 @@ class PaymentService extends BaseService {
         })
          const remainingAmount=purchaseData.amount-totalPaidAmount
          return {remainingAmount:remainingAmount}
-      }   
+    }
+    
+    async markAsPaid(paymentId) {
+        const payment = await PaymentModel.findById(paymentId);
+  
+        if (!payment) {
+            throw new Error(`Payment with ID ${paymentId} not found.`);
+        }
+  
+        if (payment.status !== PaymentStatuses.APPROVED) {
+            throw new Error(
+            `Only payments with status 'approved' can be marked as 'paid'. Current status: ${payment.status}`
+            );
+        }
+  
+        payment.status = PaymentStatuses.PAID;
+        payment.paidOn = new Date();
+ 
+        await payment.save();
+  
+        return payment;
+    }
+  
 }
 
 module.exports = new PaymentService();

@@ -13,7 +13,7 @@ const paymentFields = {
     paidTo: { type: mongoose.Schema.Types.ObjectId, refPath: 'paidToModel', required: true }, // Reference to Vendor/User
     paidToModel: { type: String, enum: ['User', 'Vendor'], required: true }, // Dynamic reference type for `paidTo`
     comments: { type: String, default: null }, // Payment comments
-    type: { type: String, enum: PaymentTypes, required: true }, // Payment type (credit/debit)
+    type: { type: String, enum: PaymentTypes, required: true , default: PaymentTypes.DEBIT}, // Payment type (credit/debit)
     paymentAllocation:[{
             purchaseId:{type: mongoose.Schema.Types.ObjectId, ref: 'Purchase', required: false, default: null} , 
             amount : {type: Number, required: true}
