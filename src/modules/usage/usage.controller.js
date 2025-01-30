@@ -98,7 +98,7 @@ class UsageController extends BaseController {
             }
     
             const usage = await UsageService.createUsage({ ...req.body, createdBy, org });
-            res.status(200).json({ success: true, data: [] });
+            res.status(200).json({ success: true, data: usage });
         } catch (error) {
             next(error);
         }

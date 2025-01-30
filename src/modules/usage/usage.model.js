@@ -16,6 +16,12 @@ const usageFields = {
     toSite: { type: mongoose.Schema.Types.ObjectId, ref: 'Site', default: null }, // Nullable reference to "To Site"
     toInventory: { type: mongoose.Schema.Types.ObjectId, ref: 'Inventory', default: null }, // Nullable reference to "To Inventory"
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null }, // Nullable reference to Order
+    recordArray: [
+        {
+            material :{ type: mongoose.Schema.Types.ObjectId, ref: 'MaterialListItem', required: true},
+            quantityInUse: { type: Number, required: true },
+        },
+    ]
 };
 
 // Create the extended schema
