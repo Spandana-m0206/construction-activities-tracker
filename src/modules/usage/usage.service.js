@@ -215,10 +215,72 @@ class UsageService extends BaseService {
             }
             if (
                 (usedQuantity !== undefined && usedQuantity < 0) ||
-                (wasteQuantity !== undefined && wasteQuantity < 0)
+                (wasteQuantity !== undefined && wasteQuantity < 0) ||
+                (stolenQuantity !== undefined && stolenQuantity < 0)
             ) {
                 throw new Error('Quantities cannot be negative');
             }
+    
+            const totalToDeduct = (usedQuantity || 0) + (wasteQuantity || 0) + (stolenQuantity || 0);
+            if (totalToDeduct <= 0) {
+                throw new Error('At least one of usedQuantity, wasteQuantity, or stolenQuantity must be greater than zero');
+            }
+    
+            const stockItem = await StockItemModel.findOne({
+                [type]: id,
+                materialMetadata: materialId,
+            }).populate('material');
+    
+            if (!stockItem) {
+                throw new Error(`No StockItem found for this ${type} + materialMetadata`);
+            }
+    
+            let remainingUsed = usedQuantity || 0;
+            let remainingWasted = wasteQuantity || 0;
+            let remainingStolen = stolenQuantity || 0;
+            let totalStockAvailable = stockItem.material.reduce((acc, item) => acc + item.qty, 0);
+            let totalUsed = remainingStolen + remainingUsed + remainingWasted;
+            if (totalUsed > 0 && totalStockAvailable < totalUsed) {
+                throw new Error('Insufficient stock to fulfill the updated quantity.');
+            }
+    
+            const usedRecordArray = [];
+            const wastedRecordArray = [];
+            const stolenRecordArray = [];
+    
+            for (const materialListItem of stockItem.material) {
+                if (remainingUsed <= 0 && remainingWasted <= 0 && remainingStolen <= 0) break;
+                
+                if ((materialListItem.qty || 0) > 0) {
+                    if (remainingUsed > 0) {
+                        const deduction = Math.min(materialListItem.qty, remainingUsed);
+                        materialListItem.qty -= deduction;
+                        remainingUsed -= deduction;
+                        usedRecordArray.push({ material: materialListItem._id, quantityInUse: deduction });
+                    }
+                    if (remainingWasted > 0) {
+                        const deduction = Math.min(materialListItem.qty, remainingWasted);
+                        materialListItem.qty -= deduction;
+                        remainingWasted -= deduction;
+                        wastedRecordArray.push({ material: materialListItem._id, quantityInUse: deduction });
+                    }
+                    if (remainingStolen > 0) {
+                        const deduction = Math.min(materialListItem.qty, remainingStolen);
+                        materialListItem.qty -= deduction;
+                        remainingStolen -= deduction;
+                        stolenRecordArray.push({ material: materialListItem._id, quantityInUse: deduction });
+                    }
+                }
+            }
+    
+            if (remainingUsed > 0 || remainingWasted > 0 || remainingStolen > 0) {
+                throw new Error(
+                    `Insufficient stock. Available: ${totalToDeduct - (remainingUsed + remainingWasted + remainingStolen)}, Required: ${totalToDeduct}`
+                );
+            }
+    
+            stockItem.updatedAt = new Date();
+            await stockItem.save();
     
             const usageDocs = [];
             if (usedQuantity && usedQuantity > 0) {
@@ -230,6 +292,7 @@ class UsageService extends BaseService {
                     type: UsageTypes.USED,
                     org: org,
                     createdBy: createdBy,
+                    recordArray: usedRecordArray,
                 });
             }
             if (wasteQuantity && wasteQuantity > 0) {
@@ -241,6 +304,7 @@ class UsageService extends BaseService {
                     type: UsageTypes.WASTED,
                     org: org,
                     createdBy: createdBy,
+                    recordArray: wastedRecordArray,
                 });
             }
             if (stolenQuantity && stolenQuantity > 0) {
@@ -252,52 +316,18 @@ class UsageService extends BaseService {
                     type: UsageTypes.THEFT,
                     org: org,
                     createdBy: createdBy,
+                    recordArray: stolenRecordArray,
                 });
-            }
-            if (usageDocs.length === 0) {
-                throw new Error('At least one of usedQuantity, wasteQuantity, or stolenQuantity must be greater than zero');
             }
     
             await UsageModel.insertMany(usageDocs);
     
-            const totalToDeduct = (usedQuantity || 0) + (wasteQuantity || 0) + (stolenQuantity || 0);
-            if (totalToDeduct > 0) {
-                const stockItem = await StockItemModel.findOne({
-                    [type]: id,
-                    materialMetadata: materialId,
-                }).populate('material');
-    
-                if (!stockItem) {
-                    throw new Error(`No StockItem found for this ${type} + materialMetadata`);
-                }
-    
-                const foundListItem = stockItem.material.find(
-                    (item) =>
-                        item.materialMetadata.toString() === materialId.toString()
-                );
-    
-                if (!foundListItem) {
-                    throw new Error('No matching MaterialListItem found in stock');
-                }
-    
-                if ((foundListItem.qty || 0) < totalToDeduct) {
-                    throw new Error(
-                        `Insufficient stock. Available: ${foundListItem.qty}, Required: ${totalToDeduct}`
-                    );
-                }
-    
-                foundListItem.qty -= totalToDeduct;
-                stockItem.updatedAt = new Date();
-                await stockItem.save();
-                await foundListItem.save();
-            }
-    
-            return { success: true };
+            return usageDocs;
         } catch (error) {
             console.error(error);
             throw new Error('Internal Server Error: ' + error.message);
         }
-    }
+    }  
     async update(id, data) {
         try {
             const { quantity: newQuantity } = data;
@@ -305,65 +335,67 @@ class UsageService extends BaseService {
             if (!usage) {
                 throw new Error('Usage record not found');
             }
-            const { material: materialId, quantity,site,inventory } = usage;
-            let stockItem = null;
-            if(site){
-                stockItem = await StockItemModel.findOne({
-                    materialMetadata: materialId, site: site,
-                }).populate('material');
-            }else if(inventory){
-                stockItem = await StockItemModel.findOne({
-                    materialMetadata: materialId, inventory: inventory,
-                }).populate('material');
-            }
+            const { material: materialId, quantity, site, inventory, recordArray } = usage;
+            let stockItem = await StockItemModel.findOne({
+                materialMetadata: materialId,
+                ...(site ? { site } : { inventory }),
+            }).populate('material');
     
             if (!stockItem) {
                 throw new Error('No stock item found for the specified material.');
             }
     
-            let totalStockAvailable = 0;
-            stockItem.material.forEach(item => {
-                if (item.materialMetadata.toString() === materialId.toString()) {
-                    totalStockAvailable += item.qty;
-                }
-            });
-    
-            const stockDifference = newQuantity - quantity;
-            if (totalStockAvailable < stockDifference) {
-                throw new Error(
-                    `Insufficient stock. Available: ${totalStockAvailable}, Required: ${newQuantity}`
-                );
+            let stockDifference = newQuantity - quantity;
+            let totalStockAvailable = stockItem.material.reduce((acc, item) => acc + item.qty, 0);
+            
+            if (stockDifference > 0 && totalStockAvailable < stockDifference) {
+                throw new Error('Insufficient stock to fulfill the updated quantity.');
             }
     
-            // Deduct stock from the list of materials proportionally
-            let remainingToDeduct = stockDifference;
-            for (let i = 0; i < stockItem.material.length; i++) {
-                let item = stockItem.material[i];
-                if (item.materialMetadata.toString() === materialId.toString()) {
-                    let deduction = Math.min(remainingToDeduct, item.qty);
-                    item.qty -= deduction;
+            if (stockDifference > 0) {
+                let remainingToDeduct = stockDifference;
+                for (const materialListItem of stockItem.material) {
+                    if (remainingToDeduct <= 0) break;
+                    let existingRecord = recordArray.find(record => record.material.toString() === materialListItem._id.toString());
+                    let deduction = Math.min(materialListItem.qty, remainingToDeduct);
+                    materialListItem.qty -= deduction;
                     remainingToDeduct -= deduction;
-                    await MaterialListItemModel.findByIdAndUpdate(item._id, { qty: item.qty });
-                    if (remainingToDeduct === 0) break;
+                    if (existingRecord) {
+                        existingRecord.quantityInUse += deduction;
+                    } else {
+                        recordArray.push({ material: materialListItem._id, quantityInUse: deduction });
+                    }
+                    await materialListItem.save();
+                }
+            } else if (stockDifference < 0) {
+                let remainingToReturn = Math.abs(stockDifference);
+                for (let i = recordArray.length - 1; i >= 0; i--) {
+                    let record = recordArray[i];
+                    let materialListItem = await MaterialListItemModel.findById(record.material);
+                    if (!materialListItem) continue;
+                    let returnAmount = Math.min(record.quantityInUse, remainingToReturn);
+                    materialListItem.qty += returnAmount;
+                    record.quantityInUse -= returnAmount;
+                    remainingToReturn -= returnAmount;
+                    await materialListItem.save();
+                    if (record.quantityInUse === 0) {
+                        recordArray.splice(i, 1);
+                    }
+                    if (remainingToReturn === 0) break;
                 }
             }
     
-            stockItem.updatedAt = new Date();
+            usage.quantity = newQuantity;
+            usage.recordArray = recordArray;
+            await usage.save();
             await stockItem.save();
     
-            // Update usage record
-            const updatedUsage = await UsageModel.findByIdAndUpdate(
-                id,
-                { quantity: newQuantity },
-                { new: true }
-            );
-    
-            return updatedUsage;
+            return usage;
         } catch (error) {
             console.error('Error Updating Usage:', error);
             throw new Error('Error Updating Usage: ' + error.message);
         }
-    }
+    }    
       
 
     
