@@ -20,6 +20,8 @@ const paymentFields = {
     }],
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default:null }, // User who made the payment
     approvedOn:{type: Date, default:null},
+    rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default:null }, // User who rejected the payment
+    rejectedOn:{type: Date, default:null},
     org: { type: mongoose.Schema.Types.ObjectId, ref: 'Org', required: true }, // User who made the payment
 };
 
