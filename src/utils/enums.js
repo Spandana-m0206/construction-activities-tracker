@@ -80,7 +80,13 @@ const StatusOrder = {
 const LandType = ["Raw", "Constructed", "Water Filled"];
 const TaskPriorities = ['Low', 'Medium', 'High']; // Add more priorities if needed
 const PaymentPriorities = ['high', 'medium', 'low'];
-const PaymentStatuses = {APPROVED:'approved',REJECTED: 'rejected',IN_REVIEW :'in review', PENDING:'pending'}
+const PaymentStatuses = {
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+    IN_REVIEW: 'in review',
+    PENDING: 'pending',
+    PAID: 'paid',
+};
 const OrderStatuses = {
     IN_PROGRESS: 'in progress',
     APPROVED: 'approved',
@@ -141,7 +147,7 @@ const CarpetAreaUnitType = {
     SQUARE_METER: 'sq. mt.',
 };
 const PaymentMethods = ['credit_card', 'debit_card', 'paypal', 'upi', 'bank_transfer', 'cash', 'wallet'];
-const PaymentTypes = ['credit', 'debit']
+const PaymentTypes = {  CREDIT:'credit', DEBIT: 'debit'}
 const TaskTypes = {
     PAYMENT: 'Payment',
     MATERIALS: 'materials',
