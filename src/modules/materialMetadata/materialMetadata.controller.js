@@ -5,7 +5,8 @@ const { Roles, MaterialCategories, Units } = require('../../utils/enums');
 const ApiError = require('../../utils/apiError');
 const ApiResponse = require('../../utils/apiResponse');
 const  enumToArray  = require('../../utils/EnumToArray');
-
+const fileService = require('../file/file.service');
+const {parseCSV}=require('../../utils/csvParser')
 class MaterialMetadataController extends BaseController {
     constructor() {
         super(MaterialMetadataService); // Pass the MaterialMetadataService to the BaseController
@@ -108,6 +109,26 @@ class MaterialMetadataController extends BaseController {
             res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, materials, 'Materials retrieved successfully'));
         } catch (error) {
             next(error);
+        }
+    }
+    async createMaterialInBulk(req,res){
+        try {
+            const file=req.file
+
+            if(!file || !file.filename){
+                return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST,"please provide a csv file","please provide a csv file"))
+            }
+
+            const fileStream=await fileService.getFileByName(file.filename)
+           const [validEntries,invalidEntries] =await parseCSV(fileStream)
+           const user=req.user.userId
+           const org=req.user.org
+           const validData=validEntries.map((entry)=>({...entry.validatedData,createdBy:user,org:org}))
+           const validMaterials=await this.service.createBulk(validData)   
+           return res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED,{validMaterials,invalidEntries},"succesfully created"))         
+        } catch (error) {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR,"Something Went Wrong",error))
+
         }
     }
 }
