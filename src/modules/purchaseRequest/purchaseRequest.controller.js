@@ -36,6 +36,27 @@ class PurchaseRequestController extends BaseController {
             next(next);
         }
     }
+    async getTodaysRequest(req, res, next) {
+        try {
+            // Extract organization ID from req.user
+            const orgId = req.user.org;  
+            // Calculate start and end of today
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0); // Midnight
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999); // End of the day
+        
+            // Query today's orders for the organization
+            const todaysRequests = await this.service.findTodaysRequest({
+              org: orgId,
+              createdAt: { $gte: startOfDay, $lt: endOfDay },
+            });
+        
+            res.status(StatusCodes.OK).json(new ApiResponse(200, todaysRequests, 'Today\'s Purchase Request retrieved successfully'));
+        } catch (error) {
+            next(error);
+        }
+    }
 
     async createOrder(req, res, next){
         try {
