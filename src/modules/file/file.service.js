@@ -92,6 +92,25 @@ class FileService extends BaseService {
         res.status(500).send('Error retrieving file');
     }
     };
+    async getFileByName(filename){
+        try {
+            const gfs = getGFSBucket();
+            const readstream = gfs.openDownloadStreamByName(filename);
+    
+            // Handle error if the file doesn't exist
+            return new Promise((resolve, reject) => {
+                // Handle error if the file doesn't exist
+                readstream.on('error', (err) => {
+                    reject(new Error('File not found'));
+                });
+    
+                // Resolve the readstream
+                resolve(readstream);
+            });
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    };
 }
 
 module.exports = new FileService();
