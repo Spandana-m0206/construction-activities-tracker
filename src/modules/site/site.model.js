@@ -8,7 +8,7 @@ const siteFields = {
     name: { type: String, required: true },
     location: { type: String, required: true },
     startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
+    endDate: { type: Date, required: false },
     projectCurrency: { type: String, enum: enumToArray(ProjectCurrencies), required: true },
     projectValue: { type: Number, required: true },
     level: { type: Number, required: true },
