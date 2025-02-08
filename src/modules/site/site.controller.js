@@ -48,8 +48,6 @@ class SiteController extends BaseController {
             }
             if(!siteData?.status)siteData.status = SiteStatuses.WAITING;
             const newSite = await SiteService.create(siteData);
-            floorPlans.forEach(floor => floor.site = newSite._id);
-            floorPlans.forEach(floor => delete floor.id);
             const newFloors = await FloorDetailsService.createBulk(floorPlans)
             await taskService.createTasksForFloors(newSite._id);
  
