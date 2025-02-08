@@ -27,7 +27,7 @@ class SiteController extends BaseController {
     async create (req, res) {
         try {
             const {siteData, floorPlans} = req.body;
-            if(siteData.startDate>siteData.endDate) {
+            if(siteData.endDate && siteData.startDate>siteData.endDate) {
                 return res.status(400)
                     .json(new ApiError(StatusCodes.BAD_REQUEST, "Invalid Date Duration"));
             }
@@ -48,6 +48,8 @@ class SiteController extends BaseController {
             }
             if(!siteData?.status)siteData.status = SiteStatuses.WAITING;
             const newSite = await SiteService.create(siteData);
+            floorPlans.forEach(floor => floor.site = newSite._id);
+            floorPlans.forEach(floor => delete floor.id);
             const newFloors = await FloorDetailsService.createBulk(floorPlans)
             await taskService.createTasksForFloors(newSite._id);
  
