@@ -113,7 +113,7 @@ class UserController extends BaseController {
             }
             const password = generateRandomPassword()
             const newUser = await UserService.create({name, countryCode, email:email.trim().toLowerCase(),role, phone, language, password,org:req.user.org,address})
-            
+            await UserService.sendPasswordForNewUser(newUser,password)
             if(role ===Roles.SITE_SUPERVISOR) {
                 const {sites} = req.body
                 Promise.all(sites.map(async site=>{
@@ -124,6 +124,7 @@ class UserController extends BaseController {
                     await SiteService.update({_id:site},{supervisor:newUser._id})
                 }))
             }
+           
             else if(role ===Roles.INVENTORY_MANAGER){
                 const {inventories} = req.body
                 Promise.all(inventories.map(async inventory=>{
@@ -136,6 +137,7 @@ class UserController extends BaseController {
             }
 
             //TODO: send a create user email 
+           
             delete newUser.password
             return res.status(StatusCodes.CREATED)
                 .json( new ApiResponse(StatusCodes.CREATED, {
