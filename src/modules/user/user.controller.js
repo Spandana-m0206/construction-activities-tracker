@@ -128,7 +128,7 @@ class UserController extends BaseController {
            
             else if(role ===Roles.INVENTORY_MANAGER){
                 const {inventories} = req.body
-                Promise.all(inventories.map(async inventory=>{
+                Promise.all(Array.isArray(inventories)&&inventories.map(async inventory=>{
                     const inventoryExisted = await InventoryService.findById(inventory)
                     if(!inventoryExisted){
                         return res.status(StatusCodes.BAD_REQUEST).json(new ApiError(StatusCodes.BAD_REQUEST, "Inventory not found"))
@@ -137,7 +137,7 @@ class UserController extends BaseController {
                 }))
             }
 
-            //TODO: send a create user email 
+        
            
             delete newUser.password
             return res.status(StatusCodes.CREATED)

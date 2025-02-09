@@ -70,13 +70,13 @@ const generatePasswordForNewUser = (name, password) => {
             </head>
             <body>
                 <div class="container">
-                    <div class="header">🎉 Welcome to Our Platform, ${name}! 🎉</div>
+                    <div class="header">🎉 Welcome to Maguz, ${name}! 🎉</div>
                     <div class="content">
-                        <p>We are excited to have you on board! Your account has been successfully created.</p>
+                        <p>Your account has been successfully created.</p>
                         <p><strong>Your Temporary Password:</strong></p>
                         <div class="password-box">${password}</div>
                         <p>Please log in and change your password as soon as possible for security reasons.</p>
-                        <a href="#" class="button">Login Now</a>
+                      
                     </div>
                     <div class="footer">
                         <p>Thank you for joining us! 💜</p>
