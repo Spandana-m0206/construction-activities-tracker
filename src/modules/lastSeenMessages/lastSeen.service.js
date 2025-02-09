@@ -55,14 +55,14 @@ class LastSeenService extends BaseService{
         return site._id.toString()
       })
       return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
-      .filter(message=>siteIds.includes(message.lastMessage.site?._id?.toString()))
+      .filter(message=>siteIds.includes(message?.lastMessage?.site?._id?.toString()))
     }else if(role==Roles.INVENTORY_MANAGER){
         const inventoryByManager=await InventoryService.findInventoriesByManager({manager:userId})
         const inventoryIds=inventoryByManager.map((inventory)=>{
           return inventory._id.toString()
         })
         return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
-      .filter(message=>inventoryIds.includes(message.lastMessage.inventory?._id?.toString())|| message.lastMessage.site._id)
+      .filter(message=>inventoryIds.includes(message?.lastMessage?.inventory?._id?.toString())|| message?.lastMessage?.site?._id)
     }
     return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0);
   }
