@@ -36,26 +36,47 @@ const allowedMimeTypes = [
     'image/jpg',
     'image/gif',
     'image/heic',
+    'image/webp',
+    'image/svg+xml',
+    'image/tiff',
+    'image/bmp',
+
     // Documents
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/rtf',
     'text/plain',
     'text/csv',
+    'application/json',
+    'application/xml',
+    'application/zip',
+    'application/x-7z-compressed',
+
     // Audio
     'audio/mpeg',
     'audio/wav',
     'audio/ogg',
     'audio/m4a',
     'audio/x-m4a',
+    'audio/flac',
+    'audio/aac',
+    'audio/webm',
+
     // Video
     'video/mp4',
     'video/x-msvideo',
     'video/mpeg',
-    'video/quicktime'
+    'video/quicktime',
+    'video/x-matroska', // MKV
+    'video/webm',
+    'video/ogg'
 ];
+
 
 // Multer upload configuration
 const upload = multer({

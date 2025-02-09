@@ -111,8 +111,7 @@ class SiteController extends BaseController {
             }
     
             // Fetch filtered sites
-            const sites = await SiteService.findPaginated(filters, page, limit);
-    
+            const sites = await SiteService.findPaginated(filters, page, limit, {}, { sort: { updatedAt: -1 } });
 
             res.status(StatusCodes.OK).json(new PaginatedApiResponse(StatusCodes.OK, sites.data, "Sites fetched Successfully", sites.pagination.page, sites.pagination.limit, sites.pagination.totalCount));
         } catch (error) {
@@ -143,7 +142,7 @@ class SiteController extends BaseController {
                 .json(new ApiError(StatusCodes.BAD_REQUEST, "Invalid Supervisor ID"));
             }
         }
-        const updatedSite = await SiteService.update({_id:site}, updates, {new:true});
+        const updatedSite = await SiteService.update({_id:site}, updates, {new:true});        
         return res.status(StatusCodes.OK)
             .json(new ApiResponse(StatusCodes.OK, updatedSite, "Site updated successfully"));
     }
