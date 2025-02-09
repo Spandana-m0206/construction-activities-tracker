@@ -39,7 +39,7 @@ class LastSeenService extends BaseService{
     if(role==Roles.ADMIN){
       chats = [...sites, ...inventories];
     }else if(role == Roles.INVENTORY_MANAGER){
-      chats = [...inventories];
+      chats = [...sites,...inventories];
     }else{
       chats = [...sites]
     }
@@ -62,7 +62,7 @@ class LastSeenService extends BaseService{
           return inventory._id.toString()
         })
         return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
-      .filter(message=>inventoryIds.includes(message.inventory?._id?.toString()))
+      .filter(message=>inventoryIds.includes(message.inventory?._id?.toString()) || message.site._id)
     }
     return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0);
   }
