@@ -529,6 +529,7 @@ class TaskService extends BaseService {
     const query = {
         site: siteId,
         ...otherFilters,
+        parentTask:{$eq:null}
     };
 
     // Add search filter for title substring matching if provided

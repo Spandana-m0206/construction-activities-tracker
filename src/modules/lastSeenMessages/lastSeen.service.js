@@ -4,6 +4,7 @@ const siteService = require("../site/site.service")
 const messageModel=require('../message/message.model')
 const InventoryService = require("../inventory/inventory.service")
 const { Roles } = require("../../utils/enums")
+const SiteModel = require("../site/site.model")
 
 class LastSeenService extends BaseService{
     constructor(){
@@ -48,7 +49,21 @@ class LastSeenService extends BaseService{
         return this.getUnseenMessageCountBySite(userId, chat._id);
       })
     );
-  
+    if(role==Roles.SITE_SUPERVISOR){
+      const sitesBySupervisor=await siteService.getSitesBySupervisor(userId)
+      const siteIds=sitesBySupervisor.map((site)=>{
+        return site._id.toString()
+      })
+      return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
+      .filter(message=>siteIds.includes(message.site?._id?.toString()))
+    }else if(role==Roles.INVENTORY_MANAGER){
+        const inventoryByManager=await InventoryService.findInventoriesByManager({manager:userId})
+        const inventoryIds=inventoryByManager.map((inventory)=>{
+          return inventory._id.toString()
+        })
+        return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
+      .filter(message=>inventoryIds.includes(message.inventory?._id?.toString()))
+    }
     return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0);
   }
   
