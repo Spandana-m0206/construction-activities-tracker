@@ -33,52 +33,39 @@ class LastSeenService extends BaseService{
  }
 
  async getUnseenMessageCountByUser(orgId, userId, role) {
-
-  const sites = await siteService.find({ org: orgId });
-  const inventories = await InventoryService.find({ org: orgId });
-
-  let chats = [];
-
-  // Assign chat visibility based on role
-  if (role === Roles.ADMIN) {
+    const sites = await siteService.find({ org: orgId });
+    const inventories = await InventoryService.find({ org: orgId})
+    let chats = [];
+    if(role==Roles.ADMIN){
       chats = [...sites, ...inventories];
-  } else if (role === Roles.INVENTORY_MANAGER) {
-      chats = [...sites, ...inventories]; 
-  } else {
-      chats = [...sites]; 
+    }else if(role == Roles.INVENTORY_MANAGER){
+      chats = [...sites,...inventories];
+    }else{
+      chats = [...sites]
+    }
+    // Map and return the result of the asynchronous operation
+    const messageBySite = await Promise.all(
+      chats.map((chat) => {
+        return this.getUnseenMessageCountBySite(userId, chat._id);
+      })
+    );
+    if(role==Roles.SITE_SUPERVISOR){
+      const sitesBySupervisor=await siteService.getSitesBySupervisor(userId)
+      const siteIds=sitesBySupervisor.map((site)=>{
+        return site._id.toString()
+      })
+      return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
+      .filter(message=>siteIds.includes(message.lastMessage.site?._id?.toString()))
+    }else if(role==Roles.INVENTORY_MANAGER){
+        const inventoryByManager=await InventoryService.findInventoriesByManager({manager:userId})
+        const inventoryIds=inventoryByManager.map((inventory)=>{
+          return inventory._id.toString()
+        })
+        return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0)
+      .filter(message=>inventoryIds.includes(message.lastMessage.inventory?._id?.toString())|| message.lastMessage.site._id)
+    }
+    return messageBySite.filter(message=>Object.keys(message?.lastMessage).length > 0);
   }
-
-  // Fetch unseen message counts for each chat
-  const messageBySite = await Promise.all(
-      chats.map((chat) => this.getUnseenMessageCountBySite(userId, chat._id))
-  );
-
-  
-  if (role === Roles.SITE_SUPERVISOR) {
-      const sitesBySupervisor = await siteService.getSitesBySupervisor(userId);
-      const siteIds = sitesBySupervisor.map((site) => site._id.toString());
-
-      return messageBySite
-          .filter((message) => Object.keys(message?.lastMessage || {}).length > 0)
-          .filter((message) => siteIds.includes(message.site?._id?.toString()));
-  }
-
-  if (role === Roles.INVENTORY_MANAGER) {
-      const inventoryByManager = await InventoryService.findInventoriesByManager({ manager: userId });
-      const inventoryIds = inventoryByManager.map((inventory) => inventory._id.toString());
-
-      return messageBySite
-          .filter((message) => Object.keys(message?.lastMessage || {}).length > 0)
-          .filter((message) => 
-              message.inventory?._id?.toString() 
-              ? inventoryIds.includes(message.inventory._id.toString()) 
-              : true 
-          );
-  }
-
-  
-  return messageBySite.filter((message) => Object.keys(message?.lastMessage || {}).length > 0);
-}
   
 }
 module.exports=new LastSeenService()
