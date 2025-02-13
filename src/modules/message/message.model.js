@@ -22,7 +22,14 @@ const messageFields = {
 
 // Create the extended schema
 const messageSchema = extendSchema(messageFields);
+messageSchema.post('find',async function (messages){
+        messages.forEach((message)=>{
+            if(message.isDeleted){
+                message.content='This Message Is Deleted'
+            }
+        })
 
+})
 // Create and export the Mongoose model
 const MessageModel = mongoose.model('Message', messageSchema);
 
